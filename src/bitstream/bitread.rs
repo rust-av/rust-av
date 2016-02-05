@@ -15,14 +15,14 @@ pub trait BitRead {
 */
 }
 
-pub struct LittleEndian <'a> {
+pub struct BitReadLE <'a> {
     buffer : &'a[u8],
     index : usize,
     cache : u64,
     left : usize,
 }
 
-impl <'a> BitRead for LittleEndian<'a> {
+impl <'a> BitRead for BitReadLE<'a> {
     fn get_bit1(&mut self) -> bool {
         let val = (self.cache & 1) == 1;
         self.cache = self.cache >> 1;
@@ -38,7 +38,7 @@ mod test {
 
 #[test]
     fn get_bit1() {
-        let mut reader = LittleEndian {
+        let mut reader = BitReadLE {
             buffer : &b""[..],
             index : 0,
             cache: 0b10,
