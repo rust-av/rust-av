@@ -3,4 +3,7 @@ name = "av"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 
+[features]
+nightly = []
+
 [dependencies]
