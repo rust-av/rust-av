@@ -1,2 +1,3 @@
-mod bitread;
+pub mod bitread;
+pub mod byteread;
 

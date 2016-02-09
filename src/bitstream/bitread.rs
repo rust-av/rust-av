@@ -1,5 +1,11 @@
+use bitstream::byteread::*;
+
 pub trait BitRead {
-    fn get_bit1(&mut self) -> bool;
+    fn count(&self) -> usize;
+    fn can_refill(&self) -> bool;
+    fn refill64(&mut self) -> ();
+    fn get_val(&mut self, n:usize) -> u64;
+    fn get_bit(&mut self) -> bool;
 /*
     fn peek_bit1(size : u8) -> bool;
 
@@ -16,17 +22,50 @@ pub trait BitRead {
 }
 
 pub struct BitReadLE <'a> {
-    buffer : &'a[u8],
+    buffer : &'a[u8], /// read buffer, 8-bytes padded
     index : usize,
     cache : u64,
     left : usize,
 }
 
 impl <'a> BitRead for BitReadLE<'a> {
-    fn get_bit1(&mut self) -> bool {
-        let val = (self.cache & 1) == 1;
-        self.cache = self.cache >> 1;
-        return val;
+    #[inline]
+    fn count(&self) -> usize {
+        self.index * 8 - self.left
+    }
+
+    #[inline]
+    fn can_refill(&self) -> bool {
+        self.index < self.buffer.len() - 8
+    }
+
+    #[inline]
+    fn refill64(&mut self) -> () {
+        if !self.can_refill() {
+            return;
+        }
+
+        self.cache  = get_u64l(&self.buffer[self.index..]);
+        self.index += 8;
+        self.left   = 64;
+    }
+
+    #[inline]
+    fn get_val(&mut self, n:usize) -> u64 {
+        let ret = self.cache & ((1u64 << n) - 1);
+
+        self.cache = self.cache >> n;
+        self.left -= n;
+
+        return ret;
+    }
+
+    fn get_bit(&mut self) -> bool {
+        if self.left <= 0 {
+            self.refill64();
+        }
+
+        self.get_val(1) != 0
     }
 }
 
@@ -37,16 +76,20 @@ mod test {
 
 
 #[test]
-    fn get_bit1() {
+    fn get_bit() {
+        let buf = &[2, 0, 0, 0,
+                    0, 0, 0, 0,
+                    1, 0, 0, 0,
+                    0, 0, 0, 0];
+
         let mut reader = BitReadLE {
-            buffer : &b""[..],
+            buffer : buf,
             index : 0,
-            cache: 0b10,
-            left: 2
+            cache: 0,
+            left: 0
         };
 
-        assert!(!reader.get_bit1());
-        assert!(reader.get_bit1());
+        assert!(!reader.get_bit());
+        assert!(reader.get_bit());
     }
-
 }
