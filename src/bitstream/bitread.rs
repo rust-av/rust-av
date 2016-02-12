@@ -7,6 +7,7 @@ pub trait BitRead {
     fn refill64(&mut self) -> ();
     fn get_val(&mut self, n:usize) -> u64;
     fn get_bit(&mut self) -> bool;
+    fn peek_val(&mut self, n:usize) -> u64;
 /*
     fn peek_bit1(size : u8) -> bool;
 
@@ -58,7 +59,7 @@ impl <'a> BitRead for BitReadLE<'a> {
 
     #[inline]
     fn get_val(&mut self, n:usize) -> u64 {
-        let ret = self.cache & ((1u64 << n) - 1);
+        let ret = self.peek_val(n);
 
         self.cache = self.cache >> n;
         self.left -= n;
@@ -72,6 +73,11 @@ impl <'a> BitRead for BitReadLE<'a> {
         }
 
         self.get_val(1) != 0
+    }
+
+    #[inline]
+    fn peek_val(&mut self, n:usize) -> u64 {
+        self.cache & ((1u64 << n) - 1)
     }
 }
 
