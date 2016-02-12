@@ -1,7 +1,7 @@
 use bitstream::byteread::*;
 
 pub trait BitRead {
-    fn count(&self) -> usize;
+    fn consumed(&self) -> usize;
     fn can_refill(&self) -> bool;
     fn refill64(&mut self) -> ();
     fn get_val(&mut self, n:usize) -> u64;
@@ -30,7 +30,7 @@ pub struct BitReadLE <'a> {
 
 impl <'a> BitRead for BitReadLE<'a> {
     #[inline]
-    fn count(&self) -> usize {
+    fn consumed(&self) -> usize {
         self.index * 8 - self.left
     }
 
