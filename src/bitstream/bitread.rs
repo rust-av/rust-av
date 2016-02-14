@@ -9,10 +9,11 @@ pub trait BitRead {
     fn get_bit(&mut self) -> bool;
     fn peek_val(&mut self, n:usize) -> u64;
     fn get_bits_64(&mut self, n: usize) -> u64;
+    fn refill32(&mut self) -> ();
+    fn get_bits_32(&mut self, n: usize) -> u32;
 /*
     fn peek_bit1(size : u8) -> bool;
 
-    fn get_bits32(size : u8) -> u32;
 
 
     fn peek_bits32(size : u8) -> u32;
@@ -98,6 +99,32 @@ impl <'a> BitRead for BitReadLE<'a> {
 
         self.get_val(n - left) << left | ret
     }
+
+    #[inline]
+    fn refill32(&mut self) -> () {
+        if !self.can_refill() {
+            return;
+        }
+        let val = get_u32l(&self.buffer[self.index..]) as u64;
+
+        self.cache  = val << self.left | self.cache;
+        self.index += 4;
+        self.left  += 32;
+    }
+
+    #[inline]
+    fn get_bits_32(&mut self, n:usize) -> u32 {
+        if n == 0 {
+            return 0;
+        }
+
+        if self.left <= n {
+            self.refill32();
+        }
+
+        return self.get_val(n) as u32;
+    }
+
 }
 
 
@@ -122,6 +149,22 @@ mod test {
 
 #[test]
     fn get_bits_64() {
+        let mut reader = BitReadLE {
+            buffer: &CHECKBOARD,
+            index: 0,
+            cache: 0,
+            left: 0
+        };
+
+        assert!(reader.get_bits_64(1) == 1);
+        assert!(reader.get_bits_64(2) == 2);
+        assert!(reader.get_bits_64(4) == 10);
+        assert!(reader.get_bits_64(1) == 0);
+        assert!(reader.get_bits_64(8) == 85);
+    }
+
+#[test]
+    fn get_bits_32() {
         let mut reader = BitReadLE {
             buffer: &CHECKBOARD,
             index: 0,
