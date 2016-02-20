@@ -15,17 +15,9 @@ pub trait BitRead {
     fn peek_bits_64(&mut self, n: usize) -> u64;
 
     fn peek_bits_32(&mut self, n: usize) -> u32;
-/*
-    fn peek_bit1(size : u8) -> bool;
 
-
-
-    fn peek_bits32(size : u8) -> u32;
-
-    fn peek_bits64(size : u8) -> u64;
-
-    fn skip_bits(size : u8) -> ();
-*/
+    fn skip_rem(&mut self, n:usize) -> ();
+    fn skip_bits(&mut self, size : usize) -> ();
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -137,6 +129,7 @@ impl <'a> BitRead for BitReadLE<'a> {
         return self.get_val(n) as u32;
     }
 
+    #[inline]
     fn peek_bits_32(&mut self, n:usize) -> u32 {
         if n == 0 {
             return 0;
@@ -147,6 +140,28 @@ impl <'a> BitRead for BitReadLE<'a> {
         }
 
         return self.peek_val(n) as u32;
+    }
+
+    fn skip_rem(&mut self, n:usize) -> () {
+        self.cache = self.cache >> n;
+        self.left -= n;
+    }
+
+    #[inline]
+    fn skip_bits(&mut self, mut n:usize) -> () {
+        if self.left < n {
+            n -= self.left;
+            self.skip_rem(n);
+            if n > 64 {
+                let skip = n / 8;
+
+                n -= skip * 8;
+                self.index += skip;
+            }
+            self.refill64();
+        }
+
+        self.skip_rem(n);
     }
 }
 
@@ -229,5 +244,21 @@ mod test {
         assert!(reader.peek_bits_32(1) == 1);
         assert!(reader.peek_bits_32(2) == 1);
         assert!(reader.peek_bits_32(2) == 1);
+    }
+#[test]
+    fn skip_bits() {
+        let mut reader = BitReadLE {
+            buffer: &CHECKBOARD,
+            index: 0,
+            cache: 0,
+            left: 0
+        };
+
+        reader.skip_bits(0);
+        assert!(reader.peek_bits_32(1) == 1);
+        reader.skip_bits(2);
+        assert!(reader.peek_bits_32(1) == 1);
+        reader.skip_bits(2);
+        assert!(reader.peek_bits_32(1) == 1);
     }
 }
