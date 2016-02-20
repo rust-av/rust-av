@@ -11,6 +11,10 @@ pub trait BitRead {
     fn get_bits_64(&mut self, n: usize) -> u64;
     fn refill32(&mut self) -> ();
     fn get_bits_32(&mut self, n: usize) -> u32;
+
+    fn peek_bits_64(&mut self, n: usize) -> u64;
+
+    fn peek_bits_32(&mut self, n: usize) -> u32;
 /*
     fn peek_bit1(size : u8) -> bool;
 
@@ -24,6 +28,7 @@ pub trait BitRead {
 */
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct BitReadLE <'a> {
     buffer : &'a[u8], /// read buffer, 8-bytes padded
     index : usize,
@@ -101,6 +106,13 @@ impl <'a> BitRead for BitReadLE<'a> {
     }
 
     #[inline]
+    fn peek_bits_64(&mut self, n:usize) -> u64 {
+        let mut tmp = self.clone();
+
+        tmp.get_bits_64(n)
+    }
+
+    #[inline]
     fn refill32(&mut self) -> () {
         if !self.can_refill() {
             return;
@@ -125,6 +137,17 @@ impl <'a> BitRead for BitReadLE<'a> {
         return self.get_val(n) as u32;
     }
 
+    fn peek_bits_32(&mut self, n:usize) -> u32 {
+        if n == 0 {
+            return 0;
+        }
+
+        if self.left <= n {
+            self.refill32();
+        }
+
+        return self.peek_val(n) as u32;
+    }
 }
 
 
@@ -164,6 +187,20 @@ mod test {
     }
 
 #[test]
+    fn peek_bits_64() {
+        let mut reader = BitReadLE {
+            buffer: &CHECKBOARD,
+            index: 0,
+            cache: 0,
+            left: 0
+        };
+
+        assert!(reader.peek_bits_64(1) == 1);
+        assert!(reader.peek_bits_64(1) == 1);
+        assert!(reader.peek_bits_64(2) == 1);
+        assert!(reader.peek_bits_64(2) == 1);
+    }
+#[test]
     fn get_bits_32() {
         let mut reader = BitReadLE {
             buffer: &CHECKBOARD,
@@ -177,5 +214,20 @@ mod test {
         assert!(reader.get_bits_64(4) == 10);
         assert!(reader.get_bits_64(1) == 0);
         assert!(reader.get_bits_64(8) == 85);
+    }
+
+#[test]
+    fn peek_bits_32() {
+        let mut reader = BitReadLE {
+            buffer: &CHECKBOARD,
+            index: 0,
+            cache: 0,
+            left: 0
+        };
+
+        assert!(reader.peek_bits_32(1) == 1);
+        assert!(reader.peek_bits_32(1) == 1);
+        assert!(reader.peek_bits_32(2) == 1);
+        assert!(reader.peek_bits_32(2) == 1);
     }
 }
