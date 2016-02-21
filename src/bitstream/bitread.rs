@@ -1,16 +1,21 @@
 use bitstream::byteread::*;
 
-pub trait BitRead {
+
+trait BitReadEndian {
     fn peek_val(&mut self, n:usize) -> u64;
     fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64;
     fn skip_rem(&mut self, n:usize) -> ();
     fn fill32(&self) -> u64;
     fn fill64(&self) -> u64;
+}
 
+trait BitReadInternal {
     fn get_val(&mut self, n:usize) -> u64;
     fn refill32(&mut self) -> ();
     fn refill64(&mut self) -> ();
+}
 
+pub trait BitRead {
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
     fn can_refill(&self) -> bool;
@@ -34,7 +39,7 @@ pub struct BitReadLE <'a> {
     left : usize,
 }
 
-impl <'a> BitRead for BitReadLE<'a> {
+impl <'a> BitReadEndian for BitReadLE<'a> {
     #[inline]
     fn peek_val(&mut self, n:usize) -> u64 {
         self.cache & ((1u64 << n) - 1)
@@ -56,7 +61,9 @@ impl <'a> BitRead for BitReadLE<'a> {
     fn fill64(&self) -> u64 {
         get_u64l(&self.buffer[self.index..])
     }
+}
 
+impl <'a> BitReadInternal for BitReadLE<'a> {
     #[inline]
     fn get_val(&mut self, n:usize) -> u64 {
         let ret = self.peek_val(n);
@@ -87,7 +94,9 @@ impl <'a> BitRead for BitReadLE<'a> {
         self.index += 8;
         self.left   = 64;
     }
+}
 
+impl <'a> BitRead for BitReadLE<'a> {
     #[inline]
     fn consumed(&self) -> usize {
         self.index * 8 - self.left
