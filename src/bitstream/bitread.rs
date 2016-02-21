@@ -18,6 +18,7 @@ pub trait BitRead {
 
     fn skip_rem(&mut self, n:usize) -> ();
     fn skip_bits(&mut self, size : usize) -> ();
+    fn align_bits(&mut self) -> ();
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -163,6 +164,13 @@ impl <'a> BitRead for BitReadLE<'a> {
 
         self.skip_rem(n);
     }
+
+    #[inline]
+    fn align_bits(&mut self) -> () {
+        let left = self.left;
+
+        self.skip_bits(left);
+    }
 }
 
 
@@ -170,12 +178,13 @@ impl <'a> BitRead for BitReadLE<'a> {
 mod test {
     use super::*;
 
-    const CHECKBOARD: [u8; 128] = [0b01010101; 128];
+    const CHECKBOARD0101: [u8; 128] = [0b01010101; 128];
+    const CHECKBOARD0011: [u8; 128] = [0b00110011; 128];
 
 #[test]
     fn get_bit() {
         let mut reader = BitReadLE {
-            buffer: &CHECKBOARD,
+            buffer: &CHECKBOARD0101,
             index: 0,
             cache: 0,
             left: 0
@@ -188,7 +197,7 @@ mod test {
 #[test]
     fn get_bits_64() {
         let mut reader = BitReadLE {
-            buffer: &CHECKBOARD,
+            buffer: &CHECKBOARD0101,
             index: 0,
             cache: 0,
             left: 0
@@ -204,7 +213,7 @@ mod test {
 #[test]
     fn peek_bits_64() {
         let mut reader = BitReadLE {
-            buffer: &CHECKBOARD,
+            buffer: &CHECKBOARD0101,
             index: 0,
             cache: 0,
             left: 0
@@ -218,7 +227,7 @@ mod test {
 #[test]
     fn get_bits_32() {
         let mut reader = BitReadLE {
-            buffer: &CHECKBOARD,
+            buffer: &CHECKBOARD0101,
             index: 0,
             cache: 0,
             left: 0
@@ -234,7 +243,7 @@ mod test {
 #[test]
     fn peek_bits_32() {
         let mut reader = BitReadLE {
-            buffer: &CHECKBOARD,
+            buffer: &CHECKBOARD0101,
             index: 0,
             cache: 0,
             left: 0
@@ -248,7 +257,7 @@ mod test {
 #[test]
     fn skip_bits() {
         let mut reader = BitReadLE {
-            buffer: &CHECKBOARD,
+            buffer: &CHECKBOARD0101,
             index: 0,
             cache: 0,
             left: 0
@@ -260,5 +269,21 @@ mod test {
         assert!(reader.peek_bits_32(1) == 1);
         reader.skip_bits(2);
         assert!(reader.peek_bits_32(1) == 1);
+    }
+#[test]
+    fn align_bits() {
+        let mut reader = BitReadLE {
+            buffer: &CHECKBOARD0011,
+            index: 0,
+            cache: 0,
+            left: 0
+        };
+
+        assert!(reader.get_bits_64(3) == 3);
+        reader.align_bits();
+        assert!(reader.get_bits_64(4) == 3);
+        reader.skip_bits(1);
+        reader.align_bits();
+        assert!(reader.get_bits_64(4) == 3);
     }
 }
