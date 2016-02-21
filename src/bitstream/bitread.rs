@@ -1,22 +1,27 @@
 use bitstream::byteread::*;
 
 pub trait BitRead {
+    fn peek_val(&mut self, n:usize) -> u64;
+    fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64;
+    fn skip_rem(&mut self, n:usize) -> ();
+    fn fill32(&self) -> u64;
+    fn fill64(&self) -> u64;
+
+    fn get_val(&mut self, n:usize) -> u64;
+    fn refill32(&mut self) -> ();
+    fn refill64(&mut self) -> ();
+
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
     fn can_refill(&self) -> bool;
-    fn refill64(&mut self) -> ();
-    fn get_val(&mut self, n:usize) -> u64;
+
     fn get_bit(&mut self) -> bool;
-    fn peek_val(&mut self, n:usize) -> u64;
     fn get_bits_64(&mut self, n: usize) -> u64;
-    fn refill32(&mut self) -> ();
     fn get_bits_32(&mut self, n: usize) -> u32;
 
+    fn peek_bits_32(&mut self, n: usize) -> u32;
     fn peek_bits_64(&mut self, n: usize) -> u64;
 
-    fn peek_bits_32(&mut self, n: usize) -> u32;
-
-    fn skip_rem(&mut self, n:usize) -> ();
     fn skip_bits(&mut self, size : usize) -> ();
     fn align_bits(&mut self) -> ();
 }
@@ -30,6 +35,59 @@ pub struct BitReadLE <'a> {
 }
 
 impl <'a> BitRead for BitReadLE<'a> {
+    #[inline]
+    fn peek_val(&mut self, n:usize) -> u64 {
+        self.cache & ((1u64 << n) - 1)
+    }
+    #[inline]
+    fn skip_rem(&mut self, n:usize) -> () {
+        self.cache = self.cache >> n;
+        self.left -= n;
+    }
+    #[inline]
+    fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64 {
+        msp << msb | lsp
+    }
+    #[inline(always)]
+    fn fill32(&self) -> u64 {
+        get_u32l(&self.buffer[self.index..]) as u64
+    }
+    #[inline(always)]
+    fn fill64(&self) -> u64 {
+        get_u64l(&self.buffer[self.index..])
+    }
+
+    #[inline]
+    fn get_val(&mut self, n:usize) -> u64 {
+        let ret = self.peek_val(n);
+
+        self.skip_rem(n);
+
+        return ret;
+    }
+    #[inline]
+    fn refill32(&mut self) -> () {
+        if !self.can_refill() {
+            return;
+        }
+        let val = self.fill32();
+
+        self.cache  = Self::merge_val(val, self.cache,
+                                      self.left, 32 - self.left);
+        self.index += 4;
+        self.left  += 32;
+    }
+    #[inline]
+    fn refill64(&mut self) -> () {
+        if !self.can_refill() {
+            return;
+        }
+
+        self.cache  = self.fill64();
+        self.index += 8;
+        self.left   = 64;
+    }
+
     #[inline]
     fn consumed(&self) -> usize {
         self.index * 8 - self.left
@@ -46,32 +104,6 @@ impl <'a> BitRead for BitReadLE<'a> {
     }
 
     #[inline]
-    fn refill64(&mut self) -> () {
-        if !self.can_refill() {
-            return;
-        }
-
-        self.cache  = get_u64l(&self.buffer[self.index..]);
-        self.index += 8;
-        self.left   = 64;
-    }
-
-    #[inline]
-    fn get_val(&mut self, n:usize) -> u64 {
-        let ret = self.peek_val(n);
-
-        self.cache = self.cache >> n;
-        self.left -= n;
-
-        return ret;
-    }
-
-    #[inline]
-    fn peek_val(&mut self, n:usize) -> u64 {
-        self.cache & ((1u64 << n) - 1)
-    }
-
-    #[inline]
     fn get_bit(&mut self) -> bool {
         if self.left <= 0 {
             self.refill64();
@@ -81,7 +113,7 @@ impl <'a> BitRead for BitReadLE<'a> {
     }
 
     #[inline]
-    fn get_bits_64(&mut self, n:usize) -> u64 {
+    fn get_bits_64(&mut self, mut n:usize) -> u64 {
         let mut left = 0;
         let mut ret = 0;
 
@@ -90,12 +122,13 @@ impl <'a> BitRead for BitReadLE<'a> {
         }
 
         if self.left < n {
+            n   -= left;
             left = self.left;
             ret  = self.get_val(left);
             self.refill64();
         }
 
-        self.get_val(n - left) << left | ret
+        Self::merge_val(self.get_val(n), ret, left, n)
     }
 
     #[inline]
@@ -103,18 +136,6 @@ impl <'a> BitRead for BitReadLE<'a> {
         let mut tmp = self.clone();
 
         tmp.get_bits_64(n)
-    }
-
-    #[inline]
-    fn refill32(&mut self) -> () {
-        if !self.can_refill() {
-            return;
-        }
-        let val = get_u32l(&self.buffer[self.index..]) as u64;
-
-        self.cache  = val << self.left | self.cache;
-        self.index += 4;
-        self.left  += 32;
     }
 
     #[inline]
@@ -141,11 +162,6 @@ impl <'a> BitRead for BitReadLE<'a> {
         }
 
         return self.peek_val(n) as u32;
-    }
-
-    fn skip_rem(&mut self, n:usize) -> () {
-        self.cache = self.cache >> n;
-        self.left -= n;
     }
 
     #[inline]
