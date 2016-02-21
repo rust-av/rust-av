@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 
 // TODO: Implement for Cursor?
 /**
