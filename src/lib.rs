@@ -14,6 +14,3 @@ mod filter;
 mod resample;
 mod scale;
 
-#[test]
-fn it_works() {
-}
