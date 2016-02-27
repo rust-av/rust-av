@@ -120,7 +120,7 @@ macro_rules! endian_reader {
                 }
 
                 if self.left < n {
-                    n   -= left;
+                    n   -= self.left;
                     left = self.left;
                     ret  = self.get_val(left);
                     self.refill64();
