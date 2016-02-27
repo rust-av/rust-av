@@ -25,7 +25,7 @@ pub trait BitReadInternal : BitReadEndian {
 
 }
 
-pub trait BitRead<'a>: BitReadInternal+Clone {
+pub trait BitRead<'a>: BitReadInternal+Copy {
     fn new(&'a[u8]) -> Self;
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
@@ -89,8 +89,8 @@ pub trait BitRead<'a>: BitReadInternal+Clone {
     }
 
     #[inline]
-    fn peek_bits_64(&mut self, n:usize) -> u64 {
-        let mut tmp = self.clone();
+    fn peek_bits_64(&self, n:usize) -> u64 {
+        let mut tmp = *self;
 
         tmp.get_bits_64(n)
     }
@@ -279,7 +279,7 @@ mod test {
 
         #[test]
         fn peek_bits_64() {
-            let mut reader = BitReadLE {
+            let reader = BitReadLE {
                 buffer: &CHECKBOARD0101,
                 index: 0,
                 cache: 0,
@@ -374,7 +374,7 @@ mod test {
         #[test]
         fn peek_bits_64() {
             let b = &CHECKBOARD0101;
-            let mut reader = BitReadBE::new(b);
+            let reader = BitReadBE::new(b);
 
             assert!(reader.peek_bits_64(1) == 0);
             assert!(reader.peek_bits_64(1) == 0);
