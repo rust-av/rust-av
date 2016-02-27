@@ -1,7 +1,7 @@
 use bitstream::byteread::*;
 
 
-trait BitReadEndian {
+pub trait BitReadEndian {
     fn peek_val(&mut self, n:usize) -> u64;
     fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64;
     fn skip_rem(&mut self, n:usize) -> ();
@@ -9,27 +9,98 @@ trait BitReadEndian {
     fn fill64(&self) -> u64;
 }
 
-trait BitReadInternal : BitReadEndian {
-    fn get_val(&mut self, n:usize) -> u64;
+pub trait BitReadInternal : BitReadEndian {
+    #[inline]
+    fn left(&self) -> usize;
     fn refill32(&mut self) -> ();
     fn refill64(&mut self) -> ();
+
+    fn get_val(&mut self, n:usize) -> u64 {
+        let ret = self.peek_val(n);
+
+        self.skip_rem(n);
+
+        return ret;
+    }
+
 }
 
-pub trait BitRead<'a> {
+pub trait BitRead<'a>: BitReadInternal+Clone {
     fn new(&'a[u8]) -> Self;
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
     fn can_refill(&self) -> bool;
 
-    fn get_bit(&mut self) -> bool;
-    fn get_bits_64(&mut self, n: usize) -> u64;
-    fn get_bits_32(&mut self, n: usize) -> u32;
-
-    fn peek_bits_32(&mut self, n: usize) -> u32;
-    fn peek_bits_64(&mut self, n: usize) -> u64;
-
     fn skip_bits(&mut self, size : usize) -> ();
-    fn align_bits(&mut self) -> ();
+
+    #[inline]
+    fn get_bit(&mut self) -> bool {
+        if self.left() <= 0 {
+            self.refill64();
+        }
+
+        self.get_val(1) != 0
+    }
+
+    #[inline]
+    fn get_bits_64(&mut self, mut n:usize) -> u64 {
+        let mut left = 0;
+        let mut ret = 0;
+
+        if n == 0 {
+            return 0;
+        }
+
+        if self.left() < n {
+            n   -= self.left();
+            left = self.left();
+            ret  = self.get_val(left);
+            self.refill64();
+        }
+
+        Self::merge_val(self.get_val(n), ret, left, n)
+    }
+
+    #[inline]
+    fn get_bits_32(&mut self, n:usize) -> u32 {
+        if n == 0 {
+            return 0;
+        }
+
+        if self.left() <= n {
+            self.refill32();
+        }
+
+        return self.get_val(n) as u32;
+    }
+
+
+    #[inline]
+    fn peek_bits_32(&mut self, n:usize) -> u32 {
+        if n == 0 {
+            return 0;
+        }
+
+        if self.left() <= n {
+            self.refill32();
+        }
+
+        return self.peek_val(n) as u32;
+    }
+
+    #[inline]
+    fn peek_bits_64(&mut self, n:usize) -> u64 {
+        let mut tmp = self.clone();
+
+        tmp.get_bits_64(n)
+    }
+
+    #[inline]
+    fn align_bits(&mut self) -> () {
+        let left = self.left() & 63;
+
+        self.skip_bits(left);
+    }
 }
 
 macro_rules! endian_reader {
@@ -42,13 +113,9 @@ macro_rules! endian_reader {
             left : usize,
         }
         impl <'a> BitReadInternal for $name<'a> {
-            // #[inline]
-            fn get_val(&mut self, n:usize) -> u64 {
-                let ret = self.peek_val(n);
-
-                self.skip_rem(n);
-
-                return ret;
+            #[inline]
+            fn left(&self) -> usize {
+                self.left
             }
             #[inline]
             fn refill32(&mut self) -> () {
@@ -102,67 +169,6 @@ macro_rules! endian_reader {
             }
 
             #[inline]
-            fn get_bit(&mut self) -> bool {
-                if self.left <= 0 {
-                    self.refill64();
-                }
-
-                self.get_val(1) != 0
-            }
-
-            #[inline]
-            fn get_bits_64(&mut self, mut n:usize) -> u64 {
-                let mut left = 0;
-                let mut ret = 0;
-
-                if n == 0 {
-                    return 0;
-                }
-
-                if self.left < n {
-                    n   -= self.left;
-                    left = self.left;
-                    ret  = self.get_val(left);
-                    self.refill64();
-                }
-
-                Self::merge_val(self.get_val(n), ret, left, n)
-            }
-
-            #[inline]
-            fn peek_bits_64(&mut self, n:usize) -> u64 {
-                let mut tmp = self.clone();
-
-                tmp.get_bits_64(n)
-            }
-
-            #[inline]
-            fn get_bits_32(&mut self, n:usize) -> u32 {
-                if n == 0 {
-                    return 0;
-                }
-
-                if self.left <= n {
-                    self.refill32();
-                }
-
-                return self.get_val(n) as u32;
-            }
-
-            #[inline]
-            fn peek_bits_32(&mut self, n:usize) -> u32 {
-                if n == 0 {
-                    return 0;
-                }
-
-                if self.left <= n {
-                    self.refill32();
-                }
-
-                return self.peek_val(n) as u32;
-            }
-
-            #[inline]
             fn skip_bits(&mut self, mut n:usize) -> () {
                 if n == 0 {
                     return;
@@ -182,12 +188,6 @@ macro_rules! endian_reader {
                 self.skip_rem(n);
             }
 
-            #[inline]
-            fn align_bits(&mut self) -> () {
-                let left = self.left & 63;
-
-                self.skip_bits(left);
-            }
         }
     }
 }
