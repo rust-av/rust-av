@@ -252,22 +252,6 @@ mod test {
     pub const CHECKBOARD0101: [u8; 128] = [0b01010101; 128];
     pub const CHECKBOARD0011: [u8; 128] = [0b00110011; 128];
 
-    #[test]
-    fn blah() {
-        struct Foo {
-            cache : u64
-        }
-        fn skip_rem(f : &mut Foo, n:usize) -> () {
-            f.cache = f.cache << n;
-        }
-
-        let mut f = Foo { cache : 0 };
-
-        for n in 0..63 {
-            skip_rem(&mut f, n);
-        }
-    }
-/*
     mod le {
         use super::super::*;
         use super::*;
@@ -362,7 +346,6 @@ mod test {
             assert!(reader.get_bits_64(4) == 3);
         }
     }
-*/
     mod be {
         use super::super::*;
         use super::*;
@@ -449,6 +432,4 @@ mod test {
             assert!(reader.get_bits_64(4) == 3);
         }
     }
-
-
 }
