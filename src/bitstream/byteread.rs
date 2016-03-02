@@ -16,6 +16,16 @@ macro_rules! read_num_bytes {
 }
 
 #[inline]
+pub fn get_u8(buf:&[u8]) -> u8 {
+    buf[0] as u8
+}
+
+#[inline]
+pub fn get_i8(buf:&[u8]) -> i8 {
+    buf[0] as i8
+}
+
+#[inline]
 pub fn get_u16l(buf:&[u8]) -> u16 {
     read_num_bytes!(u16, 2, buf, to_le)
 }
