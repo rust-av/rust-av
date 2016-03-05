@@ -7,3 +7,4 @@ authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 nightly = []
 
 [dependencies]
+bitflags = "0.5.0"
