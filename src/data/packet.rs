@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::io::{Read, Result};
+use std::io::{Read, Write, Result};
 
 // use data::SideData;
 
@@ -53,7 +53,14 @@ pub trait ReadPacket: Read {
     }
 }
 
+pub trait WritePacket: Write {
+    fn put_packet(&mut self, pkt: Packet) -> Result<()> {
+        self.write_all(pkt.data.as_slice())
+    }
+}
+
 impl<R: Read + ?Sized> ReadPacket for R {}
+impl<W: Write + ?Sized> WritePacket for W {}
 
 #[cfg(test)]
 mod test {
@@ -67,6 +74,27 @@ mod test {
         match buf.get_packet(1024) {
             Ok(pkt) => assert!(pkt.data[0] == 0),
             _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn write_packet() {
+        let size = 1024;
+        let mut buf = Cursor::new(Vec::with_capacity(size));
+
+        let mut pkt = Packet::with_capacity(size);
+
+        for i in 0..size {
+            pkt.data.push(i as u8);
+        }
+
+        buf.put_packet(pkt).unwrap();
+
+        let vec = buf.into_inner();
+
+        for i in 0..size {
+            println!("{}", vec[i]);
+            assert!(vec[i] == i as u8);
         }
     }
 }
