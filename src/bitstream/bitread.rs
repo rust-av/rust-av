@@ -77,15 +77,9 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
 
     #[inline]
     fn peek_bits_32(&mut self, n:usize) -> u32 {
-        if n == 0 {
-            return 0;
-        }
+        let mut tmp = *self;
 
-        if self.left() <= n {
-            self.refill32();
-        }
-
-        return self.peek_val(n) as u32;
+        tmp.get_bits_32(n)
     }
 
     #[inline]
