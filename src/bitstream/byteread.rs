@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::mem::transmute;
+
 /**
  * Unsafe building blocks
  */
@@ -87,22 +89,22 @@ pub fn get_i64b(buf:&[u8]) -> i64 {
 
 #[inline]
 pub fn get_f32l(buf:&[u8]) -> f32 {
-    get_u32l(buf) as f32
+    unsafe { transmute(get_u32l(buf)) }
 }
 
 #[inline]
 pub fn get_f32b(buf:&[u8]) -> f32 {
-    get_u32b(buf) as f32
+    unsafe { transmute(get_u32b(buf)) }
 }
 
 #[inline]
 pub fn get_f64l(buf:&[u8]) -> f64 {
-    get_u64l(buf) as f64
+    unsafe { transmute(get_u64l(buf)) }
 }
 
 #[inline]
 pub fn get_f64b(buf:&[u8]) -> f64 {
-    get_u64b(buf) as f64
+    unsafe { transmute(get_u64b(buf)) }
 }
 
 // TODO: write meaningful tests.
