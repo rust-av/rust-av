@@ -104,4 +104,36 @@ pub fn put_f64b(buf:&mut[u8], n:f64) {
     put_u64b(buf, unsafe { transmute(n) });
 }
 
+#[cfg(test)]
+mod test {
 
+    use super::*;
+    use bitstream::byteread::*;
+
+    #[test]
+    fn put_and_get_u8() {
+        let mut buf = [0; 3];
+        put_u8(&mut buf, 1);
+        assert!(1 == get_u8(&mut buf));
+
+        put_u8(&mut buf[1..], 2);
+        assert!(2 == get_u8(&mut buf[1..]));
+
+        put_u8(&mut buf[2..], 255);
+        assert!(255 == get_u8(&mut buf[2..]));
+    }
+
+    #[test]
+    fn put_and_get_i8() {
+        let mut buf = [0; 3];
+        put_i8(&mut buf, 1);
+        assert!(1 == get_i8(&mut buf));
+
+        put_i8(&mut buf[1..], 2);
+        assert!(2 == get_i8(&mut buf[1..]));
+
+        put_i8(&mut buf[2..], -128);
+        assert!(-128 == get_i8(&mut buf[2..]));
+    }
+
+}
