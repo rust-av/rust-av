@@ -5,6 +5,18 @@
 
 Pure-rust implementation of multimedia primitives and eventually demuxer, muxers and codecs.
 
+## Compiling
+
+```bash
+cargo build
+```
+
+## Running tests
+
+```bash
+cargo test
+```
+
 ## Notes
 
 The code is still in flux and the API is getting slowly fleshed out.
