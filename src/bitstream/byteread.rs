@@ -106,10 +106,3 @@ pub fn get_f64l(buf:&[u8]) -> f64 {
 pub fn get_f64b(buf:&[u8]) -> f64 {
     unsafe { transmute(get_u64b(buf)) }
 }
-
-// TODO: write meaningful tests.
-#[cfg(test)]
-mod test {
-
-
-}
