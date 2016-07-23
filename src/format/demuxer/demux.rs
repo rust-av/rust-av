@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 
 use std::io::Error;
 use data::packet::Packet;
@@ -81,18 +81,18 @@ mod test {
         }
     }
 
-    const TEST_DEMUXER_DESCRIPTION: &'static DemuxerDescription = &DemuxerDescription {
-        name: "Test",
-        description: "Test demuxer",
-        extensions: &["test", "t"],
-        mime: &["x-application/test"],
-    };
-
     struct TestDemuxerBuilder;
 
     impl DemuxerBuilder for TestDemuxerBuilder {
         fn describe(&self) -> &'static DemuxerDescription {
-            &TEST_DEMUXER_DESCRIPTION
+            const D: &'static DemuxerDescription = &DemuxerDescription {
+                name: "Test",
+                description: "Test demuxer",
+                extensions: &["test", "t"],
+                mime: &["x-application/test"],
+            };
+
+            D
         }
         fn probe(&self, data: &[u8; PROBE_DATA]) -> u8 {
             if data[0] == 0 {
@@ -108,9 +108,7 @@ mod test {
         }
     }
 
-    const TEST_DEMUXER_BUILDER: TestDemuxerBuilder = TestDemuxerBuilder {};
-
-    const DEMUXER_BUILDERS: [&'static DemuxerBuilder; 1] = [&TEST_DEMUXER_BUILDER];
+    const DEMUXER_BUILDERS: [&'static DemuxerBuilder; 1] = [&TestDemuxerBuilder {}];
 
     #[test]
     fn probe_demuxer() {
