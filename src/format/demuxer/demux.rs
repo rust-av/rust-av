@@ -1,3 +1,5 @@
+#[allow(dead_code)]
+
 use std::io::Error;
 use data::packet::Packet;
 
@@ -9,10 +11,10 @@ pub trait Demuxer {
 }
 
 pub struct DemuxerDescription {
-    name: String,
-    description: String,
-    extensions: Vec<String>,
-    mime: Vec<String>,
+    name: &'static str,
+    description: &'static str,
+    extensions: &'static [&'static str],
+    mime: &'static [&'static str],
 }
 
 /// Least amount of data needed to check the bytestream structure
@@ -53,5 +55,77 @@ pub fn probe<'a>(demuxers: &[&'static DemuxerBuilder],
         candidate
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::io::Error;
+    use data::packet::Packet;
+
+    struct TestDemuxer;
+
+    impl Demuxer for TestDemuxer {
+        fn open(&mut self) {
+            ()
+        }
+        fn read_headers(&mut self) -> Result<(), Error> {
+            Ok(())
+        }
+        fn read_packet(&mut self) -> Result<Packet, Error> {
+            unimplemented!();
+        }
+        fn close(&mut self) {
+            ()
+        }
+    }
+
+    const TEST_DEMUXER_DESCRIPTION: &'static DemuxerDescription = &DemuxerDescription {
+        name: "Test",
+        description: "Test demuxer",
+        extensions: &["test", "t"],
+        mime: &["x-application/test"],
+    };
+
+    struct TestDemuxerBuilder;
+
+    impl DemuxerBuilder for TestDemuxerBuilder {
+        fn describe(&self) -> &'static DemuxerDescription {
+            &TEST_DEMUXER_DESCRIPTION
+        }
+        fn probe(&self, data: &[u8; PROBE_DATA]) -> u8 {
+            if data[0] == 0 {
+                Score::MAX as u8
+            } else {
+                0
+            }
+        }
+        fn alloc(&self) -> Box<Demuxer> {
+            let demux = TestDemuxer {};
+
+            box demux
+        }
+    }
+
+    const TEST_DEMUXER_BUILDER: TestDemuxerBuilder = TestDemuxerBuilder {};
+
+    const DEMUXER_BUILDERS: [&'static DemuxerBuilder; 1] = [&TEST_DEMUXER_BUILDER];
+
+    #[test]
+    fn probe_demuxer() {
+        let mut buf = [1; PROBE_DATA];
+
+        match probe(&DEMUXER_BUILDERS, &buf) {
+            Some(_) => panic!(),
+            None => (),
+        };
+
+        buf[0] = 0;
+
+        match probe(&DEMUXER_BUILDERS, &buf) {
+            Some(_) => (),
+            None => panic!(),
+        };
     }
 }
