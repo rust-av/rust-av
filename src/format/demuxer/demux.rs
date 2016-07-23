@@ -1,20 +1,33 @@
+use std::io::Error;
 use data::packet::Packet;
 
 pub trait Demuxer {
     fn open(&mut self);
-    fn read_headers(&mut self);
-    fn read_packet(&mut self) -> Packet;
+    fn read_headers(&mut self) -> Result<(), Error>;
+    fn read_packet(&mut self) -> Result<Packet, Error>;
     fn close(&mut self);
 }
 
 pub struct DemuxerDescription {
-    name : str,
-    description : str,
-    extensions : Vec<str>,
-    mime : Vec<str>,
+    name: String,
+    description: String,
+    extensions: Vec<String>,
+    mime: Vec<String>,
 }
 
-pub const PROBE_DATA = 4 * 1024;
+/// Least amount of data needed to check the bytestream structure
+/// to match some known format.
+pub const PROBE_DATA: usize = 4 * 1024;
+
+/// Probe threshold values
+pub enum Score {
+    /// Minimum acceptable value, a file matched just by the extension
+    EXTENSION = 50,
+    /// The underlying layer provides the information, trust it up to a point
+    MIME = 75,
+    /// The data actually match a format structure
+    MAX = 100,
+}
 
 pub trait DemuxerBuilder {
     fn describe(&self) -> &'static DemuxerDescription;
@@ -22,17 +35,23 @@ pub trait DemuxerBuilder {
     fn alloc(&self) -> Box<Demuxer>;
 }
 
-fn probe(demuxers: &[&DemuxerBuilder], data: &[u8; PROBE_DATA]) -> Option<&DemuxerBuilder> {
-    let max = u8.min_value();
-    let mut candidate : Option<&DemuxerBuilder> = None ;
+pub fn probe<'a>(demuxers: &[&'static DemuxerBuilder],
+                 data: &[u8; PROBE_DATA])
+                 -> Option<&'a DemuxerBuilder> {
+    let mut max = u8::min_value();
+    let mut candidate: Option<&DemuxerBuilder> = None;
     for builder in demuxers {
         let score = builder.probe(data);
 
         if score > max {
             max = score;
-            candidate = Some(builder);
+            candidate = Some(*builder);
         }
     }
 
-    candidate
+    if max > Score::EXTENSION as u8 {
+        candidate
+    } else {
+        None
+    }
 }
