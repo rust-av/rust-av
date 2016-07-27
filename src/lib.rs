@@ -1,5 +1,8 @@
+// language extensions
+#![feature(box_syntax, plugin)]
+#![plugin(interpolate_idents)]
+
 // crates
-#![feature(box_syntax)]
 #![cfg_attr(feature = "assignment_operators", feature(augmented_assignments, op_assign_traits))]
 #[macro_use]
 extern crate bitflags;

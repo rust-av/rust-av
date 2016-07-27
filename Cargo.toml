@@ -8,3 +8,4 @@ nightly = []
 
 [dependencies]
 bitflags = "0.5.0"
+interpolate_idents = "0.1.1"

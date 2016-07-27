@@ -7,7 +7,6 @@ pub trait Demuxer {
     fn open(&mut self);
     fn read_headers(&mut self) -> Result<(), Error>;
     fn read_packet(&mut self) -> Result<Packet, Error>;
-    fn close(&mut self);
 }
 
 pub struct DemuxerDescription {
@@ -58,53 +57,74 @@ pub fn probe<'a>(demuxers: &[&'static DemuxerBuilder],
     }
 }
 
+macro_rules! module {
+    {
+        ($name:ident) {
+            open($os:ident) => $ob:block
+            read_headers($rhs:ident) => $rhb:block
+            read_packet($rps:ident) => $rpb:block
+
+            describe($ds:ident) => $db:block
+            probe($ps:ident, $pd:ident) => $pb:block
+            alloc($asel:ident) => $ab:block
+        }
+    } => {
+        interpolate_idents! {
+            struct [$name Demuxer];
+            struct [$name DemuxerBuilder];
+
+            impl Demuxer for [$name Demuxer] {
+                fn open(&mut $os) $ob
+                fn read_headers(&mut $rhs) -> Result<(), Error> $rhb
+                fn read_packet(&mut $rps) -> Result<Packet, Error> $rpb
+            }
+
+            impl DemuxerBuilder for [$name DemuxerBuilder] {
+                fn describe(&$ds) -> &'static DemuxerDescription $db
+                fn probe(&$ps, $pd: &[u8; PROBE_DATA]) -> u8 $pb
+                fn alloc(&$asel) -> Box<Demuxer> $ab
+            }
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod test {
     use super::*;
     use std::io::Error;
     use data::packet::Packet;
 
-    struct TestDemuxer;
+    module! {
+        (Test) {
+            open(self) => { () }
+            read_headers(self) => { Ok(()) }
+            read_packet(self) => { unimplemented!() }
 
-    impl Demuxer for TestDemuxer {
-        fn open(&mut self) {
-            ()
-        }
-        fn read_headers(&mut self) -> Result<(), Error> {
-            Ok(())
-        }
-        fn read_packet(&mut self) -> Result<Packet, Error> {
-            unimplemented!();
-        }
-        fn close(&mut self) {
-            ()
-        }
-    }
+            describe(self) => {
+                const D: &'static DemuxerDescription = &DemuxerDescription {
+                    name: "Test",
+                    description: "Test demuxer",
+                    extensions: &["test", "t"],
+                    mime: &["x-application/test"],
+                };
 
-    struct TestDemuxerBuilder;
-
-    impl DemuxerBuilder for TestDemuxerBuilder {
-        fn describe(&self) -> &'static DemuxerDescription {
-            const D: &'static DemuxerDescription = &DemuxerDescription {
-                name: "Test",
-                description: "Test demuxer",
-                extensions: &["test", "t"],
-                mime: &["x-application/test"],
-            };
-
-            D
-        }
-        fn probe(&self, data: &[u8; PROBE_DATA]) -> u8 {
-            if data[0] == 0 {
-                Score::MAX as u8
-            } else {
-                0
+                D
             }
-        }
-        fn alloc(&self) -> Box<Demuxer> {
-            let demux = TestDemuxer {};
 
-            box demux
+            probe(self, data) => {
+                if data[0] == 0 {
+                    Score::MAX as u8
+                } else {
+                    0
+                }
+            }
+
+            alloc(self) => {
+                let demux = TestDemuxer {};
+
+                box demux
+            }
         }
     }
 
