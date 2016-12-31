@@ -2,11 +2,12 @@
 
 use std::io::Error;
 use data::packet::Packet;
+use format::demuxer::context::*;
 
 pub trait Demuxer {
     fn open(&mut self);
-    fn read_headers(&mut self) -> Result<(), Error>;
-    fn read_packet(&mut self) -> Result<Packet, Error>;
+    fn read_headers(&mut self, ctx: &mut DemuxerContext) -> Result<(), Error>;
+    fn read_packet(&mut self, ctx: &mut DemuxerContext) -> Result<Packet, Error>;
 }
 
 pub struct DemuxerDescription {
@@ -61,8 +62,8 @@ macro_rules! module {
     {
         ($name:ident) {
             open($os:ident) => $ob:block
-            read_headers($rhs:ident) => $rhb:block
-            read_packet($rps:ident) => $rpb:block
+            read_headers($rhs:ident, $rhctx:ident) => $rhb:block
+            read_packet($rps:ident, $rpctx:ident) => $rpb:block
 
             describe($ds:ident) => $db:block
             probe($ps:ident, $pd:ident) => $pb:block
@@ -75,8 +76,8 @@ macro_rules! module {
 
             impl Demuxer for [$name Demuxer] {
                 fn open(&mut $os) $ob
-                fn read_headers(&mut $rhs) -> Result<(), Error> $rhb
-                fn read_packet(&mut $rps) -> Result<Packet, Error> $rpb
+                fn read_headers(&mut $rhs, $rhctx: &mut DemuxerContext) -> Result<(), Error> $rhb
+                fn read_packet(&mut $rps, $rpctx: &mut DemuxerContext) -> Result<Packet, Error> $rpb
             }
 
             impl DemuxerBuilder for [$name DemuxerBuilder] {
@@ -94,12 +95,13 @@ mod test {
     use super::*;
     use std::io::Error;
     use data::packet::Packet;
+    use format::demuxer::context::*;
 
     module! {
         (Test) {
             open(self) => { () }
-            read_headers(self) => { Ok(()) }
-            read_packet(self) => { unimplemented!() }
+            read_headers(self, ctx) => { Ok(()) }
+            read_packet(self, ctx) => { unimplemented!() }
 
             describe(self) => {
                 const D: &'static DemuxerDescription = &DemuxerDescription {
