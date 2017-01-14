@@ -58,6 +58,7 @@ pub fn probe<'a>(demuxers: &[&'static DemuxerBuilder],
     }
 }
 
+#[macro_export]
 macro_rules! module {
     {
         ($name:ident) {
