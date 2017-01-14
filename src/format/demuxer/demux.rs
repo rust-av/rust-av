@@ -1,13 +1,14 @@
 #![allow(dead_code)]
 
+use std::io::BufRead; //TODO: Use an extended BufRead
 use std::io::Error;
+
 use data::packet::Packet;
-use format::demuxer::context::*;
 
 pub trait Demuxer {
     fn open(&mut self);
-    fn read_headers(&mut self, ctx: &mut DemuxerContext) -> Result<(), Error>;
-    fn read_packet(&mut self, ctx: &mut DemuxerContext) -> Result<Packet, Error>;
+    fn read_headers(&mut self, ctx: &Box<BufRead>) -> Result<(), Error>;
+    fn read_packet(&mut self, ctx: &Box<BufRead>) -> Result<Packet, Error>;
 }
 
 pub struct DemuxerDescription {
@@ -77,8 +78,8 @@ macro_rules! module {
 
             impl Demuxer for [$name Demuxer] {
                 fn open(&mut $os) $ob
-                fn read_headers(&mut $rhs, $rhctx: &mut DemuxerContext) -> Result<(), Error> $rhb
-                fn read_packet(&mut $rps, $rpctx: &mut DemuxerContext) -> Result<Packet, Error> $rpb
+                fn read_headers(&mut $rhs, $rhctx: &Box<BufRead>) -> Result<(), Error> $rhb
+                fn read_packet(&mut $rps, $rpctx: &Box<BufRead>) -> Result<Packet, Error> $rpb
             }
 
             impl DemuxerBuilder for [$name DemuxerBuilder] {
