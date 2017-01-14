@@ -33,12 +33,12 @@ pub enum Score {
 
 pub trait DemuxerBuilder {
     fn describe(&self) -> &'static DemuxerDescription;
-    fn probe(&self, data: &[u8; PROBE_DATA]) -> u8;
+    fn probe(&self, data: &[u8]) -> u8;
     fn alloc(&self) -> Box<Demuxer>;
 }
 
 pub fn probe<'a>(demuxers: &[&'static DemuxerBuilder],
-                 data: &[u8; PROBE_DATA])
+                 data: &[u8])
                  -> Option<&'a DemuxerBuilder> {
     let mut max = u8::min_value();
     let mut candidate: Option<&DemuxerBuilder> = None;
@@ -83,7 +83,7 @@ macro_rules! module {
 
             impl DemuxerBuilder for [$name DemuxerBuilder] {
                 fn describe(&$ds) -> &'static DemuxerDescription $db
-                fn probe(&$ps, $pd: &[u8; PROBE_DATA]) -> u8 $pb
+                fn probe(&$ps, $pd: &[[u8]]) -> u8 $pb
                 fn alloc(&$asel) -> Box<Demuxer> $ab
             }
         }
