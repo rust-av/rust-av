@@ -11,10 +11,10 @@ pub trait Demuxer {
 }
 
 pub struct DemuxerDescription {
-    name: &'static str,
-    description: &'static str,
-    extensions: &'static [&'static str],
-    mime: &'static [&'static str],
+    pub name:        &'static str,
+    pub description: &'static str,
+    pub extensions:  &'static [&'static str],
+    pub mime:        &'static [&'static str],
 }
 
 /// Least amount of data needed to check the bytestream structure
