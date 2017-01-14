@@ -6,9 +6,10 @@ use format::demuxer::demux::*;
 
 use std::io::BufRead; //TODO: Use an extended BufRead
 use std::io::Error;
+use std::marker::Sized;
 
-pub struct DemuxerContext {
-    demuxer: Box<Demuxer>,
+pub struct DemuxerContext<'a> {
+    demuxer: Box<Demuxer+'a>,
     reader: Box<BufRead>,
     duration: Option<u64>,
     streams: Vec<Stream>,
@@ -16,13 +17,13 @@ pub struct DemuxerContext {
 //    chapters: Vec<StreamGroup>,
 }
 
-impl DemuxerContext {
-    fn new<D: Demuxer + 'static, R: BufRead + 'static>(demuxer: D, reader: R) -> Self {
+impl<'a> DemuxerContext<'a> {
+    pub fn new<R: BufRead+'static>(demuxer: Box<Demuxer + 'a>, reader: Box<R>) -> Self {
         DemuxerContext {
-            demuxer: box demuxer,
-            reader: box reader,
+            demuxer:  demuxer,
+            reader:   reader,
             duration: None,
-            streams: Vec::with_capacity(2)
+            streams:  Vec::with_capacity(2),
         }
     }
 
