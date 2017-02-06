@@ -13,6 +13,7 @@ mod bitstream;
 mod entropy;
 pub mod data;
 mod io;
+pub mod buffer;
 
 // encoded data manipulation
 mod parser;

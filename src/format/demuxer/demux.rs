@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
-use std::io::BufRead; //TODO: Use an extended BufRead
-use std::io::Error;
+use std::io::{BufRead,Error,SeekFrom};
 
+use buffer::Buffered;
 use data::packet::Packet;
 
 pub trait Demuxer {
     fn open(&mut self);
-    fn read_headers(&mut self, ctx: &Box<BufRead>) -> Result<(), Error>;
-    fn read_packet(&mut self, ctx: &Box<BufRead>) -> Result<Packet, Error>;
+    fn read_headers(&mut self, ctx: &Box<Buffered>) -> Result<SeekFrom, Error>;
+    fn read_packet(&mut self, ctx: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error>;
 }
 
 pub struct DemuxerDescription {
@@ -35,6 +35,7 @@ pub enum Score {
 pub trait DemuxerBuilder {
     fn describe(&self) -> &'static DemuxerDescription;
     fn probe(&self, data: &[u8]) -> u8;
+    // cannot use impl Demuxer as return type of a trait method yet
     fn alloc(&self) -> Box<Demuxer>;
 }
 
@@ -78,8 +79,8 @@ macro_rules! module {
 
             impl Demuxer for [$name Demuxer] {
                 fn open(&mut $os) $ob
-                fn read_headers(&mut $rhs, $rhctx: &Box<BufRead>) -> Result<(), Error> $rhb
-                fn read_packet(&mut $rps, $rpctx: &Box<BufRead>) -> Result<Packet, Error> $rpb
+                fn read_headers(&mut $rhs, $rhctx: &Box<Buffered>) -> Result<SeekFrom, Error> $rhb
+                fn read_packet(&mut $rps, $rpctx: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error> $rpb
             }
 
             impl DemuxerBuilder for [$name DemuxerBuilder] {
@@ -102,7 +103,7 @@ mod test {
     module! {
         (Test) {
             open(self) => { () }
-            read_headers(self, ctx) => { Ok(()) }
+            read_headers(self, ctx) => { Ok(SeekFrom::Current(0)) }
             read_packet(self, ctx) => { unimplemented!() }
 
             describe(self) => {
