@@ -37,6 +37,7 @@ impl<'a> DemuxerContext<'a> {
             Ok(seek) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
+                self.reader.fill_buf();
                 println!("stream now at index: {:?}", res);
                 Ok(())
             }
@@ -52,6 +53,7 @@ impl<'a> DemuxerContext<'a> {
             Ok((seek, packet)) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
+                self.reader.fill_buf();
                 println!("stream now at index: {:?}", res);
                 Ok(packet)
             }

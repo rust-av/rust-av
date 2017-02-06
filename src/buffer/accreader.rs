@@ -142,7 +142,9 @@ impl<R:Read+Seek> Seek for AccReader<R> {
       SeekFrom::Start(sz) => {
         let mv = sz as usize;
         if mv >= self.index && mv < self.index + self.end - self.pos {
+          self.pos += mv - self.index;
           self.index = mv;
+
           return Ok(mv as u64);
         }
       },
@@ -150,6 +152,7 @@ impl<R:Read+Seek> Seek for AccReader<R> {
       SeekFrom::Current(sz) => {
         if sz >= 0 && sz as usize <= self.end - self.pos {
           self.index = sz as usize;
+          self.pos += sz as usize;
           return Ok(sz as u64);
         }
       }
@@ -158,6 +161,8 @@ impl<R:Read+Seek> Seek for AccReader<R> {
     match self.inner.seek(pos) {
       Ok(sz) => {
         self.index = sz as usize;
+        self.pos = 0;
+        self.end = 0;
         self.fill_buf();
         Ok(sz)
       },
