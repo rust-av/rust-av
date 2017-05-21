@@ -6,7 +6,7 @@
 
 use std::io;
 use std::io::{BufRead,Read,Result,Seek,SeekFrom};
-use std::iter::{repeat,Iterator};
+use std::iter::Iterator;
 use std::cmp;
 use std::iter;
 use buffer::Buffered;
@@ -163,7 +163,7 @@ impl<R:Read+Seek> Seek for AccReader<R> {
         self.index = sz as usize;
         self.pos = 0;
         self.end = 0;
-        self.fill_buf();
+        try!(self.fill_buf());
         Ok(sz)
       },
       Err(e) => Err(e)

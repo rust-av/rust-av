@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::io::{BufRead,Error,SeekFrom};
+use std::io::{Error,SeekFrom};
 
 use buffer::Buffered;
 use data::packet::Packet;

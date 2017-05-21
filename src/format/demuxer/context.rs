@@ -6,8 +6,7 @@ use format::stream::*;
 use format::demuxer::demux::*;
 
 
-use std::io::{BufRead,Error,SeekFrom};
-use std::marker::Sized;
+use std::io::{BufRead,Error};
 
 pub struct DemuxerContext<'a> {
     demuxer: Box<Demuxer+'a>,
@@ -37,7 +36,7 @@ impl<'a> DemuxerContext<'a> {
             Ok(seek) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
-                self.reader.fill_buf();
+                try!(self.reader.fill_buf());
                 println!("stream now at index: {:?}", res);
                 Ok(())
             }
@@ -53,7 +52,7 @@ impl<'a> DemuxerContext<'a> {
             Ok((seek, packet)) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
-                self.reader.fill_buf();
+                try!(self.reader.fill_buf());
                 println!("stream now at index: {:?}", res);
                 Ok(packet)
             }
