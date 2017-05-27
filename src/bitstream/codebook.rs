@@ -357,53 +357,33 @@ impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
     }
 }
 
-pub struct FullCodebookDescReader<S> {
-    data: Vec<FullCodebookDesc<S>>,
-}
-
-impl<S> FullCodebookDescReader<S> {
-    pub fn new(data: Vec<FullCodebookDesc<S>>) -> Self {
-        FullCodebookDescReader { data: data }
-    }
-}
-
-impl<S: Copy> CodebookDescReader<S> for FullCodebookDescReader<S> {
+impl<S: Copy> CodebookDescReader<S> for Vec<FullCodebookDesc<S>> {
     fn bits(&mut self, idx: usize) -> u8 {
-        self.data[idx].bits
+        self[idx].bits
     }
     fn code(&mut self, idx: usize) -> u32 {
-        self.data[idx].code
+        self[idx].code
     }
     fn sym(&mut self, idx: usize) -> S {
-        self.data[idx].sym
+        self[idx].sym
     }
     fn len(&mut self) -> usize {
-        self.data.len()
+        Vec::len(self)
     }
 }
 
-pub struct ShortCodebookDescReader {
-    data: Vec<ShortCodebookDesc>,
-}
-
-impl ShortCodebookDescReader {
-    pub fn new(data: Vec<ShortCodebookDesc>) -> Self {
-        ShortCodebookDescReader { data: data }
-    }
-}
-
-impl CodebookDescReader<u32> for ShortCodebookDescReader {
+impl CodebookDescReader<u32> for Vec<ShortCodebookDesc> {
     fn bits(&mut self, idx: usize) -> u8 {
-        self.data[idx].bits
+        self[idx].bits
     }
     fn code(&mut self, idx: usize) -> u32 {
-        self.data[idx].code
+        self[idx].code
     }
     fn sym(&mut self, idx: usize) -> u32 {
         idx as u32
     }
     fn len(&mut self) -> usize {
-        self.data.len()
+        Vec::len(self)
     }
 }
 
@@ -415,30 +395,29 @@ mod test {
 
     #[test]
     fn test_full_codebook_msb() {
-        let cb_desc: Vec<FullCodebookDesc<i8>> = vec![FullCodebookDesc {
-                                                          code: 0b0,
-                                                          bits: 1,
-                                                          sym: 16,
-                                                      },
-                                                      FullCodebookDesc {
-                                                          code: 0b10,
-                                                          bits: 2,
-                                                          sym: -3,
-                                                      },
-                                                      FullCodebookDesc {
-                                                          code: 0b110,
-                                                          bits: 3,
-                                                          sym: 42,
-                                                      },
-                                                      FullCodebookDesc {
-                                                          code: 0b1110,
-                                                          bits: 4,
-                                                          sym: -42,
-                                                      }];
+        let mut cb_desc: Vec<FullCodebookDesc<i8>> = vec![FullCodebookDesc {
+                                                              code: 0b0,
+                                                              bits: 1,
+                                                              sym: 16,
+                                                          },
+                                                          FullCodebookDesc {
+                                                              code: 0b10,
+                                                              bits: 2,
+                                                              sym: -3,
+                                                          },
+                                                          FullCodebookDesc {
+                                                              code: 0b110,
+                                                              bits: 3,
+                                                              sym: 42,
+                                                          },
+                                                          FullCodebookDesc {
+                                                              code: 0b1110,
+                                                              bits: 4,
+                                                              sym: -42,
+                                                          }];
         let buf = &BITS;
         let mut br = BitReadBE::new(buf);
-        let mut cfr = FullCodebookDescReader::new(cb_desc);
-        let cb = Codebook::new(&mut cfr, CodebookMode::MSB).unwrap();
+        let cb = Codebook::new(&mut cb_desc, CodebookMode::MSB).unwrap();
 
         assert_eq!(br.read_cb(&cb).unwrap(), 16);
         assert_eq!(br.read_cb(&cb).unwrap(), -3);
@@ -454,50 +433,49 @@ mod test {
 
     #[test]
     fn test_short_codebook_msb() {
-        let scb_desc: Vec<ShortCodebookDesc> = vec![ShortCodebookDesc {
-                                                        code: 0b0,
-                                                        bits: 1,
-                                                    },
-                                                    ShortCodebookDesc { code: 0, bits: 0 },
-                                                    ShortCodebookDesc {
-                                                        code: 0b10,
-                                                        bits: 2,
-                                                    },
-                                                    ShortCodebookDesc { code: 0, bits: 0 },
-                                                    ShortCodebookDesc { code: 0, bits: 0 },
-                                                    ShortCodebookDesc {
-                                                        code: 0b110,
-                                                        bits: 3,
-                                                    },
-                                                    ShortCodebookDesc { code: 0, bits: 0 },
-                                                    ShortCodebookDesc {
-                                                        code: 0b11100,
-                                                        bits: 5,
-                                                    },
-                                                    ShortCodebookDesc {
-                                                        code: 0b11101,
-                                                        bits: 5,
-                                                    },
-                                                    ShortCodebookDesc {
-                                                        code: 0b1111010,
-                                                        bits: 7,
-                                                    },
-                                                    ShortCodebookDesc {
-                                                        code: 0b1111011,
-                                                        bits: 7,
-                                                    },
-                                                    ShortCodebookDesc {
-                                                        code: 0b1111110,
-                                                        bits: 7,
-                                                    },
-                                                    ShortCodebookDesc {
-                                                        code: 0b11111111,
-                                                        bits: 8,
-                                                    }];
+        let mut scb_desc: Vec<ShortCodebookDesc> = vec![ShortCodebookDesc {
+                                                            code: 0b0,
+                                                            bits: 1,
+                                                        },
+                                                        ShortCodebookDesc { code: 0, bits: 0 },
+                                                        ShortCodebookDesc {
+                                                            code: 0b10,
+                                                            bits: 2,
+                                                        },
+                                                        ShortCodebookDesc { code: 0, bits: 0 },
+                                                        ShortCodebookDesc { code: 0, bits: 0 },
+                                                        ShortCodebookDesc {
+                                                            code: 0b110,
+                                                            bits: 3,
+                                                        },
+                                                        ShortCodebookDesc { code: 0, bits: 0 },
+                                                        ShortCodebookDesc {
+                                                            code: 0b11100,
+                                                            bits: 5,
+                                                        },
+                                                        ShortCodebookDesc {
+                                                            code: 0b11101,
+                                                            bits: 5,
+                                                        },
+                                                        ShortCodebookDesc {
+                                                            code: 0b1111010,
+                                                            bits: 7,
+                                                        },
+                                                        ShortCodebookDesc {
+                                                            code: 0b1111011,
+                                                            bits: 7,
+                                                        },
+                                                        ShortCodebookDesc {
+                                                            code: 0b1111110,
+                                                            bits: 7,
+                                                        },
+                                                        ShortCodebookDesc {
+                                                            code: 0b11111111,
+                                                            bits: 8,
+                                                        }];
         let buf = &BITS;
         let mut br2 = BitReadBE::new(buf);
-        let mut cfr = ShortCodebookDescReader::new(scb_desc);
-        let cb = Codebook::new(&mut cfr, CodebookMode::MSB).unwrap();
+        let cb = Codebook::new(&mut scb_desc, CodebookMode::MSB).unwrap();
         assert_eq!(br2.read_cb(&cb).unwrap(), 0);
         assert_eq!(br2.read_cb(&cb).unwrap(), 2);
         assert_eq!(br2.read_cb(&cb).unwrap(), 5);
@@ -511,45 +489,44 @@ mod test {
     fn test_short_codebook_lsb() {
         const BITS_LE: [u8; 8] = [0b11101111, 0b01110010, 0b01, 0, 0, 0, 0, 0];
         let buf = &BITS_LE;
-        let scble_desc: Vec<ShortCodebookDesc> = vec![ShortCodebookDesc {
-                                                          code: 0b00,
-                                                          bits: 2,
-                                                      },
-                                                      ShortCodebookDesc { code: 0, bits: 0 },
-                                                      ShortCodebookDesc {
-                                                          code: 0b01,
-                                                          bits: 2,
-                                                      },
-                                                      ShortCodebookDesc { code: 0, bits: 0 },
-                                                      ShortCodebookDesc { code: 0, bits: 0 },
-                                                      ShortCodebookDesc {
-                                                          code: 0b011,
-                                                          bits: 3,
-                                                      },
-                                                      ShortCodebookDesc { code: 0, bits: 0 },
-                                                      ShortCodebookDesc {
-                                                          code: 0b10111,
-                                                          bits: 5,
-                                                      },
-                                                      ShortCodebookDesc {
-                                                          code: 0b00111,
-                                                          bits: 5,
-                                                      },
-                                                      ShortCodebookDesc {
-                                                          code: 0b0101111,
-                                                          bits: 7,
-                                                      },
-                                                      ShortCodebookDesc {
-                                                          code: 0b0111111,
-                                                          bits: 7,
-                                                      },
-                                                      ShortCodebookDesc {
-                                                          code: 0b1011101111,
-                                                          bits: 10,
-                                                      }];
+        let mut scble_desc: Vec<ShortCodebookDesc> = vec![ShortCodebookDesc {
+                                                              code: 0b00,
+                                                              bits: 2,
+                                                          },
+                                                          ShortCodebookDesc { code: 0, bits: 0 },
+                                                          ShortCodebookDesc {
+                                                              code: 0b01,
+                                                              bits: 2,
+                                                          },
+                                                          ShortCodebookDesc { code: 0, bits: 0 },
+                                                          ShortCodebookDesc { code: 0, bits: 0 },
+                                                          ShortCodebookDesc {
+                                                              code: 0b011,
+                                                              bits: 3,
+                                                          },
+                                                          ShortCodebookDesc { code: 0, bits: 0 },
+                                                          ShortCodebookDesc {
+                                                              code: 0b10111,
+                                                              bits: 5,
+                                                          },
+                                                          ShortCodebookDesc {
+                                                              code: 0b00111,
+                                                              bits: 5,
+                                                          },
+                                                          ShortCodebookDesc {
+                                                              code: 0b0101111,
+                                                              bits: 7,
+                                                          },
+                                                          ShortCodebookDesc {
+                                                              code: 0b0111111,
+                                                              bits: 7,
+                                                          },
+                                                          ShortCodebookDesc {
+                                                              code: 0b1011101111,
+                                                              bits: 10,
+                                                          }];
         let mut brl = BitReadLE::new(buf);
-        let mut cfr = ShortCodebookDescReader::new(scble_desc);
-        let cb = Codebook::new(&mut cfr, CodebookMode::LSB).unwrap();
+        let cb = Codebook::new(&mut scble_desc, CodebookMode::LSB).unwrap();
         assert_eq!(brl.read_cb(&cb).unwrap(), 11);
         assert_eq!(brl.read_cb(&cb).unwrap(), 0);
         assert_eq!(brl.read_cb(&cb).unwrap(), 7);
