@@ -195,11 +195,7 @@ fn add_esc_code(cc: &mut EscapeCodes, key: u32, code: u32, bits: u8, idx: usize)
 
 fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) -> Result<()> {
     let mut escape_list: EscapeCodes = HashMap::new();
-    let maxlen = if bucket.maxlen > MAX_LUT_BITS {
-        MAX_LUT_BITS
-    } else {
-        bucket.maxlen
-    };
+    let maxlen = min(bucket.maxlen, MAX_LUT_BITS);
 
     for code in &bucket.codes {
         let bits = code.bits;
@@ -328,7 +324,6 @@ impl<S: Copy> Codebook<S> {
 }
 
 impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
-    #[allow(unused_variables)]
     fn read_cb(&mut self, cb: &Codebook<S>) -> Result<S> {
         let mut esc = true;
         let mut idx = 0;
