@@ -166,23 +166,20 @@ macro_rules! endian_reader {
 
             #[inline]
             fn can_refill(&self) -> bool {
-                self.index < self.buffer.len() - 8
+                self.index + 8 <= self.buffer.len()
             }
 
             #[inline]
             fn skip_bits(&mut self, mut n:usize) -> () {
-                if n == 0 {
-                    return;
-                }
-                if self.left <= n {
+                if self.left < n {
                     n -= self.left;
-                    self.skip_rem(n);
                     if n > 64 {
                         let skip = n / 8;
 
                         n -= skip * 8;
                         self.index += skip;
                     }
+                    self.skip_rem(n);
                     self.refill64();
                 }
 
@@ -205,7 +202,7 @@ impl <'a> BitReadEndian for BitReadLE<'a> {
     #[inline]
     fn skip_rem(&mut self, n:usize) -> () {
         self.cache = self.cache >> n;
-        self.left -= n;
+        self.left = self.left.saturating_sub(n);
     }
     #[inline]
     fn merge_val(msp:u64, lsp:u64, msb:usize, _:usize) -> u64 {
@@ -231,7 +228,7 @@ impl <'a> BitReadEndian for BitReadBE<'a> {
     #[inline]
     fn skip_rem(&mut self, n:usize) -> () {
         self.cache = self.cache << n;
-        self.left -= n;
+        self.left = self.left.saturating_sub(n);
     }
     #[inline]
     fn merge_val(msp:u64, lsp:u64, _:usize, lsb:usize) -> u64 {
@@ -346,6 +343,15 @@ mod test {
             reader.align_bits();
             assert!(reader.get_bits_64(4) == 3);
         }
+
+        #[test]
+        fn overread() {
+            let b = &CHECKBOARD0011;
+            let mut reader = BitReadLE::new(b);
+
+            reader.skip_bits(128*8+2);
+            reader.get_bits_64(6);
+        }
     }
     mod be {
         use super::super::*;
@@ -431,6 +437,15 @@ mod test {
             reader.skip_bits(1);
             reader.align_bits();
             assert!(reader.get_bits_64(4) == 3);
+        }
+
+        #[test]
+        fn overread() {
+            let b = &CHECKBOARD0011;
+            let mut reader = BitReadBE::new(b);
+
+            reader.skip_bits(128*8+2);
+            reader.get_bits_64(6);
         }
     }
 }
