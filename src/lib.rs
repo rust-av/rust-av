@@ -8,8 +8,14 @@
 extern crate bitflags;
 extern crate num;
 
+#[macro_use]
+extern crate error_chain;
+
+#[cfg(test)]
+#[macro_use] extern crate assert_matches;
+
 // core functionalities
-mod bitstream;
+pub mod bitstream;
 mod entropy;
 pub mod data;
 mod io;
