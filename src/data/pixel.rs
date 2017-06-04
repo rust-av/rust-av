@@ -1,4 +1,5 @@
 use std::string::*;
+use std::slice;
 use std::fmt;
 
 #[derive(Debug,Clone,Copy,PartialEq)]
@@ -222,6 +223,15 @@ impl Formaton {
     }
 }
 
+impl<'a> IntoIterator for &'a Formaton {
+    type Item = &'a Option<Chromaton>;
+    type IntoIter = slice::Iter<'a, Option<Chromaton>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.comp_info.iter()
+    }
+}
+
 impl fmt::Display for Formaton {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let end = if self.be {
@@ -245,8 +255,8 @@ impl fmt::Display for Formaton {
                               astr,
                               end,
                               self.elem_size);
-        for i in 0..self.comp_info.len() {
-            if let Some(chr) = self.comp_info[i] {
+        for &i in self.into_iter() {
+            if let Some(chr) = i {
                 str = format!("{} {}", str, chr);
             }
         }
