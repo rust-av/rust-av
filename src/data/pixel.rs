@@ -81,6 +81,10 @@ pub struct Chromaton {
     next_elem: u8,
 }
 
+fn align(v: usize, a: usize) -> usize {
+    (v + a - 1) & !(a - 1)
+}
+
 impl Chromaton {
     pub fn get_subsampling(&self) -> (u8, u8) {
         (self.h_ss, self.v_ss)
@@ -107,13 +111,13 @@ impl Chromaton {
     pub fn get_height(&self, height: usize) -> usize {
         (height + ((1 << self.v_ss) - 1)) >> self.v_ss
     }
-    pub fn get_linesize(&self, width: usize) -> usize {
+    pub fn get_linesize(&self, width: usize, alignment: usize) -> usize {
         let d = self.depth as usize;
-        (self.get_width(width) * d + d - 1) >> 3
+        align((self.get_width(width) * d + d - 1) >> 3, alignment)
     }
-    pub fn get_data_size(&self, width: usize, height: usize) -> usize {
+    pub fn get_data_size(&self, width: usize, height: usize, align: usize) -> usize {
         let nh = (height + ((1 << self.v_ss) - 1)) >> self.v_ss;
-        self.get_linesize(width) * nh
+        self.get_linesize(width, align) * nh
     }
 }
 
