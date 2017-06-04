@@ -1,18 +1,22 @@
 // language extensions
-#![feature(box_syntax, plugin)]
+#![feature(box_syntax, plugin, heap_api, alloc)]
 #![plugin(interpolate_idents)]
 
 // crates
 #![cfg_attr(feature = "assignment_operators", feature(augmented_assignments, op_assign_traits))]
 #[macro_use]
 extern crate bitflags;
+extern crate bytes;
 extern crate num;
 
 #[macro_use]
 extern crate error_chain;
 
 #[cfg(test)]
-#[macro_use] extern crate assert_matches;
+#[macro_use]
+extern crate assert_matches;
+
+extern crate alloc;
 
 // core functionalities
 pub mod bitstream;
