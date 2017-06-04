@@ -1,6 +1,7 @@
 use std::string::*;
 use std::slice;
 use std::fmt;
+use std::ops::Index;
 
 #[derive(Debug,Clone,Copy,PartialEq)]
 pub enum RGBSubmodel {
@@ -220,6 +221,14 @@ impl Formaton {
     }
     pub fn get_elem_size(&self) -> u8 {
         self.elem_size
+    }
+}
+
+impl<'a> Index<usize> for &'a Formaton {
+    type Output = Option<Chromaton>;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.comp_info.index(index)
     }
 }
 
