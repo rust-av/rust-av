@@ -152,45 +152,24 @@ bitflags! {
 }
 
 impl Formaton {
-    pub fn new(model: ColorModel,
-               comp1: Option<Chromaton>,
-               comp2: Option<Chromaton>,
-               comp3: Option<Chromaton>,
-               comp4: Option<Chromaton>,
-               comp5: Option<Chromaton>,
-               flags: Flags,
-               elem_size: u8)
-               -> Self {
-        let mut chromatons: [Option<Chromaton>; 5] = [None; 5];
-        let mut ncomp = 0;
+    pub fn new(model: ColorModel, components: &[Chromaton], flags: Flags, elem_size: u8) -> Self {
         let be = flags.contains(BE);
         let alpha = flags.contains(ALPHA);
         let palette = flags.contains(PALETTE);
-        if let Some(c) = comp1 {
-            chromatons[0] = Some(c);
-            ncomp += 1;
+        let mut c: [Option<Chromaton>; 5] = [None; 5];
+
+        if components.len() > 5 {
+            panic!("too many components");
         }
-        if let Some(c) = comp2 {
-            chromatons[1] = Some(c);
-            ncomp += 1;
-        }
-        if let Some(c) = comp3 {
-            chromatons[2] = Some(c);
-            ncomp += 1;
-        }
-        if let Some(c) = comp4 {
-            chromatons[3] = Some(c);
-            ncomp += 1;
-        }
-        if let Some(c) = comp5 {
-            chromatons[4] = Some(c);
-            ncomp += 1;
+
+        for (i, v) in components.iter().enumerate() {
+            c[i] = Some(*v);
         }
 
         Formaton {
             model: model,
-            components: ncomp,
-            comp_info: chromatons,
+            components: components.len() as u8,
+            comp_info: c,
             elem_size: elem_size,
             be: be,
             alpha: alpha,
