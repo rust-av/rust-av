@@ -1,10 +1,11 @@
+#![allow(dead_code, unused_variables)]
 use data::timeinfo::*;
 use data::pixel::*;
 use data::audiosample::*;
 
 use alloc::heap::allocate;
 use bytes::Bytes;
-use std::ptr::write_bytes;
+// use std::ptr::write_bytes;
 
 error_chain! {
     errors {
@@ -83,7 +84,7 @@ impl DefaultFrameBuffer {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe { allocate(size, ALIGNMENT) };
                 // unsafe { write_bytes(data, 0, size) };
-                let mut buf = Bytes::from(unsafe { Vec::from_raw_parts(data, size, size) });
+                let buf = Bytes::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
                     planes: Vec::new(),
