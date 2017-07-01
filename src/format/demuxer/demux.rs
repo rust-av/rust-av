@@ -95,11 +95,11 @@ macro_rules! module {
 
 #[cfg(test)]
 mod test {
+    #![allow(dead_code)]
+    #![allow(unused_variables)]
     use super::*;
     use std::io::Error;
     use data::packet::Packet;
-    use format::demuxer::context::*;
-
     module! {
         (Test) {
             open(self) => { () }
