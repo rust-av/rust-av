@@ -163,7 +163,6 @@ impl<R: BufRead + ?Sized> BytePeek for R {}
 mod test {
     use std::io::{Cursor, BufReader};
     use io::byteread::*;
-    use std::io::ErrorKind::*;
 
     macro_rules! test_read {
         {$fun: ident, $val: expr, $len: expr} => {
