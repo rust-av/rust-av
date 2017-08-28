@@ -1,5 +1,5 @@
 // language extensions
-#![feature(box_syntax, plugin, heap_api, alloc)]
+#![feature(box_syntax, plugin, allocator_api, alloc)]
 #![plugin(interpolate_idents)]
 
 // crates

@@ -3,7 +3,7 @@ use data::timeinfo::*;
 use data::pixel::*;
 use data::audiosample::*;
 
-use alloc::heap::allocate;
+use alloc::heap::{Heap, Alloc, Layout};
 use bytes::Bytes;
 // use std::ptr::write_bytes;
 
@@ -82,8 +82,8 @@ impl DefaultFrameBuffer {
         match kind {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
-                let data = unsafe { allocate(size, ALIGNMENT) };
-                // unsafe { write_bytes(data, 0, size) };
+                let data = unsafe { Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()).unwrap() };
+                //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
                 let buf = Bytes::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
