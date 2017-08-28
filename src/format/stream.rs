@@ -21,7 +21,10 @@ pub struct CodecParams {
 pub struct Stream {
     id: usize,
     index: usize,
-//  params : CodecParams,
+    params : CodecParams,
+    start: Option<u64>,
+    duration: Option<u64>,
+    timebase : Rational32,
 //  seek_index : SeekIndex
 }
 
