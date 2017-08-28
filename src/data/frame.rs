@@ -13,13 +13,13 @@ error_chain! {
     }
 }
 
-pub struct VideoFrame {
+pub struct VideoInfo {
     pub width: usize,
     pub height: usize,
     pub format: Box<Formaton>,
 }
 
-impl VideoFrame {
+impl VideoInfo {
     fn size(&self, align: usize) -> usize {
         let mut size = 0;
         for &component in self.format.into_iter() {
@@ -31,25 +31,25 @@ impl VideoFrame {
     }
 }
 
-pub struct AudioFrame {
+pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
     pub map: ChannelMap,
     pub format: Box<Soniton>,
 }
 
-impl AudioFrame {
+impl AudioInfo {
     fn size(&self, align: usize) -> usize {
         unimplemented!()
     }
 }
 
-pub enum FrameKind {
-    Video(VideoFrame),
-    Audio(AudioFrame),
+pub enum MediaKind {
+    Video(VideoInfo),
+    Audio(AudioInfo),
 }
 
-use self::FrameKind::*;
+use self::MediaKind::*;
 
 
 pub trait FrameBuffer {
@@ -60,7 +60,7 @@ pub trait FrameBuffer {
 }
 
 pub struct Frame {
-    kind: FrameKind,
+    kind: MediaKind,
     buf: Box<FrameBuffer>,
     t: TimeInfo,
 }
@@ -78,7 +78,7 @@ struct DefaultFrameBuffer {
 }
 
 impl DefaultFrameBuffer {
-    pub fn new(kind: &FrameKind) -> DefaultFrameBuffer {
+    pub fn new(kind: &MediaKind) -> DefaultFrameBuffer {
         match kind {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
