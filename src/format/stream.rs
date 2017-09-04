@@ -4,7 +4,8 @@ use num::rational::Rational32;
 use data::frame::MediaKind;
 
 enum CodecID {
-    //
+    VP9,
+    Opus
 }
 
 pub struct CodecParams {
