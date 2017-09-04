@@ -1,50 +1,76 @@
-use std::string::*;
 use std::slice;
 use std::fmt;
 use std::ops::Index;
 
 #[derive(Debug,Clone,Copy,PartialEq)]
-pub enum RGBSubmodel {
-    RGB,
-    SRGB,
+pub enum YUVRange {
+    Limited,
+    Full
 }
 
-impl fmt::Display for RGBSubmodel {
+impl fmt::Display for YUVRange {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = match *self {
-            RGBSubmodel::RGB => "RGB".to_string(),
-            RGBSubmodel::SRGB => "sRGB".to_string(),
-        };
-        write!(f, "{}", name)
+        match *self {
+            YUVRange::Limited => write!(f, "Limited range"),
+            YUVRange::Full => write!(f, "Full range")
+        }
     }
 }
 
 #[derive(Debug,Clone,Copy,PartialEq)]
-pub enum YUVSubmodel {
-    YCbCr,
-    YIQ,
-    YUVJ,
+pub enum YUVSystem {
+    YCbCr(YUVRange),
+    YCoCg,
+    ICtCp
 }
 
-impl fmt::Display for YUVSubmodel {
+impl fmt::Display for YUVSystem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = match *self {
-            YUVSubmodel::YCbCr => "YCbCr".to_string(),
-            YUVSubmodel::YIQ => "YIQ".to_string(),
-            YUVSubmodel::YUVJ => "YUVJ".to_string(),
-        };
-        write!(f, "{}", name)
+        use self::YUVSystem::*;
+        match *self {
+            YCbCr(range) => write!(f, "YCbCr ({})", range),
+            YCoCg => write!(f, "YCbCg"),
+            ICtCp => write!(f, "ICtCp"),
+        }
+    }
+}
+
+#[derive(Debug, Clone,Copy,PartialEq)]
+pub enum TrichromaticEncodingSystem {
+    RGB,
+    YUV(YUVSystem),
+    XYZ
+}
+
+impl fmt::Display for TrichromaticEncodingSystem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::TrichromaticEncodingSystem::*;
+        match *self {
+            YUV(system) => write!(f, "{}", system),
+            RGB => write!(f, "RGB"),
+            XYZ => write!(f, "XYZ"),
+        }
     }
 }
 
 #[derive(Debug, Clone,Copy,PartialEq)]
 pub enum ColorModel {
-    RGB(RGBSubmodel),
-    YUV(YUVSubmodel),
+    Trichromatic(TrichromaticEncodingSystem),
     CMYK,
     HSV,
     LAB,
-    XYZ,
+}
+
+impl fmt::Display for ColorModel {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::ColorModel::*;
+        match *self {
+            Trichromatic(system) => write!(f, "{}", system),
+            CMYK => write!(f, "CMYK"),
+            HSV => write!(f, "HSV"),
+            LAB => write!(f, "LAB"),
+        }
+    }
 }
 
 impl ColorModel {
@@ -53,20 +79,6 @@ impl ColorModel {
             ColorModel::CMYK => 4,
             _ => 3,
         }
-    }
-}
-
-impl fmt::Display for ColorModel {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = match *self {
-            ColorModel::RGB(fmt) => format!("RGB({})", fmt).to_string(),
-            ColorModel::YUV(fmt) => format!("YUV({})", fmt).to_string(),
-            ColorModel::CMYK => "CMYK".to_string(),
-            ColorModel::HSV => "HSV".to_string(),
-            ColorModel::LAB => "LAB".to_string(),
-            ColorModel::XYZ => "XYZ".to_string(),
-        };
-        write!(f, "{}", name)
     }
 }
 
@@ -280,9 +292,13 @@ macro_rules! chromaton {
 
 pub mod formats {
     use data::pixel::*;
+    use self::ColorModel::*;
+    use self::TrichromaticEncodingSystem::*;
+    use self::YUVSystem::*;
+    use self::YUVRange::*;
 
     pub const YUV420: Formaton = Formaton {
-        model: ColorModel::YUV(YUVSubmodel::YUVJ),
+        model: Trichromatic(YUV(YCbCr(Limited))),
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 1, 1, 1),
@@ -296,7 +312,7 @@ pub mod formats {
     };
 
     pub const YUV410: Formaton = Formaton {
-        model: ColorModel::YUV(YUVSubmodel::YUVJ),
+        model: Trichromatic(YUV(YCbCr(Limited))),
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 2, 2, 1),
@@ -310,7 +326,7 @@ pub mod formats {
     };
 
     pub const PAL8: Formaton = Formaton {
-        model: ColorModel::RGB(RGBSubmodel::RGB),
+        model: Trichromatic(RGB),
         components: 3,
         comp_info: [chromaton!(pal8; 0), chromaton!(pal8; 1), chromaton!(pal8; 2), None, None],
         elem_size: 3,
@@ -320,7 +336,7 @@ pub mod formats {
     };
 
     pub const RGB565: Formaton = Formaton {
-        model: ColorModel::RGB(RGBSubmodel::RGB),
+        model: Trichromatic(RGB),
         components: 3,
         comp_info: [chromaton!(packrgb; 5, 11, 0, 2),
                     chromaton!(packrgb; 6,  5, 0, 2),
@@ -334,7 +350,7 @@ pub mod formats {
     };
 
     pub const RGB24: Formaton = Formaton {
-        model: ColorModel::RGB(RGBSubmodel::RGB),
+        model: Trichromatic(RGB),
         components: 3,
         comp_info: [chromaton!(packrgb; 8, 0, 2, 3),
                     chromaton!(packrgb; 8, 0, 1, 3),
