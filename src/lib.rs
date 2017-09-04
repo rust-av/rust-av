@@ -1,3 +1,6 @@
+// workarounds
+#![allow(unused_doc_comment)]
+
 // language extensions
 #![feature(box_syntax, plugin, allocator_api, alloc)]
 #![plugin(interpolate_idents)]
