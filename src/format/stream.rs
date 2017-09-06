@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use num::rational::Rational32;
+use rational::Rational32;
 use data::frame::MediaKind;
 
 enum CodecID {

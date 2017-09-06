@@ -1,0 +1,11 @@
+[package]
+name = "av-data"
+description = "Multimedia data structures"
+version = "0.1.0"
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+
+[dependencies]
+num-rational = "0.1"
+error-chain = "0.6.0"
+bytes = "0.4.4"
+bitflags = "0.5.0"

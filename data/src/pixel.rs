@@ -291,7 +291,7 @@ macro_rules! chromaton {
 }
 
 pub mod formats {
-    use data::pixel::*;
+    use pixel::*;
     use self::ColorModel::*;
     use self::TrichromaticEncodingSystem::*;
     use self::YUVSystem::*;

@@ -2,16 +2,11 @@
 #![allow(unused_doc_comment)]
 
 // language extensions
-#![feature(box_syntax, plugin, allocator_api, alloc)]
+#![feature(box_syntax, plugin)]
 #![plugin(interpolate_idents)]
 
 // crates
-#![cfg_attr(feature = "assignment_operators", feature(augmented_assignments, op_assign_traits))]
-#[macro_use]
-extern crate bitflags;
-extern crate bytes;
-extern crate num;
-
+extern crate num_rational as rational;
 #[macro_use]
 extern crate error_chain;
 
@@ -19,12 +14,16 @@ extern crate error_chain;
 #[macro_use]
 extern crate assert_matches;
 
-extern crate alloc;
+// local crates
+extern crate av_data;
+
+pub mod data {
+    pub use av_data::*;
+}
 
 // core functionalities
 pub mod bitstream;
 mod entropy;
-pub mod data;
 mod io;
 pub mod buffer;
 

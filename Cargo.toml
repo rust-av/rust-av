@@ -9,9 +9,12 @@ nightly = []
 [dependencies]
 bitflags = "0.5.0"
 interpolate_idents = "0.1.7"
-num  = "0.1.35"
 error-chain = "0.6.0"
-bytes = "0.4.4"
+num-rational = "0.1"
+
+[dependencies.av-data]
+path = "data"
+version = "*"
 
 [dev-dependencies]
 assert_matches = "1.1"

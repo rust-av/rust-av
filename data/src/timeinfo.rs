@@ -1,4 +1,4 @@
-use num::rational::Rational32;
+use rational::Rational32;
 
 pub struct TimeInfo {
     pub pts: Option<i64>,

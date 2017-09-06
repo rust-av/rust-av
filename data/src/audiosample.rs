@@ -239,7 +239,7 @@ impl ChannelMap {
 }
 
 pub mod formats {
-    use data::audiosample::*;
+    use super::*;
 
     pub const U8: Soniton = Soniton {
         bits: 8,
