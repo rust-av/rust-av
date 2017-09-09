@@ -1,6 +1,6 @@
 #![allow(dead_code, unused_variables)]
 use alloc::heap::{Heap, Alloc, Layout};
-use bytes::Bytes;
+use bytes::BytesMut;
 
 use audiosample::*;
 use pixel::*;
@@ -54,7 +54,7 @@ use self::MediaKind::*;
 pub trait FrameBuffer {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [u8]>;
     fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]>;
-    fn linesize(&self, idx: usize) -> usize;
+    fn linesize(&self, idx: usize) -> Result<usize>;
     fn count(&self) -> usize;
 }
 
@@ -67,13 +67,37 @@ pub struct Frame {
 const ALIGNMENT: usize = 32;
 
 struct Plane {
-    buf: Bytes,
+    buf: BytesMut,
     linesize: usize,
 }
 
 struct DefaultFrameBuffer {
-    buf: Bytes,
+    buf: BytesMut,
     planes: Vec<Plane>,
+}
+
+impl FrameBuffer for DefaultFrameBuffer {
+    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [u8]> {
+        match self.planes.get(idx) {
+            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            Some(plane) => Ok(&plane.buf)
+        }
+    }
+    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]> {
+        match self.planes.get_mut(idx) {
+            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            Some(plane) => Ok(&mut plane.buf)
+        }
+    }
+    fn linesize(&self, idx: usize) -> Result<usize> {
+        match self.planes.get(idx) {
+            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            Some(plane) => Ok(plane.linesize)
+        }
+    }
+    fn count(&self) -> usize {
+        self.planes.len()
+    }
 }
 
 impl DefaultFrameBuffer {
@@ -83,7 +107,7 @@ impl DefaultFrameBuffer {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe { Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()).unwrap() };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
-                let buf = Bytes::from(unsafe { Vec::from_raw_parts(data, size, size) });
+                let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
                     planes: Vec::new(),

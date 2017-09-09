@@ -2,6 +2,9 @@
 name = "av"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+homepage = "https://github.com/rust-av/rust-av"
+keywords = ["multimedia"]
+license = "LGPL-2.1"
 
 [features]
 nightly = []
