@@ -2,8 +2,8 @@
 
 use data::packet::*;
 use buffer::Buffered;
-use format::stream::*;
-use format::demuxer::demux::*;
+use stream::*;
+use demuxer::demux::*;
 
 
 use std::io::{BufRead,Error};

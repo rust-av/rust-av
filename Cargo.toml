@@ -19,5 +19,10 @@ num-rational = "0.1"
 path = "data"
 version = "*"
 
+[dependencies.av-format]
+path = "format"
+version = "*"
+
+
 [dev-dependencies]
 assert_matches = "1.1"
