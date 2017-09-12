@@ -4,11 +4,12 @@ use std::io::{Error,SeekFrom};
 
 use buffer::Buffered;
 use data::packet::Packet;
+use demuxer::context::GlobalInfo;
 
 pub trait Demuxer {
     fn open(&mut self);
-    fn read_headers(&mut self, ctx: &Box<Buffered>) -> Result<SeekFrom, Error>;
-    fn read_packet(&mut self, ctx: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error>;
+    fn read_headers(&mut self, buf: &Box<Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom, Error>;
+    fn read_packet(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error>;
 }
 
 pub struct DemuxerDescription {
@@ -65,7 +66,7 @@ macro_rules! module {
     {
         ($name:ident) {
             open($os:ident) => $ob:block
-            read_headers($rhs:ident, $rhctx:ident) => $rhb:block
+            read_headers($rhs:ident, $rhctx:ident, $rhi:ident) => $rhb:block
             read_packet($rps:ident, $rpctx:ident) => $rpb:block
 
             describe($ds:ident) => $db:block
@@ -79,7 +80,7 @@ macro_rules! module {
 
             impl Demuxer for [$name Demuxer] {
                 fn open(&mut $os) $ob
-                fn read_headers(&mut $rhs, $rhctx: &Box<Buffered>) -> Result<SeekFrom, Error> $rhb
+                fn read_headers(&mut $rhs, $rhctx: &Box<Buffered>, $rhi: &mut GlobalInfo) -> Result<SeekFrom, Error> $rhb
                 fn read_packet(&mut $rps, $rpctx: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error> $rpb
             }
 
@@ -103,8 +104,8 @@ mod test {
     module! {
         (Test) {
             open(self) => { () }
-            read_headers(self, ctx) => { Ok(SeekFrom::Current(0)) }
-            read_packet(self, ctx) => { unimplemented!() }
+            read_headers(self, buf, info) => { Ok(SeekFrom::Current(0)) }
+            read_packet(self, buf) => { unimplemented!() }
 
             describe(self) => {
                 const D: &'static DemuxerDescription = &DemuxerDescription {
