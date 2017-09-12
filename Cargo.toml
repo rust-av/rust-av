@@ -23,6 +23,11 @@ version = "*"
 path = "format"
 version = "*"
 
+[workspace]
+members = [
+    "data",
+    "format"
+]
 
 [dev-dependencies]
 assert_matches = "1.1"
