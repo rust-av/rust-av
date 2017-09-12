@@ -4,12 +4,19 @@ use std::io::{Error,SeekFrom};
 
 use buffer::Buffered;
 use data::packet::Packet;
+use stream::Stream;
 use demuxer::context::GlobalInfo;
+
+pub enum Event {
+    NewPacket(Packet),
+    NewStream(Stream),
+    MoreDataNeeded
+}
 
 pub trait Demuxer {
     fn open(&mut self);
     fn read_headers(&mut self, buf: &Box<Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom, Error>;
-    fn read_packet(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error>;
+    fn read_packet(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event), Error>;
 }
 
 pub struct DemuxerDescription {

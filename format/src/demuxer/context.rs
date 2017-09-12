@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use data::packet::*;
 use buffer::Buffered;
 use stream::*;
 use demuxer::demux::*;
@@ -49,18 +48,22 @@ impl<'a> DemuxerContext<'a> {
         }
     }
 
-    pub fn read_packet(&mut self) -> Result<Packet, Error> {
+    pub fn read_packet(&mut self) -> Result<Event, Error> {
         let ref mut demux = self.demuxer;
 
         let res = demux.read_packet(&self.reader);
         match res {
             Err(e)   => Err(e),
-            Ok((seek, packet)) => {
+            Ok((seek, event)) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
                 try!(self.reader.fill_buf());
+                /* TODO: update the global info here?
+                 * if let Event::NewStream(st) = event {
+                    self.info.streams.push(st);
+                } */
                 println!("stream now at index: {:?}", res);
-                Ok(packet)
+                Ok(event)
             }
         }
     }
