@@ -12,7 +12,7 @@ nightly = []
 [dependencies]
 bitflags = "0.5.0"
 interpolate_idents = "0.1.7"
-error-chain = "0.6.0"
+error-chain = "0.10.0"
 num-rational = "0.1"
 
 [dependencies.av-data]
