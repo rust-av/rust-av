@@ -2,6 +2,8 @@
 use alloc::heap::{Heap, Alloc, Layout};
 use bytes::BytesMut;
 
+use std::rc::Rc;
+
 use audiosample::*;
 use pixel::*;
 use timeinfo::*;
@@ -16,7 +18,7 @@ error_chain! {
 pub struct VideoInfo {
     pub width: usize,
     pub height: usize,
-    pub format: Box<Formaton>,
+    pub format: Rc<Formaton>,
 }
 
 impl VideoInfo {
@@ -36,7 +38,7 @@ pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
     pub map: ChannelMap,
-    pub format: Box<Soniton>,
+    pub format: Rc<Soniton>,
 }
 
 impl AudioInfo {
