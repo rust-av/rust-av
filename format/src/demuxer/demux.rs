@@ -8,7 +8,7 @@ use stream::Stream;
 use demuxer::context::GlobalInfo;
 use error::*;
 
-#[derive(Clone)]
+#[derive(Clone,Debug,PartialEq)]
 pub enum Event {
     NewPacket(Packet),
     NewStream(Stream),

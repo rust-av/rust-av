@@ -82,7 +82,7 @@ impl ColorModel {
     }
 }
 
-#[derive(Clone,Copy,PartialEq)]
+#[derive(Clone,Copy,Debug,PartialEq)]
 pub struct Chromaton {
     h_ss: u8,
     v_ss: u8,
@@ -148,7 +148,7 @@ impl fmt::Display for Chromaton {
     }
 }
 
-#[derive(Clone,Copy,PartialEq)]
+#[derive(Clone,Copy,PartialEq,Debug)]
 pub struct Formaton {
     model: ColorModel,
     components: u8,

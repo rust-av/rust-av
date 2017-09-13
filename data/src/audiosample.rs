@@ -205,7 +205,7 @@ impl fmt::Display for ChannelType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug,PartialEq)]
 pub struct ChannelMap {
     ids: Vec<ChannelType>,
 }
