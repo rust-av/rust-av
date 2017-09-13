@@ -7,6 +7,7 @@ use data::packet::Packet;
 use stream::Stream;
 use demuxer::context::GlobalInfo;
 
+#[derive(Clone)]
 pub enum Event {
     NewPacket(Packet),
     NewStream(Stream),

@@ -3,11 +3,13 @@
 use rational::Rational32;
 use data::frame::MediaKind;
 
+#[derive(Clone)]
 enum CodecID {
     VP9,
     Opus
 }
 
+#[derive(Clone)]
 pub struct CodecParams {
     kind: MediaKind,
     codec_id: CodecID,
@@ -19,6 +21,7 @@ pub struct CodecParams {
     level: usize,
 }
 
+#[derive(Clone)]
 pub struct Stream {
     id: usize,
     index: usize,

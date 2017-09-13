@@ -12,6 +12,7 @@ error_chain! {
     }
 }
 
+#[derive(Clone)]
 pub struct VideoInfo {
     pub width: usize,
     pub height: usize,
@@ -30,6 +31,7 @@ impl VideoInfo {
     }
 }
 
+#[derive(Clone)]
 pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
@@ -43,6 +45,7 @@ impl AudioInfo {
     }
 }
 
+#[derive(Clone)]
 pub enum MediaKind {
     Video(VideoInfo),
     Audio(AudioInfo),

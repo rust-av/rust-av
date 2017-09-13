@@ -12,7 +12,7 @@ bitflags! {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Packet {
     data : Vec<u8>,
     pts : Option<i64>,
