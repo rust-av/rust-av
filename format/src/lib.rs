@@ -2,8 +2,6 @@
 #![allow(unused_doc_comment)]
 
 // crates
-extern crate num_rational as rational;
-
 #[macro_use]
 extern crate error_chain;
 
@@ -13,6 +11,8 @@ extern crate av_data;
 mod data {
     pub use av_data::*;
 }
+
+pub use av_data::rational;
 
 pub mod buffer;
 pub mod stream;

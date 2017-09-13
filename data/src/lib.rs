@@ -8,11 +8,15 @@
 // crates
 extern crate alloc;
 extern crate bytes;
-extern crate num_rational as rational;
+extern crate num_rational;
 #[macro_use]
 extern crate bitflags;
 #[macro_use]
 extern crate error_chain;
+
+pub mod rational {
+    pub use num_rational::*;
+}
 
 pub mod audiosample;
 pub mod frame;

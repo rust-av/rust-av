@@ -25,6 +25,8 @@ pub mod format {
     pub use av_format::*;
 }
 
+pub use av_data::rational;
+
 // core functionalities
 pub mod bitstream;
 mod entropy;
