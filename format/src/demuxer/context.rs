@@ -7,9 +7,10 @@ use error::*;
 
 use std::io::BufRead;
 
+#[derive(Clone,Debug,PartialEq)]
 pub struct GlobalInfo {
-    duration: Option<u64>,
-    streams: Vec<Stream>,
+    pub duration: Option<u64>,
+    pub streams: Vec<Stream>,
 //    programs: Vec<StreamGroup>,
 //    chapters: Vec<StreamGroup>,
 }
