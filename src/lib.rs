@@ -30,10 +30,6 @@ pub mod bitstream;
 mod entropy;
 mod io;
 
-// encoded data manipulation
-mod parser;
-mod codec;
-
 // raw multimedia data manipulation
 mod filter;
 mod resample;
