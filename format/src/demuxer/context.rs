@@ -3,9 +3,9 @@
 use buffer::Buffered;
 use stream::*;
 use demuxer::demux::*;
+use error::*;
 
-
-use std::io::{BufRead,Error};
+use std::io::BufRead;
 
 pub struct GlobalInfo {
     duration: Option<u64>,
@@ -32,7 +32,7 @@ impl<'a> DemuxerContext<'a> {
         }
     }
 
-    pub fn read_headers(&mut self) -> Result<(), Error> {
+    pub fn read_headers(&mut self) -> Result<()> {
         let ref mut demux = self.demuxer;
 
         let res = demux.read_headers(&self.reader, &mut self.info);
@@ -48,7 +48,7 @@ impl<'a> DemuxerContext<'a> {
         }
     }
 
-    pub fn read_packet(&mut self) -> Result<Event, Error> {
+    pub fn read_packet(&mut self) -> Result<Event> {
         let ref mut demux = self.demuxer;
 
         let res = demux.read_packet(&self.reader);

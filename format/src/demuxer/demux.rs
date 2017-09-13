@@ -1,11 +1,12 @@
 #![allow(dead_code)]
 
-use std::io::{Error,SeekFrom};
+use std::io::SeekFrom;
 
 use buffer::Buffered;
 use data::packet::Packet;
 use stream::Stream;
 use demuxer::context::GlobalInfo;
+use error::*;
 
 #[derive(Clone)]
 pub enum Event {
@@ -16,8 +17,8 @@ pub enum Event {
 
 pub trait Demuxer {
     fn open(&mut self);
-    fn read_headers(&mut self, buf: &Box<Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom, Error>;
-    fn read_packet(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event), Error>;
+    fn read_headers(&mut self, buf: &Box<Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
+    fn read_packet(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event)>;
 }
 
 pub struct DemuxerDescription {
@@ -88,8 +89,8 @@ macro_rules! module {
 
             impl Demuxer for [$name Demuxer] {
                 fn open(&mut $os) $ob
-                fn read_headers(&mut $rhs, $rhctx: &Box<Buffered>, $rhi: &mut GlobalInfo) -> Result<SeekFrom, Error> $rhb
-                fn read_packet(&mut $rps, $rpctx: &Box<Buffered>) -> Result<(SeekFrom,Packet), Error> $rpb
+                fn read_headers(&mut $rhs, $rhctx: &Box<Buffered>, $rhi: &mut GlobalInfo) -> Result<SeekFrom> $rhb
+                fn read_packet(&mut $rps, $rpctx: &Box<Buffered>) -> Result<(SeekFrom, Event)> $rpb
             }
 
             impl DemuxerBuilder for [$name DemuxerBuilder] {
