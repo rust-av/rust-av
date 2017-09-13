@@ -58,10 +58,9 @@ impl<'a> DemuxerContext<'a> {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
                 try!(self.reader.fill_buf());
-                /* TODO: update the global info here?
-                 * if let Event::NewStream(st) = event {
-                    self.info.streams.push(st);
-                } */
+                if let &Event::NewStream(ref st) = &event {
+                    self.info.streams.push(st.clone());
+                }
                 println!("stream now at index: {:?}", res);
                 Ok(event)
             }
