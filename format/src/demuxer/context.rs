@@ -18,7 +18,7 @@ pub struct GlobalInfo {
 pub struct DemuxerContext<'a> {
     demuxer: Box<Demuxer+'a>,
     reader: Box<Buffered>,
-    info: GlobalInfo,
+    pub info: GlobalInfo,
 }
 
 impl<'a> DemuxerContext<'a> {
