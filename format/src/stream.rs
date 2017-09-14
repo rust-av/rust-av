@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 
+use std::rc::Rc;
+
 use rational::Rational32;
-use data::frame::MediaKind;
+use data::audiosample::{Soniton, ChannelMap};
+use data::pixel::Formaton;
 
 #[derive(Clone,Debug,PartialEq)]
 pub enum CodecID {
@@ -10,15 +13,34 @@ pub enum CodecID {
 }
 
 #[derive(Clone,Debug,PartialEq)]
+pub struct VideoInfo {
+    pub width: usize,
+    pub height: usize,
+    pub format: Option<Rc<Formaton>>,
+}
+
+#[derive(Clone,Debug,PartialEq)]
+pub struct AudioInfo {
+    pub samples: usize,
+    pub rate: usize,
+    pub map: Option<ChannelMap>,
+    pub format: Option<Rc<Soniton>>,
+}
+
+#[derive(Clone,Debug,PartialEq)]
+pub enum MediaKind {
+    Video(VideoInfo),
+    Audio(AudioInfo),
+}
+
+#[derive(Clone,Debug,PartialEq)]
 pub struct CodecParams {
-    pub kind: MediaKind,
-    pub codec_id: CodecID,
-    pub extradata: Vec<u8>,
-    pub tag: u32,
+    pub kind: Option<MediaKind>,
+    pub codec_id: Option<CodecID>,
+    pub extradata: Option<Vec<u8>>,
+//    pub tag: Option<u32>,
     pub bit_rate: usize,
-    pub bits_per_coded_sample: usize,
-    pub profile: usize,
-    pub level: usize,
+//    pub bits_per_coded_sample: usize,
 }
 
 #[derive(Clone,Debug,PartialEq)]
