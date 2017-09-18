@@ -66,7 +66,7 @@ pub trait FrameBuffer {
 pub struct Frame {
     pub kind: MediaKind,
     pub buf: Box<FrameBuffer>,
-    pub t: TimeInfo,
+    pub t: Option<TimeInfo>,
 }
 
 const ALIGNMENT: usize = 32;
@@ -134,7 +134,7 @@ impl DefaultFrameBuffer {
     }
 }
 
-pub fn new_default_frame(kind: &MediaKind, t: TimeInfo) -> Frame {
+pub fn new_default_frame(kind: &MediaKind, t: Option<TimeInfo>) -> Frame {
     let buf = DefaultFrameBuffer::new(kind);
 
     Frame { kind: kind.clone(), buf: box buf, t: t }
