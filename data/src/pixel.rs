@@ -297,7 +297,7 @@ pub mod formats {
     use self::YUVSystem::*;
     use self::YUVRange::*;
 
-    pub const YUV420: Formaton = Formaton {
+    pub const YUV420: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -311,7 +311,7 @@ pub mod formats {
         palette: false,
     };
 
-    pub const YUV410: Formaton = Formaton {
+    pub const YUV410: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -325,7 +325,7 @@ pub mod formats {
         palette: false,
     };
 
-    pub const PAL8: Formaton = Formaton {
+    pub const PAL8: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         components: 3,
         comp_info: [chromaton!(pal8; 0), chromaton!(pal8; 1), chromaton!(pal8; 2), None, None],
@@ -335,7 +335,7 @@ pub mod formats {
         palette: true,
     };
 
-    pub const RGB565: Formaton = Formaton {
+    pub const RGB565: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         components: 3,
         comp_info: [chromaton!(packrgb; 5, 11, 0, 2),
@@ -349,7 +349,7 @@ pub mod formats {
         palette: false,
     };
 
-    pub const RGB24: Formaton = Formaton {
+    pub const RGB24: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         components: 3,
         comp_info: [chromaton!(packrgb; 8, 0, 2, 3),
