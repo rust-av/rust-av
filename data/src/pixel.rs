@@ -217,6 +217,10 @@ impl Formaton {
     pub fn get_elem_size(&self) -> u8 {
         self.elem_size
     }
+
+    pub fn iter<'a>(&'a self) -> slice::Iter<'a, Option<Chromaton>> {
+        self.comp_info.iter()
+    }
 }
 
 impl<'a> Index<usize> for &'a Formaton {

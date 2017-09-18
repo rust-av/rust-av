@@ -117,7 +117,7 @@ impl DefaultFrameBuffer {
                     buf: buf,
                     planes: Vec::new(),
                 };
-                for &component in video.format.into_iter() {
+                for &component in video.format.iter() {
                     if let Some(c) = component {
                         let planesize = c.get_data_size(video.width, video.height, ALIGNMENT);
                         let linesize = c.get_linesize(video.width, ALIGNMENT);
