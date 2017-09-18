@@ -118,10 +118,10 @@ impl Chromaton {
     }
 
     pub fn get_width(&self, width: usize) -> usize {
-        (width + ((1 << self.h_ss) - 1)) >> self.h_ss
+        (width + ((1 << self.v_ss) - 1)) >> self.v_ss
     }
     pub fn get_height(&self, height: usize) -> usize {
-        (height + ((1 << self.v_ss) - 1)) >> self.v_ss
+        (height + ((1 << self.h_ss) - 1)) >> self.h_ss
     }
     pub fn get_linesize(&self, width: usize, alignment: usize) -> usize {
         let d = self.depth as usize;
