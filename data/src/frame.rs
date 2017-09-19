@@ -231,7 +231,7 @@ use std::slice;
 
 // TODO make it a separate trait
 impl Frame {
-    fn copy_from_slice<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
+    pub fn copy_from_slice<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
     where
         I: Iterator<Item = &'a [u8]>,
         IU: Iterator<Item = usize>,
@@ -260,7 +260,7 @@ impl Frame {
         }
     }
 
-    fn copy_from_raw_parts<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
+    pub fn copy_from_raw_parts<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
     where
         I: Iterator<Item = *const u8>,
         IU: Iterator<Item = usize>,
