@@ -14,8 +14,23 @@ error_chain! {
     }
 }
 
+// TODO: Document
+#[derive(Clone, Debug, PartialEq)]
+pub enum PictureType {
+    UNKNOWN,
+    I,
+    P,
+    B,
+    S,
+    SI,
+    SP,
+    SB,
+    BI
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct VideoInfo {
+    pub pic_type: PictureType,
     pub width: usize,
     pub height: usize,
     pub format: Rc<Formaton>,
