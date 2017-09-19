@@ -14,7 +14,7 @@ error_chain! {
     }
 }
 
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct VideoInfo {
     pub width: usize,
     pub height: usize,
@@ -33,7 +33,7 @@ impl VideoInfo {
     }
 }
 
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
@@ -47,7 +47,7 @@ impl AudioInfo {
     }
 }
 
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum MediaKind {
     Video(VideoInfo),
     Audio(AudioInfo),
@@ -85,19 +85,19 @@ impl FrameBuffer for DefaultFrameBuffer {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [u8]> {
         match self.planes.get(idx) {
             None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
-            Some(plane) => Ok(&plane.buf)
+            Some(plane) => Ok(&plane.buf),
         }
     }
     fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]> {
         match self.planes.get_mut(idx) {
             None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
-            Some(plane) => Ok(&mut plane.buf)
+            Some(plane) => Ok(&mut plane.buf),
         }
     }
     fn linesize(&self, idx: usize) -> Result<usize> {
         match self.planes.get(idx) {
             None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
-            Some(plane) => Ok(plane.linesize)
+            Some(plane) => Ok(plane.linesize),
         }
     }
     fn count(&self) -> usize {
@@ -110,7 +110,10 @@ impl DefaultFrameBuffer {
         match kind {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
-                let data = unsafe { Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()).unwrap() };
+                let data = unsafe {
+                    Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
+                        .unwrap()
+                };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
@@ -137,5 +140,9 @@ impl DefaultFrameBuffer {
 pub fn new_default_frame(kind: &MediaKind, t: Option<TimeInfo>) -> Frame {
     let buf = DefaultFrameBuffer::new(kind);
 
-    Frame { kind: kind.clone(), buf: box buf, t: t }
+    Frame {
+        kind: kind.clone(),
+        buf: box buf,
+        t: t,
+    }
 }
