@@ -370,12 +370,28 @@ pub mod formats {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    mod formats {
+        use super::super::*;
+        #[test]
+        fn fmt() {
+            println!("formaton yuv- {}", formats::YUV420);
+            println!("formaton pal- {}", formats::PAL8);
+            println!("formaton rgb565- {}", formats::RGB565);
+        }
 
-    #[test]
-    fn fmt() {
-        println!("formaton yuv- {}", formats::YUV420);
-        println!("formaton pal- {}", formats::PAL8);
-        println!("formaton rgb565- {}", formats::RGB565);
+        #[test]
+        fn comparison() {
+            use std::rc::Rc;
+            let rcf = Rc::new(*formats::YUV420);
+            let ref cf = formats::YUV420.clone();
+
+            if cf != formats::YUV420 {
+                panic!("cf");
+            }
+
+            if *rcf != *formats::YUV420 {
+                panic!("rcf");
+            }
+        }
     }
 }
