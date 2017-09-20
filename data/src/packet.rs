@@ -4,25 +4,18 @@ use std::io::{Read, Write, Result};
 
 // use data::SideData;
 
-bitflags! {
-    flags PacketFlags: u32 {
-        const KEY     = 0b0001,
-        const CORRUPT = 0b0010,
-        const NONE    = 0,
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Packet {
-    data : Vec<u8>,
-    pts : Option<i64>,
-    dts : Option<i64>,
-    pos : Option<i64>,
-    stream_index : isize,
+    pub data : Vec<u8>,
+    pub pts : Option<i64>,
+    pub dts : Option<i64>,
+    pub pos : Option<i64>,
+    pub stream_index : isize,
 
     // side_data : SideData;
 
-    flags : PacketFlags,
+    pub is_key: bool,
+    pub is_corrupted: bool,
 }
 
 impl Packet {
@@ -33,7 +26,8 @@ impl Packet {
             dts : None,
             pos : None,
             stream_index : -1,
-            flags : NONE
+            is_key: false,
+            is_corrupted: false,
         }
     }
 
