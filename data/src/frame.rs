@@ -78,6 +78,15 @@ pub trait FrameBuffer {
     fn count(&self) -> usize;
 }
 
+use std::fmt;
+
+impl fmt::Debug for FrameBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FrameBuffer")
+    }
+}
+
+#[derive(Debug)]
 pub struct Frame {
     pub kind: MediaKind,
     pub buf: Box<FrameBuffer>,
