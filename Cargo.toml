@@ -24,8 +24,9 @@ version = "*"
 
 [workspace]
 members = [
+    "codec",
     "data",
-    "format"
+    "format",
 ]
 
 [dev-dependencies]
