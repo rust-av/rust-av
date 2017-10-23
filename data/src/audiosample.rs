@@ -3,67 +3,43 @@ use std::fmt;
 
 #[derive(Debug,Copy,Clone,PartialEq)]
 pub struct Soniton {
-    bits: u8,
-    be: bool,
-    packed: bool,
-    planar: bool,
-    float: bool,
-    signed: bool,
+    pub bits: u8,
+    pub be: bool,
+    pub packed: bool,
+    pub planar: bool,
+    pub float: bool,
+    pub signed: bool,
 }
 
-bitflags! {
-    pub flags Flags: u8 {
-        const BE       = 0x01,
-        const PACKED   = 0x02,
-        const PLAR   = 0x04,
-        const FLOAT    = 0x08,
-        const SIGNED   = 0x10,
-    }
+// TODO: make it a trait for usize?
+fn align(v: usize, a: usize) -> usize {
+    (v + a - 1) & !(a - 1)
+}
+
+fn round_to_byte(v: usize) -> usize {
+    (v + 7) >> 3
 }
 
 impl Soniton {
-    pub fn new(bits: u8, flags: Flags) -> Self {
-        let is_be = flags.contains(BE);
-        let is_pk = flags.contains(PACKED);
-        let is_pl = flags.contains(PLAR);
-        let is_fl = flags.contains(FLOAT);
-        let is_sg = flags.contains(SIGNED);
-
+    pub fn new(bits: u8, be: bool, packed: bool, planar: bool, float: bool, signed: bool) -> Self {
         Soniton {
             bits: bits,
-            be: is_be,
-            packed: is_pk,
-            planar: is_pl,
-            float: is_fl,
-            signed: is_sg,
+            be: be,
+            packed: packed,
+            planar: planar,
+            float: float,
+            signed: signed,
         }
     }
 
-    pub fn get_bits(&self) -> u8 {
-        self.bits
-    }
-    pub fn is_be(&self) -> bool {
-        self.be
-    }
-    pub fn is_packed(&self) -> bool {
-        self.packed
-    }
-    pub fn is_planar(&self) -> bool {
-        self.planar
-    }
-    pub fn is_float(&self) -> bool {
-        self.float
-    }
-    pub fn is_signed(&self) -> bool {
-        self.signed
-    }
-
-    pub fn get_audio_size(&self, length: u64) -> usize {
-        if self.packed {
-            ((length * (self.bits as u64) + 7) >> 3) as usize
+    pub fn get_audio_size(&self, length: usize, alignment: usize) -> usize {
+        let s = if self.packed {
+            round_to_byte(length * (self.bits as usize))
         } else {
-            (length * (((self.bits + 7) >> 3) as u64)) as usize
-        }
+            length * round_to_byte(self.bits as usize)
+        };
+
+        align(s, alignment)
     }
 }
 
@@ -222,7 +198,7 @@ impl ChannelMap {
             self.ids.push(chs[i]);
         }
     }
-    pub fn num_channels(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.ids.len()
     }
     pub fn get_channel(&self, idx: usize) -> ChannelType {

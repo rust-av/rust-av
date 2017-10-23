@@ -59,7 +59,7 @@ pub struct AudioInfo {
 
 impl AudioInfo {
     fn size(&self, align: usize) -> usize {
-        unimplemented!()
+        self.format.get_audio_size(self.samples, align) * self.map.len()
     }
 }
 
@@ -156,8 +156,27 @@ impl DefaultFrameBuffer {
                     }
                 }
                 buffer
-            }
-            _ => unimplemented!(),
+            },
+            &Audio(ref audio) => {
+                let size = audio.size(ALIGNMENT);
+                let data = unsafe {
+                    Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
+                        .unwrap()
+                };
+                let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
+                let mut buffer = DefaultFrameBuffer {
+                    buf: buf,
+                    planes: Vec::new(),
+                };
+                for _ in 0..audio.map.len() {
+                    let size = audio.format.get_audio_size(audio.samples, ALIGNMENT);
+                    buffer.planes.push(Plane {
+                        buf: buffer.buf.split_to(size),
+                        linesize: size,
+                    });
+                }
+                buffer
+            },
         }
     }
 }
