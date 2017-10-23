@@ -15,6 +15,7 @@ error_chain! {
 }
 
 // TODO: Document
+// TODO: Change it to provide Droppable/Seekable information or use a separate enum?
 #[derive(Clone, Debug, PartialEq)]
 pub enum PictureType {
     UNKNOWN,
@@ -25,7 +26,7 @@ pub enum PictureType {
     SI,
     SP,
     SB,
-    BI
+    BI,
 }
 
 #[derive(Clone, Debug, PartialEq)]
