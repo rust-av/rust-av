@@ -3,9 +3,6 @@ use std::io::ErrorKind::*;
 
 use bitstream::byteread::*;
 
-#[doc = /**
- * Safe bytereader abstraction
- */]
 #[allow(dead_code)]
 fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
     let mut nread = 0usize;
