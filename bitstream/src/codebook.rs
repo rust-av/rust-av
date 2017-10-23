@@ -1,4 +1,4 @@
-use bitstream::bitread::*;
+use bitread::*;
 use std::collections::HashMap;
 use std::cmp::{min, max};
 

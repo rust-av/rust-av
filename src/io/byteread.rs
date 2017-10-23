@@ -3,11 +3,9 @@ use std::io::ErrorKind::*;
 
 use bitstream::byteread::*;
 
-/**
+#[doc = /**
  * Safe bytereader abstraction
- */
-
-
+ */]
 #[allow(dead_code)]
 fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
     let mut nread = 0usize;
@@ -15,7 +13,7 @@ fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
         match reader.read(&mut buf[nread..]) {
             Ok(0) => return Err(Error::new(UnexpectedEof, "Empty")),
             Ok(n) => nread += n,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         }
     }
     Ok(())

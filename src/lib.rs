@@ -3,17 +3,11 @@
 
 // language extensions
 #![feature(box_syntax, plugin)]
-#![plugin(interpolate_idents)]
 
 // crates
-#[macro_use]
-extern crate error_chain;
-
-#[cfg(test)]
-#[macro_use]
-extern crate assert_matches;
 
 // local crates
+extern crate av_bitstream;
 extern crate av_data;
 extern crate av_format;
 
@@ -25,10 +19,13 @@ pub mod format {
     pub use av_format::*;
 }
 
+pub mod bitstream {
+    pub use av_bitstream::*;
+}
+
 pub use av_data::rational;
 
 // core functionalities
-pub mod bitstream;
 mod entropy;
 mod io;
 

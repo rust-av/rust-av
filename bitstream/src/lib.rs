@@ -1,3 +1,9 @@
+// workarounds
+#![allow(unused_doc_comment)]
+
+#[macro_use]
+extern crate error_chain;
+
 pub mod bitread;
 pub mod byteread;
 pub mod bytewrite;

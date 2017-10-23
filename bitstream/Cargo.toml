@@ -1,0 +1,9 @@
+[package]
+name = "av-bitstream"
+description = "Simple bit and byte writer/reader"
+version = "0.1.0"
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+
+[dependencies]
+error-chain = "0.10.0"
+
