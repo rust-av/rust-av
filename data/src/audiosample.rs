@@ -212,6 +212,16 @@ impl ChannelMap {
         }
         None
     }
+    pub fn default_map(count: usize) -> Self {
+        use self::ChannelType::*;
+        let ids = match count {
+            1 => vec![C],
+            2 => vec![R, L],
+            _ => unimplemented!()
+        };
+
+        ChannelMap { ids }
+    }
 }
 
 pub mod formats {
