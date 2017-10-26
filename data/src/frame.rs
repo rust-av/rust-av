@@ -98,6 +98,38 @@ pub trait FrameBuffer {
     fn count(&self) -> usize;
 }
 
+pub trait FrameBufferConv<T> : FrameBuffer {
+    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T]> {
+        let size = mem::size_of::<T>();
+        if (self.linesize(idx)? % size) != 0 {
+            Err(ErrorKind::InvalidConversion.into())
+        } else {
+            let s = FrameBuffer::as_slice(self, idx)?;
+            let r = unsafe {
+                slice::from_raw_parts::<T>(mem::transmute(s.as_ptr()), s.len() / size)
+            };
+
+            Ok(r)
+        }
+    }
+    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [T]> {
+        let size = mem::size_of::<T>();
+        if (self.linesize(idx)? % size) != 0 {
+            Err(ErrorKind::InvalidConversion.into())
+        } else {
+            let s = FrameBuffer::as_mut_slice(self, idx)?;
+            let r = unsafe {
+                slice::from_raw_parts_mut::<T>(mem::transmute(s.as_ptr()), s.len() / size)
+            };
+
+            Ok(r)
+        }
+    }
+}
+
+impl FrameBufferConv<i16> for FrameBuffer {}
+impl FrameBufferConv<f32> for FrameBuffer {}
+
 use std::fmt;
 
 impl fmt::Debug for FrameBuffer {
