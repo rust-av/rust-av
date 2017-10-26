@@ -90,21 +90,23 @@ impl From<AudioInfo> for MediaKind {
 
 use self::MediaKind::*;
 
-
-pub trait FrameBuffer {
-    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [u8]>;
-    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]>;
+pub trait FrameBufferSize {
     fn linesize(&self, idx: usize) -> Result<usize>;
     fn count(&self) -> usize;
 }
 
-pub trait FrameBufferConv<T> : FrameBuffer {
+pub trait FrameBufferSlice: FrameBufferSize {
+    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]>;
+    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]>;
+}
+
+pub trait FrameBufferConv<T> : FrameBufferSlice {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T]> {
         let size = mem::size_of::<T>();
         if (self.linesize(idx)? % size) != 0 {
             Err(ErrorKind::InvalidConversion.into())
         } else {
-            let s = FrameBuffer::as_slice(self, idx)?;
+            let s = self.as_slice_inner(idx)?;
             let r = unsafe {
                 slice::from_raw_parts::<T>(mem::transmute(s.as_ptr()), s.len() / size)
             };
@@ -117,7 +119,7 @@ pub trait FrameBufferConv<T> : FrameBuffer {
         if (self.linesize(idx)? % size) != 0 {
             Err(ErrorKind::InvalidConversion.into())
         } else {
-            let s = FrameBuffer::as_mut_slice(self, idx)?;
+            let s = self.as_mut_slice_inner(idx)?;
             let r = unsafe {
                 slice::from_raw_parts_mut::<T>(mem::transmute(s.as_ptr()), s.len() / size)
             };
@@ -127,8 +129,7 @@ pub trait FrameBufferConv<T> : FrameBuffer {
     }
 }
 
-impl FrameBufferConv<i16> for FrameBuffer {}
-impl FrameBufferConv<f32> for FrameBuffer {}
+pub trait FrameBuffer : FrameBufferSize + FrameBufferConv<u8> + FrameBufferConv<i16> + FrameBufferConv<f32> {}
 
 use std::fmt;
 
@@ -157,19 +158,7 @@ struct DefaultFrameBuffer {
     planes: Vec<Plane>,
 }
 
-impl FrameBuffer for DefaultFrameBuffer {
-    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [u8]> {
-        match self.planes.get(idx) {
-            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
-            Some(plane) => Ok(&plane.buf),
-        }
-    }
-    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]> {
-        match self.planes.get_mut(idx) {
-            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
-            Some(plane) => Ok(&mut plane.buf),
-        }
-    }
+impl FrameBufferSize for DefaultFrameBuffer {
     fn linesize(&self, idx: usize) -> Result<usize> {
         match self.planes.get(idx) {
             None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
@@ -180,6 +169,26 @@ impl FrameBuffer for DefaultFrameBuffer {
         self.planes.len()
     }
 }
+
+impl FrameBufferSlice for DefaultFrameBuffer {
+    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]> {
+        match self.planes.get(idx) {
+            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            Some(plane) => Ok(&plane.buf),
+        }
+    }
+    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]> {
+        match self.planes.get_mut(idx) {
+            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            Some(plane) => Ok(&mut plane.buf),
+        }
+    }
+}
+
+impl FrameBufferConv<u8> for DefaultFrameBuffer {}
+impl FrameBufferConv<i16> for DefaultFrameBuffer {}
+impl FrameBufferConv<f32> for DefaultFrameBuffer {}
+impl FrameBuffer for DefaultFrameBuffer {}
 
 impl DefaultFrameBuffer {
     pub fn new<'a>(kind: &'a MediaKind) -> DefaultFrameBuffer {
