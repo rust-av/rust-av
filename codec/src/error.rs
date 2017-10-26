@@ -3,5 +3,6 @@ error_chain! {
         MoreDataNeeded
         InvalidData
         ConfigurationIncomplete
+        InvalidConfiguration
     }
 }
