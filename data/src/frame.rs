@@ -8,11 +8,16 @@ use audiosample::*;
 use pixel::*;
 use timeinfo::*;
 
-error_chain! {
-    errors {
-        InvalidIndex
+pub mod error {
+    error_chain! {
+        errors {
+            InvalidIndex
+            InvalidConversion
+        }
     }
 }
+
+use self::error::*;
 
 // TODO: Document
 // TODO: Change it to provide Droppable/Seekable information or use a separate enum?
