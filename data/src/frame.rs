@@ -74,6 +74,20 @@ pub enum MediaKind {
     Audio(AudioInfo),
 }
 
+use std::convert::From;
+
+impl From<VideoInfo> for MediaKind {
+    fn from(v: VideoInfo) -> Self {
+        MediaKind::Video(v)
+    }
+}
+
+impl From<AudioInfo> for MediaKind {
+    fn from(a: AudioInfo) -> Self {
+        MediaKind::Audio(a)
+    }
+}
+
 use self::MediaKind::*;
 
 
@@ -136,7 +150,7 @@ impl FrameBuffer for DefaultFrameBuffer {
 }
 
 impl DefaultFrameBuffer {
-    pub fn new(kind: &MediaKind) -> DefaultFrameBuffer {
+    pub fn new<'a>(kind: &'a MediaKind) -> DefaultFrameBuffer {
         match kind {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
@@ -186,11 +200,15 @@ impl DefaultFrameBuffer {
     }
 }
 
-pub fn new_default_frame(kind: &MediaKind, t: Option<TimeInfo>) -> Frame {
-    let buf = DefaultFrameBuffer::new(kind);
+
+pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> Frame
+where T: Into<MediaKind> + Clone
+{
+    let k = kind.into();
+    let buf = DefaultFrameBuffer::new(&k);
 
     Frame {
-        kind: kind.clone(),
+        kind: k,
         buf: box buf,
         t: t,
     }
