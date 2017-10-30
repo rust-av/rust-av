@@ -90,17 +90,14 @@ impl From<AudioInfo> for MediaKind {
 
 use self::MediaKind::*;
 
-pub trait FrameBufferSize {
+pub trait FrameBuffer {
     fn linesize(&self, idx: usize) -> Result<usize>;
     fn count(&self) -> usize;
-}
-
-pub trait FrameBufferSlice: FrameBufferSize {
     fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]>;
     fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]>;
 }
 
-pub trait FrameBufferConv<T> : FrameBufferSlice {
+pub trait FrameBufferConv<T> : FrameBuffer {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T]> {
         let size = mem::size_of::<T>();
         if (self.linesize(idx)? % size) != 0 {
@@ -129,7 +126,9 @@ pub trait FrameBufferConv<T> : FrameBufferSlice {
     }
 }
 
-pub trait FrameBuffer : FrameBufferSize + FrameBufferConv<u8> + FrameBufferConv<i16> + FrameBufferConv<f32> {}
+impl FrameBufferConv<u8> for FrameBuffer {}
+impl FrameBufferConv<i16> for FrameBuffer {}
+impl FrameBufferConv<f32> for FrameBuffer {}
 
 use std::fmt;
 
@@ -158,7 +157,7 @@ struct DefaultFrameBuffer {
     planes: Vec<Plane>,
 }
 
-impl FrameBufferSize for DefaultFrameBuffer {
+impl FrameBuffer for DefaultFrameBuffer {
     fn linesize(&self, idx: usize) -> Result<usize> {
         match self.planes.get(idx) {
             None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
@@ -168,9 +167,7 @@ impl FrameBufferSize for DefaultFrameBuffer {
     fn count(&self) -> usize {
         self.planes.len()
     }
-}
 
-impl FrameBufferSlice for DefaultFrameBuffer {
     fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]> {
         match self.planes.get(idx) {
             None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
@@ -184,11 +181,6 @@ impl FrameBufferSlice for DefaultFrameBuffer {
         }
     }
 }
-
-impl FrameBufferConv<u8> for DefaultFrameBuffer {}
-impl FrameBufferConv<i16> for DefaultFrameBuffer {}
-impl FrameBufferConv<f32> for DefaultFrameBuffer {}
-impl FrameBuffer for DefaultFrameBuffer {}
 
 impl DefaultFrameBuffer {
     pub fn new<'a>(kind: &'a MediaKind) -> DefaultFrameBuffer {
