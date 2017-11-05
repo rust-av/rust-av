@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use data::packet::Packet;
-use data::frame::Frame;
+use data::frame::ArcFrame;
 
 use error::*;
 
@@ -10,7 +10,7 @@ pub trait Decoder {
     // fn open(&mut self) -> Result<()>;
     fn set_extradata(&mut self, extra: &[u8]);
     fn send_packet(&mut self, pkt: &Packet) -> Result<()>;
-    fn receive_frame(&mut self) -> Result<Frame>;
+    fn receive_frame(&mut self) -> Result<ArcFrame>;
     fn reset(&mut self) -> Result<()>; // TODO: name it validate?
 }
 
@@ -49,7 +49,7 @@ impl Context {
     pub fn send_packet(&mut self, pkt: &Packet) -> Result<()> {
         self.dec.send_packet(pkt)
     }
-    pub fn receive_frame(&mut self) -> Result<Frame> {
+    pub fn receive_frame(&mut self) -> Result<ArcFrame> {
         self.dec.receive_frame()
     }
     pub fn reset(&mut self) -> Result<()> {

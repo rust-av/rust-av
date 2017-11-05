@@ -2,14 +2,14 @@ use std::collections::HashMap;
 use std::convert::Into;
 
 use data::packet::Packet;
-use data::frame::Frame;
+use data::frame::ArcFrame;
 use data::value::Value;
 
 use error::*;
 
 pub trait Encoder {
     fn get_extradata(&self) -> Option<Vec<u8>>;
-    fn send_frame(&mut self, pkt: &Frame) -> Result<()>;
+    fn send_frame(&mut self, pkt: &ArcFrame) -> Result<()>;
     fn receive_packet(&mut self) -> Result<Packet>;
 
     fn validate(&mut self) -> Result<()>;
@@ -44,7 +44,7 @@ impl Context {
     pub fn get_extradata(&mut self) -> Option<Vec<u8>> {
         self.enc.get_extradata()
     }
-    pub fn send_frame(&mut self, frame: &Frame) -> Result<()> {
+    pub fn send_frame(&mut self, frame: &ArcFrame) -> Result<()> {
         self.enc.send_frame(frame)
     }
     // TODO: Return an Event?
