@@ -9,7 +9,8 @@ pub struct Packet {
     pub data : Vec<u8>,
     pub pts : Option<i64>,
     pub dts : Option<i64>,
-    pub pos : Option<i64>,
+    pub pos : Option<usize>,
+    pub duration: Option<i64>,
     pub stream_index : isize,
 
     // side_data : SideData;
@@ -25,6 +26,7 @@ impl Packet {
             pts : None,
             dts : None,
             pos : None,
+            duration: None,
             stream_index : -1,
             is_key: false,
             is_corrupted: false,
