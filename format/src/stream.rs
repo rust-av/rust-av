@@ -2,7 +2,7 @@
 
 use std::rc::Rc;
 
-use rational::Rational32;
+use rational::Rational64;
 use data::audiosample::{Soniton, ChannelMap};
 use data::pixel::Formaton;
 
@@ -50,7 +50,7 @@ pub struct Stream {
     pub params : CodecParams,
     pub start: Option<u64>,
     pub duration: Option<u64>,
-    pub timebase : Rational32,
+    pub timebase : Rational64,
 //  seek_index : SeekIndex
 }
 
