@@ -123,7 +123,7 @@ mod test {
                 self.state += 1;
                 Ok(())
             }
-            fn receive_frame(&mut self) -> Result<Frame> {
+            fn receive_frame(&mut self) -> Result<ArcFrame> {
                 unimplemented!()
             }
         }

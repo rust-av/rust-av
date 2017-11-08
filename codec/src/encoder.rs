@@ -131,7 +131,7 @@ mod test {
             fn get_extradata(&self) -> Option<Vec<u8>> {
                 Some(vec![self.state as u8; 1])
             }
-            fn send_frame(&mut self, _frame: &Frame) -> Result<()> {
+            fn send_frame(&mut self, _frame: &ArcFrame) -> Result<()> {
                 self.state += 1;
                 Ok(())
             }
