@@ -12,7 +12,7 @@ pub trait Encoder {
     fn send_frame(&mut self, pkt: &ArcFrame) -> Result<()>;
     fn receive_packet(&mut self) -> Result<Packet>;
 
-    fn validate(&mut self) -> Result<()>;
+    fn configure(&mut self) -> Result<()>;
     fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
     // fn get_option(&mut self, key: &str) -> Option<Value>;
 }
@@ -21,6 +21,7 @@ pub struct Context {
     enc: Box<Encoder>,
     // TODO: Queue up packets/frames
     // TODO: Store here more information
+    // TODO: Have a resource pool
     // format: Format
 }
 
@@ -34,6 +35,11 @@ impl Context {
             None
         }
     }
+
+    pub fn configure(&mut self) -> Result<()> {
+        self.enc.configure()
+    }
+
     pub fn set_option<'a, V>(&mut self, key: &str, val: V) -> Result<()>
         where V: Into<Value<'a>>
     {
@@ -51,6 +57,9 @@ impl Context {
     pub fn receive_packet(&mut self) -> Result<Packet> {
         self.enc.receive_packet()
     }
+
+    // TODO: Explicitly flush the encoder
+    // pub fn flush(&mut self) -> Result<()>
 }
 
 #[derive(Debug)]
@@ -125,7 +134,7 @@ mod test {
         }
 
         impl Encoder for Enc {
-            fn validate(&mut self) -> Result<()> {
+            fn configure(&mut self) -> Result<()> {
                 if self.h.is_some() && self.w.is_some() && self.format.is_some() {
                     Ok(())
                 } else {

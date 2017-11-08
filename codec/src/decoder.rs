@@ -12,7 +12,7 @@ pub trait Decoder {
     fn set_extradata(&mut self, extra: &[u8]);
     fn send_packet(&mut self, pkt: &Packet) -> Result<()>;
     fn receive_frame(&mut self) -> Result<ArcFrame>;
-    fn reset(&mut self) -> Result<()>; // TODO: name it validate?
+    fn configure(&mut self) -> Result<()>;
 }
 
 #[derive(Debug)]
@@ -48,9 +48,11 @@ impl Context {
     pub fn receive_frame(&mut self) -> Result<ArcFrame> {
         self.dec.receive_frame()
     }
-    pub fn reset(&mut self) -> Result<()> {
-        self.dec.reset()
+    pub fn configure(&mut self) -> Result<()> {
+        self.dec.configure()
     }
+    // TODO: Explicitly flush the decoder
+    // pub fn flush(&mut self) -> Result<()>
 }
 
 pub trait Descriptor {
@@ -113,8 +115,8 @@ mod test {
         }
 
         impl Decoder for Dec {
-            fn reset(&mut self) -> Result<()> {
-                    Ok(())
+            fn configure(&mut self) -> Result<()> {
+                Ok(())
             }
             fn set_extradata(&mut self, extra: &[u8]) {
                 if extra.len() > 4 {
