@@ -10,6 +10,7 @@ pub enum Value<'a> {
     U64(u64),
     Str(&'a str),
     Bool(bool),
+    Pair(i64, i64),
     Formaton(Rc<Formaton>),
     Soniton(Rc<Soniton>),
 }
@@ -35,6 +36,12 @@ impl<'a> From<&'a str> for Value<'a> {
 impl<'a> From<bool> for Value<'a> {
     fn from(v: bool) -> Self {
         Value::Bool(v)
+    }
+}
+
+impl<'a> From<(i64, i64)> for Value<'a> {
+    fn from(v: (i64, i64)) ->Self {
+        Value::Pair(v.0, v.1)
     }
 }
 
