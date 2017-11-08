@@ -4,6 +4,7 @@ use data::packet::Packet;
 use data::frame::ArcFrame;
 
 use error::*;
+pub use common::CodecList;
 
 pub trait Decoder {
     // TODO support codec configuration using set_option
@@ -21,11 +22,6 @@ pub struct Descr {
     pub desc: &'static str,
     pub mime: &'static str,
     // TODO more fields regarding capabilities
-}
-
-pub trait Descriptor {
-    fn create(&self) -> Box<Decoder>;
-    fn describe<'a>(&'a self) -> &'a Descr;
 }
 
 pub struct Context {
@@ -57,16 +53,24 @@ impl Context {
     }
 }
 
+pub trait Descriptor {
+    fn create(&self) -> Box<Decoder>;
+    fn describe<'a>(&'a self) -> &'a Descr;
+}
+
 pub struct Codecs {
     list: HashMap<&'static str, Vec<&'static Descriptor>>
 }
 
-impl Codecs {
-    pub fn new() -> Codecs {
+impl CodecList for Codecs {
+    type D = Descriptor;
+
+    fn new() -> Codecs {
         Codecs { list: HashMap::new() }
     }
+
     // TODO more lookup functions
-    pub fn by_name(&self, name: &str) -> Option<&'static Descriptor> {
+    fn by_name(&self, name: &str) -> Option<&'static Self::D> {
         if let Some(descs) = self.list.get(name) {
             Some(descs[0])
         } else {
@@ -74,7 +78,7 @@ impl Codecs {
         }
     }
 
-    pub fn append(&mut self, desc: &'static Descriptor) {
+    fn append(&mut self, desc: &'static Self::D) {
         let codec_name = desc.describe().codec;
 
         self.list.entry(codec_name).or_insert(Vec::new()).push(desc);
@@ -141,9 +145,7 @@ mod test {
 
     #[test]
     fn lookup() {
-        let mut codecs = Codecs::new();
-
-        codecs.append(DUMMY_DESCR);
+        let codecs = Codecs::from_list(&[DUMMY_DESCR]);
 
         let _dec = codecs.by_name("dummy").unwrap();
     }

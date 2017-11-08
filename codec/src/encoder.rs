@@ -71,12 +71,15 @@ pub struct Codecs {
     list: HashMap<&'static str, Vec<&'static Descriptor>>
 }
 
-impl Codecs {
-    pub fn new() -> Codecs {
+pub use common::CodecList;
+
+impl CodecList for Codecs {
+    type D = Descriptor;
+    fn new() -> Codecs {
         Codecs { list: HashMap::new() }
     }
     // TODO more lookup functions
-    pub fn by_name(&self, name: &str) -> Option<&'static Descriptor> {
+    fn by_name(&self, name: &str) -> Option<&'static Descriptor> {
         if let Some(descs) = self.list.get(name) {
             Some(descs[0])
         } else {
@@ -84,7 +87,7 @@ impl Codecs {
         }
     }
 
-    pub fn append(&mut self, desc: &'static Descriptor) {
+    fn append(&mut self, desc: &'static Descriptor) {
         let codec_name = desc.describe().codec;
 
         self.list.entry(codec_name).or_insert(Vec::new()).push(desc);
@@ -169,9 +172,7 @@ mod test {
 
     #[test]
     fn lookup() {
-        let mut codecs = Codecs::new();
-
-        codecs.append(DUMMY_DESCR);
+        let codecs = Codecs::from_list(&[DUMMY_DESCR]);
 
         let _enc = codecs.by_name("dummy");
     }
