@@ -11,6 +11,7 @@ pub trait Encoder {
     fn get_extradata(&self) -> Option<Vec<u8>>;
     fn send_frame(&mut self, pkt: &ArcFrame) -> Result<()>;
     fn receive_packet(&mut self) -> Result<Packet>;
+    fn flush(&mut self) -> Result<()>;
 
     fn configure(&mut self) -> Result<()>;
     fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
@@ -58,8 +59,9 @@ impl Context {
         self.enc.receive_packet()
     }
 
-    // TODO: Explicitly flush the encoder
-    // pub fn flush(&mut self) -> Result<()>
+    pub fn flush(&mut self) -> Result<()> {
+        self.enc.flush()
+    }
 }
 
 #[derive(Debug)]
