@@ -237,17 +237,17 @@ use std::sync::Arc;
 
 pub type ArcFrame = Arc<Frame>;
 
-pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> ArcFrame
+pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> Frame
 where T: Into<MediaKind> + Clone
 {
     let k = kind.into();
     let buf = DefaultFrameBuffer::new(&k);
 
-    Arc::new(Frame {
+    Frame {
         kind: k,
         buf: box buf,
         t: t,
-    })
+    }
 }
 
 use std::ptr::copy_nonoverlapping;
