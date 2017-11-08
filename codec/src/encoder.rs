@@ -99,6 +99,7 @@ mod test {
         use super::super::*;
         use std::rc::Rc;
         use data::pixel::Formaton;
+        use super::super::super::error::ErrorKind;
 
         struct Enc {
             state: usize,
@@ -125,7 +126,7 @@ mod test {
                 if self.h.is_some() && self.w.is_some() && self.format.is_some() {
                     Ok(())
                 } else {
-                    unimplemented!()
+                    Err(ErrorKind::ConfigurationIncomplete.into())
                 }
             }
             fn get_extradata(&self) -> Option<Vec<u8>> {
@@ -147,7 +148,7 @@ mod test {
                     ("w", Value::U64(v)) => self.w = Some(v as usize),
                     ("h", Value::U64(v)) => self.h = Some(v as usize),
                     ("format", Value::Formaton(f)) => self.format = Some(f),
-                    _ => unimplemented!()
+                    _ => return Err(ErrorKind::Unsupported.into())
                 }
 
                 Ok(())

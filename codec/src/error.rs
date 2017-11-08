@@ -4,5 +4,6 @@ error_chain! {
         InvalidData
         ConfigurationIncomplete
         InvalidConfiguration
+        Unsupported
     }
 }
