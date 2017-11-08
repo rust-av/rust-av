@@ -10,7 +10,7 @@ pub struct Packet {
     pub pts : Option<i64>,
     pub dts : Option<i64>,
     pub pos : Option<usize>,
-    pub duration: Option<i64>,
+    pub duration: Option<u64>,
     pub stream_index : isize,
 
     // side_data : SideData;
