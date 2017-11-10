@@ -142,7 +142,7 @@ impl fmt::Debug for FrameBuffer {
 pub struct Frame {
     pub kind: MediaKind,
     pub buf: Box<FrameBuffer>,
-    pub t: Option<TimeInfo>,
+    pub t: TimeInfo,
 }
 
 const ALIGNMENT: usize = 32;
@@ -246,7 +246,7 @@ where T: Into<MediaKind> + Clone
     Frame {
         kind: k,
         buf: box buf,
-        t: t,
+        t: t.unwrap_or_default(),
     }
 }
 

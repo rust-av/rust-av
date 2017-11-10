@@ -1,17 +1,16 @@
 #![allow(dead_code)]
 
 use std::io::{Read, Write, Result};
+use timeinfo::TimeInfo;
 
 // use data::SideData;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Packet {
     pub data : Vec<u8>,
-    pub pts : Option<i64>,
-    pub dts : Option<i64>,
     pub pos : Option<usize>,
-    pub duration: Option<u64>,
     pub stream_index : isize,
+    pub t: TimeInfo,
 
     // side_data : SideData;
 
@@ -23,10 +22,8 @@ impl Packet {
     pub fn with_capacity(capacity: usize) -> Self {
         Packet {
             data : Vec::with_capacity(capacity),
-            pts : None,
-            dts : None,
+            t: TimeInfo::default(),
             pos : None,
-            duration: None,
             stream_index : -1,
             is_key: false,
             is_corrupted: false,
