@@ -21,6 +21,10 @@ version = "*"
 path = "bitstream"
 version = "*"
 
+[dependencies.av-codec]
+path = "codec"
+version = "*"
+
 [workspace]
 members = [
     "bitstream",
