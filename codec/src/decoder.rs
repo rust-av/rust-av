@@ -13,6 +13,7 @@ pub trait Decoder {
     fn send_packet(&mut self, pkt: &Packet) -> Result<()>;
     fn receive_frame(&mut self) -> Result<ArcFrame>;
     fn configure(&mut self) -> Result<()>;
+    fn flush(&mut self) -> Result<()>;
 }
 
 #[derive(Debug)]
@@ -51,8 +52,10 @@ impl Context {
     pub fn configure(&mut self) -> Result<()> {
         self.dec.configure()
     }
-    // TODO: Explicitly flush the decoder
-    // pub fn flush(&mut self) -> Result<()>
+
+    pub fn flush(&mut self) -> Result<()> {
+        self.dec.flush()
+    }
 }
 
 pub trait Descriptor {
