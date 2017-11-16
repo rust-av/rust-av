@@ -82,6 +82,10 @@ impl<R: BufRead + Seek> Buffered for AccReader<R> {
     fn data(&self) -> &[u8] {
         &self.buf[self.pos..self.end]
     }
+    fn grow(&mut self, len: usize) {
+        let l = self.buf.len() + len;
+        self.buf.resize(l, 0);
+    }
 }
 
 impl<R: Read + Seek> Read for AccReader<R> {
@@ -187,6 +191,7 @@ impl<R: Read + Seek> Seek for AccReader<R> {
 mod tests {
     use super::*;
     use std::io::{Cursor, BufRead};
+    use buffer::Buffered;
 
     #[test]
     fn acc_reader_test() {
@@ -200,6 +205,19 @@ mod tests {
         // }
         // assert!(false);
         assert_eq!(4, acc.lines().count());
+    }
 
+    #[test]
+    fn grow() {
+        let buf = b"abcdefghilmnopqrst";
+        let c = Cursor::new(&buf[..]);
+
+        let mut acc = AccReader::with_capacity(4, c);
+        acc.fill_buf().unwrap();
+        acc.consume(2);
+        acc.grow(4);
+        assert_eq!(b"cd", acc.data());
+        acc.fill_buf().unwrap();
+        assert_eq!(b"cdefghil", acc.data());
     }
 }
