@@ -176,8 +176,8 @@ mod test {
 
     #[test]
     fn probe() {
-        let codecs: &[&'static Descriptor] = &[DUMMY_DES];
+        let demuxers: &[&'static Descriptor] = &[DUMMY_DES];
 
-        codecs.probe(b"dummy").unwrap();
+        demuxers.probe(b"dummy").unwrap();
     }
 }
