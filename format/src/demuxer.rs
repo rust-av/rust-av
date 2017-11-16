@@ -17,7 +17,7 @@ pub struct GlobalInfo {
 pub enum Event {
     NewPacket(Packet),
     NewStream(Stream),
-    MoreDataNeeded,
+    MoreDataNeeded(usize),
 }
 
 pub trait Demuxer {
@@ -60,25 +60,38 @@ impl Context {
         }
     }
 
-    pub fn read_headers(&mut self) -> Result<()> {
+    fn read_headers_internal(&mut self) -> Result<()> {
         let ref mut demux = self.demuxer;
-
-        try!(self.reader.fill_buf());
-
         let res = demux.read_headers(&self.reader, &mut self.info);
         match res {
             Err(e) => Err(e),
             Ok(seek) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
-                try!(self.reader.fill_buf());
                 println!("stream now at index: {:?}", res);
                 Ok(())
             }
         }
     }
 
-    pub fn read_event(&mut self) -> Result<Event> {
+    pub fn read_headers(&mut self) -> Result<()> {
+        loop {
+            println!("Filling");
+            try!(self.reader.fill_buf());
+            match self.read_headers_internal() {
+                Err(e) => match e {
+                    Error(ErrorKind::MoreDataNeeded(needed), _) => {
+                        self.reader.grow(needed);
+                    },
+                    _ => return Err(e)
+                },
+                Ok(_) => return Ok(()),
+            }
+        }
+    }
+
+
+    fn read_event_internal(&mut self) -> Result<Event> {
         let ref mut demux = self.demuxer;
 
         let res = demux.read_event(&self.reader);
@@ -87,12 +100,31 @@ impl Context {
             Ok((seek, event)) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
+                println!("stream now at index: {:?}", res);
                 try!(self.reader.fill_buf());
                 if let Event::NewStream(ref st) = event {
                     self.info.streams.push(st.clone());
                 }
-                println!("stream now at index: {:?}", res);
+                if let Event::MoreDataNeeded(size) = event {
+                    return Err(ErrorKind::MoreDataNeeded(size).into());
+                }
                 Ok(event)
+            }
+        }
+    }
+
+    pub fn read_event(&mut self) -> Result<Event> {
+        // TODO: guard against infiniloops and maybe factor the loop.
+        loop {
+            try!(self.reader.fill_buf());
+            match self.read_event_internal() {
+                Err(e) => match e {
+                    Error(ErrorKind::MoreDataNeeded(needed), _) => {
+                        self.reader.grow(needed);
+                    },
+                    _ => return Err(e)
+                },
+                Ok(ev) => return Ok(ev),
             }
         }
     }
@@ -133,6 +165,8 @@ impl<'a> Probe for [&'static Descriptor] {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::io::SeekFrom;
+    use data::packet::Packet;
 
     struct DummyDes {
         d: Descr,
@@ -141,11 +175,32 @@ mod test {
     struct DummyDemuxer {}
 
     impl Demuxer for DummyDemuxer {
-        fn read_headers(&mut self, _buf: &Box<Buffered>, _info: &mut GlobalInfo) -> Result<SeekFrom> {
-            unimplemented!()
+        fn read_headers(&mut self, buf: &Box<Buffered>, _info: &mut GlobalInfo) -> Result<SeekFrom> {
+            let len = buf.data().len();
+            if 9 > len {
+                let needed = 9 - len;
+                Err(ErrorKind::MoreDataNeeded(needed).into())
+            } else {
+                Ok(SeekFrom::Current(9))
+            }
         }
-        fn read_event(&mut self, _buf: &Box<Buffered>) -> Result<(SeekFrom, Event)> {
-            unimplemented!()
+        fn read_event(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event)> {
+            let size = 2;
+            let len = buf.data().len();
+            if size > len {
+                Err(ErrorKind::MoreDataNeeded(size - len).into())
+            } else {
+                println!("{:?}", buf.data());
+                match &buf.data()[..2] {
+                    b"p1" => {
+                        Ok((SeekFrom::Current(3), Event::NewPacket(Packet::new())))
+                    },
+                    b"e1" => {
+                        Ok((SeekFrom::Current(3), Event::MoreDataNeeded(0)))
+                    }
+                    _ => Err(ErrorKind::InvalidData.into())
+                }
+            }
         }
     }
 
@@ -179,5 +234,34 @@ mod test {
         let demuxers: &[&'static Descriptor] = &[DUMMY_DES];
 
         demuxers.probe(b"dummy").unwrap();
+    }
+
+    use std::io::Cursor;
+    use buffer::*;
+
+    #[test]
+    fn read_headers() {
+        let buf = b"dummy header";
+        let r = AccReader::with_capacity(4, Cursor::new(buf));
+        let d = DUMMY_DES.create();
+        let mut c = Context::new(d, Box::new(r));
+
+        c.read_headers().unwrap();
+    }
+
+    #[test]
+    fn read_event() {
+        let buf = b"dummy header p1 e1 p1 ";
+
+        let r = AccReader::with_capacity(4, Cursor::new(buf));
+        let d = DUMMY_DES.create();
+        let mut c = Context::new(d, Box::new(r));
+
+        c.read_headers().unwrap();
+
+        println!("{:?}", c.read_event());
+        println!("{:?}", c.read_event());
+        println!("{:?}", c.read_event());
+        println!("{:?}", c.read_event());
     }
 }
