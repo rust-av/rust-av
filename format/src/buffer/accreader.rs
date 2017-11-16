@@ -123,19 +123,14 @@ impl<R: Read + Seek> Read for AccReader<R> {
 impl<R: Read + Seek> BufRead for AccReader<R> {
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         // println!("fillbuf current: {:?}", str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
-        if self.pos == 0 && self.end == self.buf.len() {
-            Err(io::Error::new(
-                io::ErrorKind::Interrupted,
-                "buffer completely filled",
-            ))
-        } else {
+        if self.pos != 0 || self.end != self.buf.len() {
             self.reset_buffer_position();
             // println!("buffer reset ended");
             let read = try!(self.inner.read(&mut self.buf[self.end..]));
             self.end += read;
             // println!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
-            Ok(&self.buf[self.pos..self.end])
         }
+        Ok(&self.buf[self.pos..self.end])
     }
 
     fn consume(&mut self, amt: usize) {
