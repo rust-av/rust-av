@@ -63,6 +63,8 @@ impl Context {
     pub fn read_headers(&mut self) -> Result<()> {
         let ref mut demux = self.demuxer;
 
+        try!(self.reader.fill_buf());
+
         let res = demux.read_headers(&self.reader, &mut self.info);
         match res {
             Err(e) => Err(e),
