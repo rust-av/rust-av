@@ -7,12 +7,6 @@ use data::audiosample::{Soniton, ChannelMap};
 use data::pixel::Formaton;
 
 #[derive(Clone,Debug,PartialEq)]
-pub enum CodecID {
-    VP9,
-    Opus
-}
-
-#[derive(Clone,Debug,PartialEq)]
 pub struct VideoInfo {
     pub width: usize,
     pub height: usize,
@@ -21,7 +15,6 @@ pub struct VideoInfo {
 
 #[derive(Clone,Debug,PartialEq)]
 pub struct AudioInfo {
-    pub samples: usize,
     pub rate: usize,
     pub map: Option<ChannelMap>,
     pub format: Option<Rc<Soniton>>,
@@ -36,7 +29,7 @@ pub enum MediaKind {
 #[derive(Clone,Debug,PartialEq)]
 pub struct CodecParams {
     pub kind: Option<MediaKind>,
-    pub codec_id: Option<CodecID>,
+    pub codec_id: Option<String>,
     pub extradata: Option<Vec<u8>>,
 //    pub tag: Option<u32>,
     pub bit_rate: usize,
