@@ -131,6 +131,9 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
             self.reset_buffer_position();
             // println!("buffer reset ended");
             let read = try!(self.inner.read(&mut self.buf[self.end..]));
+            if read == 0 {
+                return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "EOF"));
+            }
             self.end += read;
             // println!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
         }
