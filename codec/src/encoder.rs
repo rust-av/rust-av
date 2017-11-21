@@ -167,7 +167,9 @@ mod test {
 
                 Ok(())
             }
-
+            fn flush(&mut self) -> Result<()> {
+                Ok(())
+            }
         }
 
         pub const DUMMY_DESCR: &Des = &Des {

@@ -135,6 +135,9 @@ mod test {
             fn receive_frame(&mut self) -> Result<ArcFrame> {
                 unimplemented!()
             }
+            fn flush(&mut self) -> Result<()> {
+                Ok(())
+            }
         }
 
         pub const DUMMY_DESCR: &Des = &Des {
