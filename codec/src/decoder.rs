@@ -96,12 +96,12 @@ mod test {
 
     mod dummy {
         use super::super::*;
-        use std::rc::Rc;
+        use std::sync::Arc;
         use data::pixel::Formaton;
 
         struct Dec {
             state: usize,
-            format: Option<Rc<Formaton>>
+            format: Option<Arc<Formaton>>
         }
 
         pub struct Des {
