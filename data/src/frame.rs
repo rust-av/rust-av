@@ -90,7 +90,7 @@ impl From<AudioInfo> for MediaKind {
 
 use self::MediaKind::*;
 
-pub trait FrameBuffer {
+pub trait FrameBuffer : Send + Sync {
     fn linesize(&self, idx: usize) -> Result<usize>;
     fn count(&self) -> usize;
     fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]>;
