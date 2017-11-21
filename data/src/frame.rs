@@ -2,7 +2,7 @@
 use alloc::heap::{Heap, Alloc, Layout};
 use bytes::BytesMut;
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use audiosample::*;
 use pixel::*;
@@ -39,7 +39,7 @@ pub struct VideoInfo {
     pub pic_type: PictureType,
     pub width: usize,
     pub height: usize,
-    pub format: Rc<Formaton>,
+    pub format: Arc<Formaton>,
 }
 
 impl VideoInfo {
@@ -59,7 +59,7 @@ pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
     pub map: ChannelMap,
-    pub format: Rc<Soniton>,
+    pub format: Arc<Soniton>,
 }
 
 impl AudioInfo {
@@ -232,8 +232,6 @@ impl DefaultFrameBuffer {
         }
     }
 }
-
-use std::sync::Arc;
 
 pub type ArcFrame = Arc<Frame>;
 

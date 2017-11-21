@@ -381,8 +381,8 @@ mod test {
 
         #[test]
         fn comparison() {
-            use std::rc::Rc;
-            let rcf = Rc::new(*formats::YUV420);
+            use std::sync::Arc;
+            let rcf = Arc::new(*formats::YUV420);
             let ref cf = formats::YUV420.clone();
 
             if cf != formats::YUV420 {
