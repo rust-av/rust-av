@@ -100,8 +100,6 @@ impl Context {
             Ok((seek, event)) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
-                println!("stream now at index: {:?}", res);
-                try!(self.reader.fill_buf());
                 if let Event::NewStream(ref st) = event {
                     self.info.streams.push(st.clone());
                 }
@@ -116,11 +114,11 @@ impl Context {
     pub fn read_event(&mut self) -> Result<Event> {
         // TODO: guard against infiniloops and maybe factor the loop.
         loop {
-            try!(self.reader.fill_buf());
             match self.read_event_internal() {
                 Err(e) => match e {
                     Error(ErrorKind::MoreDataNeeded(needed), _) => {
                         self.reader.grow(needed);
+                        try!(self.reader.fill_buf());
                     },
                     _ => return Err(e)
                 },
