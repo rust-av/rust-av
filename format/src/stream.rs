@@ -34,6 +34,12 @@ pub struct CodecParams {
 //    pub tag: Option<u32>,
     pub bit_rate: usize,
 //    pub bits_per_coded_sample: usize,
+    /// Number of samples the decode must process
+    /// before outputting valid data
+    pub convergence_window: usize,
+    /// Number of samples the codec needs to process
+    /// before returning data
+    pub delay: usize,
 }
 
 #[derive(Clone,Debug,PartialEq)]
