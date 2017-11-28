@@ -21,6 +21,7 @@ pub mod rational {
 pub mod audiosample;
 pub mod frame;
 pub mod packet;
+pub mod params;
 pub mod pixel;
 pub mod timeinfo;
 pub mod value;
