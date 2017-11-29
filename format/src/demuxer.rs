@@ -20,7 +20,7 @@ pub enum Event {
     MoreDataNeeded(usize),
 }
 
-pub trait Demuxer {
+pub trait Demuxer : Send {
     fn read_headers(&mut self, buf: &Box<Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
     fn read_event(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event)>;
 }

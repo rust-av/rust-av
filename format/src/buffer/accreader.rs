@@ -78,7 +78,7 @@ impl<R: Read + Seek> AccReader<R> {
     }
 }
 
-impl<R: Read + Seek> Buffered for AccReader<R> {
+impl<R: Read + Seek + Send> Buffered for AccReader<R> {
     fn data(&self) -> &[u8] {
         &self.buf[self.pos..self.end]
     }

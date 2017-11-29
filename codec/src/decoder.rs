@@ -6,7 +6,7 @@ use data::frame::ArcFrame;
 use error::*;
 pub use common::CodecList;
 
-pub trait Decoder {
+pub trait Decoder : Send {
     // TODO support codec configuration using set_option
     // fn open(&mut self) -> Result<()>;
     fn set_extradata(&mut self, extra: &[u8]);

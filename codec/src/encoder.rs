@@ -7,7 +7,7 @@ use data::value::Value;
 
 use error::*;
 
-pub trait Encoder {
+pub trait Encoder : Send {
     fn get_extradata(&self) -> Option<Vec<u8>>;
     fn send_frame(&mut self, pkt: &ArcFrame) -> Result<()>;
     fn receive_packet(&mut self) -> Result<Packet>;
