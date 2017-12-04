@@ -97,7 +97,7 @@ impl Context {
         let res = demux.read_event(&self.reader);
         match res {
             Err(e) => Err(e),
-            Ok((seek, event)) => {
+            Ok((seek, mut event)) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
                 if let Event::NewStream(ref st) = event {
@@ -105,6 +105,15 @@ impl Context {
                 }
                 if let Event::MoreDataNeeded(size) = event {
                     return Err(ErrorKind::MoreDataNeeded(size).into());
+                }
+                if let Event::NewPacket(ref mut pkt) = event {
+                    if pkt.t.timebase.is_none() {
+                        if let Some(ref st) = self.info.streams.iter().find(|s| {
+                            s.index as isize == pkt.stream_index
+                        }) {
+                            pkt.t.timebase = Some(st.timebase);
+                        }
+                    }
                 }
                 Ok(event)
             }
