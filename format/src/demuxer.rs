@@ -1,17 +1,12 @@
-use data::packet::Packet;
-use data::rational::Rational64;
-use stream::Stream;
 use error::*;
 
 use buffer::Buffered;
 use std::io::SeekFrom;
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct GlobalInfo {
-    pub duration: Option<u64>,
-    pub timebase: Option<Rational64>,
-    pub streams: Vec<Stream>,
-}
+use common::*;
+
+use stream::Stream;
+use data::packet::Packet;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Event {
