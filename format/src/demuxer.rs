@@ -99,7 +99,7 @@ impl Context {
             Err(e) => Err(e),
             Ok((seek, mut event)) => {
                 //TODO: handle seeking here
-                let res = self.reader.seek(seek);
+                let _ = self.reader.seek(seek)?;
                 if let Event::NewStream(ref st) = event {
                     self.info.streams.push(st.clone());
                 }
