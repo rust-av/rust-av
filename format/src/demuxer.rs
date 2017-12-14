@@ -121,13 +121,18 @@ impl Context {
     }
 
     pub fn read_event(&mut self) -> Result<Event> {
+        use std::io::ErrorKind as Eio;
         // TODO: guard against infiniloops and maybe factor the loop.
         loop {
             match self.read_event_internal() {
                 Err(e) => match e {
                     Error(ErrorKind::MoreDataNeeded(needed), _) => {
+                        let len = self.reader.data().len();
                         self.reader.grow(needed);
                         try!(self.reader.fill_buf());
+                        if self.reader.data().len() <= len {
+                            return Err(ErrorKind::Io(Eio::UnexpectedEof.into()).into());
+                        }
                     },
                     _ => return Err(e)
                 },
