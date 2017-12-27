@@ -7,3 +7,5 @@ authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 [dependencies]
 error-chain = "0.10.0"
 
+[dev-dependencies]
+assert_matches = "1.1"

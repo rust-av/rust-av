@@ -108,7 +108,7 @@ pub fn put_f64b(buf:&mut[u8], n:f64) {
 mod test {
 
     use super::*;
-    use bitstream::byteread::*;
+    use byteread::*;
 
     #[test]
     fn put_and_get_u8() {
