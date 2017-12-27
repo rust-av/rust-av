@@ -4,11 +4,14 @@ pub trait BitReadEndian {
     fn peek_val(&mut self, n:usize) -> u64;
     fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64;
     fn skip_rem(&mut self, n:usize) -> ();
+}
+
+pub trait BitReadFill {
     fn fill32(&self) -> u64;
     fn fill64(&self) -> u64;
 }
 
-pub trait BitReadInternal : BitReadEndian {
+pub trait BitReadInternal : BitReadEndian + BitReadFill {
     #[inline]
     fn left(&self) -> usize;
     fn refill32(&mut self) -> ();
@@ -189,24 +192,33 @@ macro_rules! endian_reader {
     }
 }
 
-endian_reader!{ BitReadLE }
+macro_rules! little_endian_reader {
+    {$name: ident} => {
+        endian_reader!{ $name }
 
-impl <'a> BitReadEndian for BitReadLE<'a> {
-    #[inline]
-    fn peek_val(&mut self, n:usize) -> u64 {
-        let v = self.cache & ((1u64 << n) - 1);
+        impl <'a> BitReadEndian for $name<'a> {
+            #[inline]
+            fn peek_val(&mut self, n:usize) -> u64 {
+                let v = self.cache & ((1u64 << n) - 1);
 
-        return v;
+                return v;
+            }
+            #[inline]
+            fn skip_rem(&mut self, n:usize) -> () {
+                self.cache = self.cache >> n;
+                self.left = self.left.saturating_sub(n);
+            }
+            #[inline]
+            fn merge_val(msp:u64, lsp:u64, msb:usize, _:usize) -> u64 {
+                msp << msb | lsp
+            }
+        }
     }
-    #[inline]
-    fn skip_rem(&mut self, n:usize) -> () {
-        self.cache = self.cache >> n;
-        self.left = self.left.saturating_sub(n);
-    }
-    #[inline]
-    fn merge_val(msp:u64, lsp:u64, msb:usize, _:usize) -> u64 {
-        msp << msb | lsp
-    }
+}
+
+little_endian_reader!{ BitReadLE }
+
+impl <'a> BitReadFill for BitReadLE<'a> {
     #[inline(always)]
     fn fill32(&self) -> u64 {
         get_u32l(&self.buffer[self.index..]) as u64
@@ -217,22 +229,31 @@ impl <'a> BitReadEndian for BitReadLE<'a> {
     }
 }
 
-endian_reader!{ BitReadBE }
+macro_rules! big_endian_reader {
+    {$name: ident} => {
+        endian_reader!{ $name }
 
-impl <'a> BitReadEndian for BitReadBE<'a> {
-    #[inline]
-    fn peek_val(&mut self, n:usize) -> u64 {
-        self.cache >> (64 - n)
+        impl <'a> BitReadEndian for $name<'a> {
+            #[inline]
+            fn peek_val(&mut self, n:usize) -> u64 {
+                self.cache >> (64 - n)
+            }
+            #[inline]
+            fn skip_rem(&mut self, n:usize) -> () {
+                self.cache = self.cache << n;
+                self.left = self.left.saturating_sub(n);
+            }
+            #[inline]
+            fn merge_val(msp:u64, lsp:u64, _:usize, lsb:usize) -> u64 {
+                msp | lsp << lsb
+            }
+        }
     }
-    #[inline]
-    fn skip_rem(&mut self, n:usize) -> () {
-        self.cache = self.cache << n;
-        self.left = self.left.saturating_sub(n);
-    }
-    #[inline]
-    fn merge_val(msp:u64, lsp:u64, _:usize, lsb:usize) -> u64 {
-        msp | lsp << lsb
-    }
+}
+
+big_endian_reader!{ BitReadBE }
+
+impl <'a> BitReadFill for BitReadBE<'a> {
     #[inline(always)]
     fn fill32(&self) -> u64 {
         get_u32b(&self.buffer[self.index..]) as u64
