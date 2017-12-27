@@ -12,6 +12,12 @@ pub struct Stream {
 //  seek_index : SeekIndex
 }
 
+impl Stream {
+    pub fn get_extradata<'a>(&'a self) -> Option<&'a [u8]> {
+        self.params.extradata.as_ref().map(|e| e.as_slice())
+    }
+}
+
 pub struct StreamGroup<'a> {
     pub id: usize,
     pub start: u64,
