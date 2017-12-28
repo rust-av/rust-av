@@ -7,6 +7,7 @@ pub trait BitReadEndian {
 }
 
 pub trait BitReadFill {
+    fn can_refill(&self) -> bool;
     fn fill32(&self) -> u64;
     fn fill64(&self) -> u64;
 }
@@ -31,7 +32,6 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
     fn new(&'a[u8]) -> Self;
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
-    fn can_refill(&self) -> bool;
 
     fn skip_bits(&mut self, size : usize) -> ();
 
@@ -167,11 +167,6 @@ macro_rules! endian_reader {
             }
 
             #[inline]
-            fn can_refill(&self) -> bool {
-                self.index + 8 <= self.buffer.len()
-            }
-
-            #[inline]
             fn skip_bits(&mut self, mut n:usize) -> () {
                 if self.left < n {
                     n -= self.left;
@@ -219,6 +214,10 @@ macro_rules! little_endian_reader {
 little_endian_reader!{ BitReadLE }
 
 impl <'a> BitReadFill for BitReadLE<'a> {
+    #[inline]
+    fn can_refill(&self) -> bool {
+        self.index + 8 <= self.buffer.len()
+    }
     #[inline(always)]
     fn fill32(&self) -> u64 {
         get_u32l(&self.buffer[self.index..]) as u64
@@ -254,6 +253,10 @@ macro_rules! big_endian_reader {
 big_endian_reader!{ BitReadBE }
 
 impl <'a> BitReadFill for BitReadBE<'a> {
+    #[inline]
+    fn can_refill(&self) -> bool {
+        self.index + 8 <= self.buffer.len()
+    }
     #[inline(always)]
     fn fill32(&self) -> u64 {
         get_u32b(&self.buffer[self.index..]) as u64
