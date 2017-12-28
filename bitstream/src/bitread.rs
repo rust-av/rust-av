@@ -106,6 +106,7 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
     }
 }
 
+#[macro_export]
 macro_rules! endian_reader {
     {$name: ident} => {
         #[derive(Debug, Clone, Copy)]
@@ -187,6 +188,7 @@ macro_rules! endian_reader {
     }
 }
 
+#[macro_export]
 macro_rules! little_endian_reader {
     {$name: ident} => {
         endian_reader!{ $name }
@@ -228,6 +230,7 @@ impl <'a> BitReadFill for BitReadLE<'a> {
     }
 }
 
+#[macro_export]
 macro_rules! big_endian_reader {
     {$name: ident} => {
         endian_reader!{ $name }
