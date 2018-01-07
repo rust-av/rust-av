@@ -72,10 +72,11 @@ impl Context {
     pub fn read_headers(&mut self) -> Result<()> {
         loop {
             println!("Filling");
-            try!(self.reader.fill_buf());
+            // TODO: wrap fill_buf() with a check for Eof
+            self.reader.fill_buf()?;
             match self.read_headers_internal() {
                 Err(e) => match e {
-                    Error(ErrorKind::MoreDataNeeded(needed), _) => {
+                    Error::MoreDataNeeded(needed) => {
                         self.reader.grow(needed);
                     },
                     _ => return Err(e)
@@ -99,7 +100,7 @@ impl Context {
                     self.info.streams.push(st.clone());
                 }
                 if let Event::MoreDataNeeded(size) = event {
-                    return Err(ErrorKind::MoreDataNeeded(size).into());
+                    return Err(Error::MoreDataNeeded(size));
                 }
                 if let Event::NewPacket(ref mut pkt) = event {
                     if pkt.t.timebase.is_none() {
@@ -121,12 +122,12 @@ impl Context {
         loop {
             match self.read_event_internal() {
                 Err(e) => match e {
-                    Error(ErrorKind::MoreDataNeeded(needed), _) => {
+                    Error::MoreDataNeeded(needed) => {
                         let len = self.reader.data().len();
                         self.reader.grow(needed);
-                        try!(self.reader.fill_buf());
+                        self.reader.fill_buf()?;
                         if self.reader.data().len() <= len {
-                            return Err(ErrorKind::Io(Eio::UnexpectedEof.into()).into());
+                            return Err(Error::Io(Eio::UnexpectedEof.into()));
                         }
                     },
                     _ => return Err(e)
@@ -186,7 +187,7 @@ mod test {
             let len = buf.data().len();
             if 9 > len {
                 let needed = 9 - len;
-                Err(ErrorKind::MoreDataNeeded(needed).into())
+                Err(ErrorKind::MoreDataNeeded(needed))
             } else {
                 Ok(SeekFrom::Current(9))
             }
@@ -195,7 +196,7 @@ mod test {
             let size = 2;
             let len = buf.data().len();
             if size > len {
-                Err(ErrorKind::MoreDataNeeded(size - len).into())
+                Err(ErrorKind::MoreDataNeeded(size - len))
             } else {
                 println!("{:?}", buf.data());
                 match &buf.data()[..2] {

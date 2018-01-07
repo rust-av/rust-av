@@ -1,15 +1,19 @@
 use std::io;
 
-error_chain! {
-    foreign_links {
-        Io(io::Error);
-    }
+#[derive(Debug, Fail)]
+pub enum Error {
+    #[fail(display = "Invalid Data")]
+    InvalidData,
+    #[fail(display = "{} more bytes needed", _0)]
+    MoreDataNeeded(usize),
+    #[fail(display = "I/O error")]
+    Io(#[cause] io::Error),
+}
 
-    errors {
-        MoreDataNeeded(needed: usize) {
-            description("More data is needed to continue")
-            display("At least {} bytes are needed", needed)
-        }
-        InvalidData
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Error::Io(e)
     }
 }
+
+pub type Result<T> = ::std::result::Result<T, Error>;

@@ -37,17 +37,17 @@ impl Context {
 
     pub fn write_header(&mut self) -> Result<usize> {
         self.muxer.write_header(&mut self.buf)?;
-        self.writer.write(&self.buf).map_err(|e| ErrorKind::Io(e).into())
+        self.writer.write(&self.buf).map_err(|e| Error::Io(e))
     }
 
     pub fn write_packet(&mut self, pkt: Arc<Packet>) -> Result<usize> {
         self.muxer.write_packet(&mut self.buf, pkt)?;
-        self.writer.write(&self.buf).map_err(|e| ErrorKind::Io(e).into())
+        self.writer.write(&self.buf).map_err(|e| Error::Io(e))
     }
 
     pub fn write_trailer(&mut self) -> Result<usize> {
         self.muxer.write_trailer(&mut self.buf)?;
-        self.writer.write(&self.buf).map_err(|e| ErrorKind::Io(e).into())
+        self.writer.write(&self.buf).map_err(|e| Error::Io(e))
     }
 
     pub fn set_global_info(&mut self, info: GlobalInfo) -> Result<()> {

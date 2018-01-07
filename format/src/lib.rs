@@ -3,7 +3,7 @@
 
 // crates
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 
 // local crates
 extern crate av_data;
