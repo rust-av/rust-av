@@ -2,14 +2,15 @@ use bitread::*;
 use std::collections::HashMap;
 use std::cmp::{min, max};
 
-error_chain! {
-    errors {
-        InvalidCodebook
-        InvalidCode
-    }
+#[derive(Fail, Debug)]
+pub enum CodebookError {
+    #[fail(display = "Invalid Codebook")]
+    InvalidCodebook,
+    #[fail(display = "Invalid Code")]
+    InvalidCode
 }
 
-use self::ErrorKind::*;
+use self::CodebookError::*;
 
 #[derive(Debug, Copy, Clone)]
 pub enum CodebookMode {
@@ -43,7 +44,7 @@ pub struct Codebook<S> {
 }
 
 pub trait CodebookReader<S> {
-    fn read_cb(&mut self, cb: &Codebook<S>) -> Result<S>;
+    fn read_cb(&mut self, cb: &Codebook<S>) -> Result<S, CodebookError>;
 }
 
 pub fn reverse_bits(inval: u32) -> u32 {
@@ -122,13 +123,13 @@ fn fill_lut(table: &mut Vec<u32>,
     bits > lut_bits
 }
 
-fn resize_table(table: &mut Vec<u32>, bits: u8) -> Result<u32> {
+fn resize_table(table: &mut Vec<u32>, bits: u8) -> u32 {
     let add_size = (1 << bits) as usize;
     table.reserve(add_size);
     let cur_off = table.len() as u32;
     let new_size = table.len() + add_size;
     table.resize(new_size, TABLE_FILL_VALUE);
-    Ok(cur_off)
+    cur_off
 }
 
 
@@ -193,7 +194,7 @@ fn add_esc_code(cc: &mut EscapeCodes, key: u32, code: u32, bits: u8, idx: usize)
     }
 }
 
-fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) -> Result<()> {
+fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) -> Result<(), CodebookError> {
     let mut escape_list: EscapeCodes = HashMap::new();
     let maxlen = min(bucket.maxlen, MAX_LUT_BITS);
 
@@ -219,7 +220,7 @@ fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) 
     for (ckey, sec_bucket) in &mut escape_list {
         let key = *ckey as u32;
         let maxlen = min(sec_bucket.maxlen, MAX_LUT_BITS);
-        let new_off = resize_table(table, maxlen)?;
+        let new_off = resize_table(table, maxlen);
         fill_lut(table,
                  mode,
                  cur_offset,
@@ -239,7 +240,7 @@ fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) 
 }
 
 impl<S: Copy> Codebook<S> {
-    pub fn new(cb: &mut CodebookDescReader<S>, mode: CodebookMode) -> Result<Self> {
+    pub fn new(cb: &mut CodebookDescReader<S>, mode: CodebookMode) -> Result<Self, CodebookError> {
         let mut maxbits = 0;
         let mut nnz = 0;
         let mut escape_list: EscapeCodes = HashMap::new();
@@ -262,7 +263,7 @@ impl<S: Copy> Codebook<S> {
             }
         }
         if maxbits == 0 {
-            return Err(InvalidCodebook.into());
+            return Err(InvalidCodebook);
         }
 
         if maxbits > MAX_LUT_BITS {
@@ -289,7 +290,7 @@ impl<S: Copy> Codebook<S> {
                     let key = ckey as u32;
                     if let Some(bucket) = escape_list.get_mut(&key) {
                         let maxlen = min(bucket.maxlen, MAX_LUT_BITS);
-                        let new_off = resize_table(&mut table, maxlen)?;
+                        let new_off = resize_table(&mut table, maxlen);
                         fill_lut(&mut table,
                                  mode,
                                  0,
@@ -324,7 +325,7 @@ impl<S: Copy> Codebook<S> {
 }
 
 impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
-    fn read_cb(&mut self, cb: &Codebook<S>) -> Result<S> {
+    fn read_cb(&mut self, cb: &Codebook<S>) -> Result<S, CodebookError> {
         let mut esc = true;
         let mut idx = 0;
         let mut lut_bits = cb.lut_bits;
@@ -332,13 +333,13 @@ impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
             let lut_idx = (self.peek_bits_32(lut_bits as usize) as usize) + (idx as usize);
             if cb.table[lut_idx] == TABLE_FILL_VALUE {
 
-                return Err(InvalidCode.into());
+                return Err(InvalidCode);
             }
             let bits = cb.table[lut_idx] & 0x7F;
             esc = (cb.table[lut_idx] & 0x80) != 0;
             idx = (cb.table[lut_idx] >> 8) as usize;
             if bits > self.left() as u32 {
-                return Err(InvalidCode.into());
+                return Err(InvalidCode);
             }
             let skip_bits = if esc {
                 lut_bits as usize
@@ -420,7 +421,7 @@ mod test {
         assert_eq!(br.read_cb(&cb).unwrap(), -42);
         let ret = br.read_cb(&cb);
         if let Err(e) = ret {
-            assert_matches!(e.kind(), &InvalidCode);
+            assert_matches!(e, InvalidCode);
         } else {
             assert_eq!(0, 1);
         }

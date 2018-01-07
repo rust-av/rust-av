@@ -2,7 +2,7 @@
 #![allow(unused_doc_comment)]
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 
 #[cfg(test)]
 #[macro_use]
