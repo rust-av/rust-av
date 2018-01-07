@@ -8,16 +8,15 @@ use audiosample::*;
 use pixel::*;
 use timeinfo::*;
 
-pub mod error {
-    error_chain! {
-        errors {
-            InvalidIndex
-            InvalidConversion
-        }
-    }
+#[derive(Fail, Debug)]
+pub enum FrameError {
+    #[fail(display = "Invalid Index")]
+    InvalidIndex,
+    #[fail(display = "Invalid Conversion")]
+    InvalidConversion,
 }
 
-use self::error::*;
+use self::FrameError::*;
 
 // TODO: Document
 // TODO: Change it to provide Droppable/Seekable information or use a separate enum?
@@ -91,17 +90,17 @@ impl From<AudioInfo> for MediaKind {
 use self::MediaKind::*;
 
 pub trait FrameBuffer : Send + Sync {
-    fn linesize(&self, idx: usize) -> Result<usize>;
+    fn linesize(&self, idx: usize) -> Result<usize, FrameError>;
     fn count(&self) -> usize;
-    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]>;
-    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]>;
+    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8], FrameError>;
+    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8], FrameError>;
 }
 
 pub trait FrameBufferConv<T> : FrameBuffer {
-    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T]> {
+    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T], FrameError> {
         let size = mem::size_of::<T>();
         if (self.linesize(idx)? % size) != 0 {
-            Err(ErrorKind::InvalidConversion.into())
+            Err(InvalidConversion)
         } else {
             let s = self.as_slice_inner(idx)?;
             let r = unsafe {
@@ -111,10 +110,10 @@ pub trait FrameBufferConv<T> : FrameBuffer {
             Ok(r)
         }
     }
-    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [T]> {
+    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [T], FrameError> {
         let size = mem::size_of::<T>();
         if (self.linesize(idx)? % size) != 0 {
-            Err(ErrorKind::InvalidConversion.into())
+            Err(InvalidConversion)
         } else {
             let s = self.as_mut_slice_inner(idx)?;
             let r = unsafe {
@@ -158,9 +157,9 @@ struct DefaultFrameBuffer {
 }
 
 impl FrameBuffer for DefaultFrameBuffer {
-    fn linesize(&self, idx: usize) -> Result<usize> {
+    fn linesize(&self, idx: usize) -> Result<usize, FrameError> {
         match self.planes.get(idx) {
-            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            None => Err(InvalidIndex),
             Some(plane) => Ok(plane.linesize),
         }
     }
@@ -168,15 +167,15 @@ impl FrameBuffer for DefaultFrameBuffer {
         self.planes.len()
     }
 
-    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8]> {
+    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8], FrameError> {
         match self.planes.get(idx) {
-            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            None => Err(InvalidIndex),
             Some(plane) => Ok(&plane.buf),
         }
     }
-    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8]> {
+    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8], FrameError> {
         match self.planes.get_mut(idx) {
-            None => Err(Error::from_kind(ErrorKind::InvalidIndex)),
+            None => Err(InvalidIndex),
             Some(plane) => Ok(&mut plane.buf),
         }
     }

@@ -12,7 +12,7 @@ extern crate num_rational;
 #[macro_use]
 extern crate bitflags;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 
 pub mod rational {
     pub use num_rational::*;
