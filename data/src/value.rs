@@ -1,7 +1,7 @@
 use pixel::Formaton;
 use audiosample::Soniton;
 
-use std::rc::Rc;
+use std::sync::Arc;
 use std::convert::From;
 
 #[derive(Debug)]
@@ -11,8 +11,8 @@ pub enum Value<'a> {
     Str(&'a str),
     Bool(bool),
     Pair(i64, i64),
-    Formaton(Rc<Formaton>),
-    Soniton(Rc<Soniton>),
+    Formaton(Arc<Formaton>),
+    Soniton(Arc<Soniton>),
 }
 
 impl<'a> From<i64> for Value<'a> {
@@ -45,14 +45,14 @@ impl<'a> From<(i64, i64)> for Value<'a> {
     }
 }
 
-impl<'a> From<Rc<Formaton>> for Value<'a> {
-    fn from(v: Rc<Formaton>) -> Self {
+impl<'a> From<Arc<Formaton>> for Value<'a> {
+    fn from(v: Arc<Formaton>) -> Self {
         Value::Formaton(v)
     }
 }
 
-impl<'a> From<Rc<Soniton>> for Value<'a> {
-    fn from(v: Rc<Soniton>) -> Self {
+impl<'a> From<Arc<Soniton>> for Value<'a> {
+    fn from(v: Arc<Soniton>) -> Self {
         Value::Soniton(v)
     }
 }
