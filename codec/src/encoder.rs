@@ -113,7 +113,7 @@ mod test {
         use super::super::*;
         use std::sync::Arc;
         use data::pixel::Formaton;
-        use super::super::super::error::ErrorKind;
+        use super::super::super::error::Error;
 
         struct Enc {
             state: usize,
@@ -140,7 +140,7 @@ mod test {
                 if self.h.is_some() && self.w.is_some() && self.format.is_some() {
                     Ok(())
                 } else {
-                    Err(ErrorKind::ConfigurationIncomplete.into())
+                    Err(Error::ConfigurationIncomplete)
                 }
             }
             fn get_extradata(&self) -> Option<Vec<u8>> {
@@ -162,7 +162,7 @@ mod test {
                     ("w", Value::U64(v)) => self.w = Some(v as usize),
                     ("h", Value::U64(v)) => self.h = Some(v as usize),
                     ("format", Value::Formaton(f)) => self.format = Some(f),
-                    _ => return Err(ErrorKind::Unsupported.into())
+                    _ => return Err(Error::Unsupported(format!("{} key", key)))
                 }
 
                 Ok(())
