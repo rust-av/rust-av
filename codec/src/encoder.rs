@@ -111,7 +111,7 @@ mod test {
 
     mod dummy {
         use super::super::*;
-        use std::rc::Rc;
+        use std::sync::Arc;
         use data::pixel::Formaton;
         use super::super::super::error::ErrorKind;
 
@@ -119,7 +119,7 @@ mod test {
             state: usize,
             w: Option<usize>,
             h: Option<usize>,
-            format: Option<Rc<Formaton>>
+            format: Option<Arc<Formaton>>
         }
 
         pub struct Des {
