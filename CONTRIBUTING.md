@@ -13,18 +13,17 @@ The following is a set of guidelines for contributing to [Rust-AV][1] and [relat
 
 ### License
 
-The project uses the [LGPL-2.1][l1] as license. By contributing to this project you agree to license
+The project uses the [MIT][l1] as license. By contributing to this project you agree to license
 your changes under this license.
 
-If you want to provide new code under more liberal (e.g. [MIT][l2]) or restrictive (e.g. [GPL-3][l3]) license
+If you want to provide new code under more restrictive license (e.g. [GPL-3][l2])
 we can possibly work to make so it gets integrated as long they are compatible.
 
-**Since the project is young**: Using a less restrictive license for the bulk of the code is on the table as
-long enough people would contribute using it.
+**Since the project is young**: It switched from LGPL-2.1 to MIT because of the rust community
+feedback.
 
-[l1]: https://opensource.org/licenses/LGPL-2.1
-[l2]: https://opensource.org/licenses/MIT
-[l3]: https://opensource.org/licenses/GPL-3.0
+[l1]: https://opensource.org/licenses/MIT
+[l2]: https://opensource.org/licenses/GPL-3.0
 
 
 ## What to do
