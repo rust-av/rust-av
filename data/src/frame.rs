@@ -96,7 +96,14 @@ pub trait FrameBuffer : Send + Sync {
     fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8], FrameError>;
 }
 
-pub trait FrameBufferConv<T> : FrameBuffer {
+mod private {
+    pub trait Supported {}
+    impl Supported for u8 {}
+    impl Supported for i16 {}
+    impl Supported for f32 {}
+}
+
+pub trait FrameBufferConv<T: private::Supported> : FrameBuffer {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T], FrameError> {
         let size = mem::size_of::<T>();
         if (self.linesize(idx)? % size) != 0 {
