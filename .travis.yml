@@ -1,31 +1,39 @@
+sudo: false
 language: rust
+rust: nightly
 
+# Cache cargo symbols for faster build
+cache: cargo
+
+# Dependencies of kcov, used by coverage
 addons:
   apt:
     packages:
       - libcurl4-openssl-dev
       - libelf-dev
       - libdw-dev
+      - binutils-dev
+      - cmake # also required for cargo-update
+    sources:
+      - kalakris-cmake
 
-rust:
-  - nightly
+# Who needs exports when you can have travis do the work?
+env:
+  - PATH=$HOME/.cargo/bin:$PATH CARGO_FEATURES_DEFAULT=["nightly"]
 
 before_script:
-  - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
+  - cargo install cargo-update || echo "cargo-update already installed"
+  - cargo install cargo-travis || echo "cargo-travis already installed"
+  - cargo install-update -a # update outdated cached binaries
 
+# the main build
 script:
   - |
-      travis-cargo build &&
-      travis-cargo test &&
-      travis-cargo bench &&
-      travis-cargo --only stable doc
+      cargo build &&
+      cargo test &&
+      cargo bench &&
+      cargo doc
 
 after_success:
-  - travis-cargo coveralls --no-sudo
-
-env:
-  global:
-    # override the default `--features unstable` used for the nightly branch (optional)
-    - TRAVIS_CARGO_NIGHTLY_FEATURE=nightly
-
-sudo: false
+# measure code coverage and upload to coveralls.io
+  - cargo coveralls
