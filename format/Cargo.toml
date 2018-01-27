@@ -3,6 +3,7 @@ name = "av-format"
 description = "Multimedia format demuxing and muxing"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
 
 [dependencies]
 failure = "0.1.1"

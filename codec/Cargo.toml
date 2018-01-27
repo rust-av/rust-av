@@ -3,6 +3,7 @@ name = "av-codec"
 description = "Multimedia format decoding and encoding"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
 
 [dependencies]
 num-rational = "0.1"

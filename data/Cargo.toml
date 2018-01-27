@@ -3,6 +3,7 @@ name = "av-data"
 description = "Multimedia data structures"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
 
 [dependencies]
 failure = "0.1.1"
