@@ -187,7 +187,7 @@ mod test {
             let len = buf.data().len();
             if 9 > len {
                 let needed = 9 - len;
-                Err(ErrorKind::MoreDataNeeded(needed))
+                Err(Error::MoreDataNeeded(needed))
             } else {
                 Ok(SeekFrom::Current(9))
             }
@@ -196,7 +196,7 @@ mod test {
             let size = 2;
             let len = buf.data().len();
             if size > len {
-                Err(ErrorKind::MoreDataNeeded(size - len))
+                Err(Error::MoreDataNeeded(size - len))
             } else {
                 println!("{:?}", buf.data());
                 match &buf.data()[..2] {
@@ -206,7 +206,7 @@ mod test {
                     b"e1" => {
                         Ok((SeekFrom::Current(3), Event::MoreDataNeeded(0)))
                     }
-                    _ => Err(ErrorKind::InvalidData.into())
+                    _ => Err(Error::InvalidData.into())
                 }
             }
         }
