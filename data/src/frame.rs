@@ -8,6 +8,8 @@ use audiosample::*;
 use pixel::*;
 use timeinfo::*;
 
+use byte_slice_cast::*;
+
 #[derive(Fail, Debug)]
 pub enum FrameError {
     #[fail(display = "Invalid Index")]
@@ -97,7 +99,9 @@ pub trait FrameBuffer : Send + Sync {
 }
 
 mod private {
-    pub trait Supported {}
+    use byte_slice_cast::*;
+
+    pub trait Supported: FromByteSlice {}
     impl Supported for u8 {}
     impl Supported for i16 {}
     impl Supported for f32 {}
@@ -105,30 +109,10 @@ mod private {
 
 pub trait FrameBufferConv<T: private::Supported> : FrameBuffer {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T], FrameError> {
-        let size = mem::size_of::<T>();
-        if (self.linesize(idx)? % size) != 0 {
-            Err(InvalidConversion)
-        } else {
-            let s = self.as_slice_inner(idx)?;
-            let r = unsafe {
-                slice::from_raw_parts::<T>(mem::transmute(s.as_ptr()), s.len() / size)
-            };
-
-            Ok(r)
-        }
+        self.as_slice_inner(idx)?.as_slice_of::<T>().map_err(|e| InvalidConversion)
     }
     fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [T], FrameError> {
-        let size = mem::size_of::<T>();
-        if (self.linesize(idx)? % size) != 0 {
-            Err(InvalidConversion)
-        } else {
-            let s = self.as_mut_slice_inner(idx)?;
-            let r = unsafe {
-                slice::from_raw_parts_mut::<T>(mem::transmute(s.as_ptr()), s.len() / size)
-            };
-
-            Ok(r)
-        }
+        self.as_mut_slice_inner(idx)?.as_mut_slice_of::<T>().map_err(|e| InvalidConversion)
     }
 }
 

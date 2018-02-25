@@ -14,6 +14,8 @@ extern crate bitflags;
 #[macro_use]
 extern crate failure;
 
+extern crate byte_slice_cast;
+
 pub mod rational {
     pub use num_rational::*;
 }
