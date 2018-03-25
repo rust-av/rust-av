@@ -3,6 +3,7 @@ use byteread::*;
 pub trait BitReadEndian {
     fn peek_val(&mut self, n:usize) -> u64;
     fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64;
+    fn build_cache(cache:u64, refill:u64, cache_size:usize) -> u64;
     fn skip_rem(&mut self, n:usize) -> ();
 }
 
@@ -128,8 +129,8 @@ macro_rules! endian_reader {
                 }
                 let val = self.fill32();
 
-                self.cache  = Self::merge_val(val, self.cache,
-                                              self.left, 32 - self.left);
+                self.cache  = Self::build_cache(self.cache, val, self.left);
+
                 self.index += 4;
                 self.left  += 32;
             }
@@ -209,6 +210,10 @@ macro_rules! little_endian_reader {
             fn merge_val(msp:u64, lsp:u64, msb:usize, _:usize) -> u64 {
                 msp << msb | lsp
             }
+            #[inline]
+            fn build_cache(cache:u64, refill:u64, cache_size:usize) -> u64 {
+                cache | refill << cache_size
+            }
         }
     }
 }
@@ -248,6 +253,10 @@ macro_rules! big_endian_reader {
             #[inline]
             fn merge_val(msp:u64, lsp:u64, _:usize, lsb:usize) -> u64 {
                 msp | lsp << lsb
+            }
+            #[inline]
+            fn build_cache(cache:u64, refill:u64, cache_size:usize) -> u64 {
+                cache | refill << (32 - cache_size)
             }
         }
     }
@@ -299,6 +308,7 @@ mod test {
             assert!(reader.get_bits_64(4) == 10);
             assert!(reader.get_bits_64(1) == 0);
             assert!(reader.get_bits_64(8) == 85);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
         }
 
         #[test]
@@ -330,6 +340,11 @@ mod test {
             assert!(reader.get_bits_32(4) == 10);
             assert!(reader.get_bits_32(1) == 0);
             assert!(reader.get_bits_32(8) == 85);
+
+            assert_eq!(reader.get_bits_32(1), 1);
+            for _ in 0..8 {
+                assert_eq!(reader.get_bits_32(8), 170);
+            }
         }
 
         #[test]
@@ -402,6 +417,7 @@ mod test {
             assert!(reader.get_bits_64(4) == 10);
             assert!(reader.get_bits_64(1) == 1);
             assert!(reader.get_bits_64(8) == 85);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
         }
 
         #[test]
@@ -425,6 +441,11 @@ mod test {
             assert!(reader.get_bits_32(4) == 10);
             assert!(reader.get_bits_32(1) == 1);
             assert!(reader.get_bits_32(8) == 85);
+
+            assert_eq!(reader.get_bits_32(1), 0);
+            for _ in 0..8 {
+                assert_eq!(reader.get_bits_32(8), 170);
+            }
         }
 
         #[test]
