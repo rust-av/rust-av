@@ -71,7 +71,6 @@ impl Context {
 
     pub fn read_headers(&mut self) -> Result<()> {
         loop {
-            println!("Filling");
             // TODO: wrap fill_buf() with a check for Eof
             self.reader.fill_buf()?;
             match self.read_headers_internal() {
