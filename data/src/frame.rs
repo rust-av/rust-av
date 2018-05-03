@@ -1,5 +1,5 @@
 #![allow(dead_code, unused_variables)]
-use alloc::heap::{Heap, Alloc, Layout};
+use alloc::heap::{Global, Alloc, Layout};
 use bytes::BytesMut;
 
 use std::sync::Arc;
@@ -178,9 +178,10 @@ impl DefaultFrameBuffer {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe {
-                    Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
+                    Global.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
                         .unwrap()
                 };
+                let data = data.as_ptr() as *mut u8;
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
@@ -202,9 +203,10 @@ impl DefaultFrameBuffer {
             &Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
                 let data = unsafe {
-                    Heap.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
+                    Global.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
                         .unwrap()
                 };
+                let data = data.as_ptr() as *mut u8;
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
