@@ -1,5 +1,5 @@
 // workarounds
-#![allow(unused_doc_comment)]
+#![allow(unused_doc_comments)]
 
 // language extensions
 #![feature(box_syntax, plugin, allocator_api, alloc)]
