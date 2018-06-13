@@ -1,5 +1,5 @@
 #![allow(dead_code, unused_variables)]
-use alloc::heap::{Global, Alloc, Layout};
+use alloc::alloc::{Global, Alloc, Layout};
 use bytes::BytesMut;
 
 use std::sync::Arc;
