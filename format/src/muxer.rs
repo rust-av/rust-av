@@ -37,17 +37,41 @@ impl Context {
 
     pub fn write_header(&mut self) -> Result<usize> {
         self.muxer.write_header(&mut self.buf)?;
-        self.writer.write(&self.buf).map_err(|e| Error::Io(e))
+        //FIXME: we should have proper management of the buffer's index
+        match self.writer.write_all(&self.buf) {
+          Ok(()) => {
+            let len = self.buf.len();
+            self.buf.clear();
+            Ok(len)
+          },
+          Err(e) => Err(Error::Io(e)),
+        }
     }
 
     pub fn write_packet(&mut self, pkt: Arc<Packet>) -> Result<usize> {
         self.muxer.write_packet(&mut self.buf, pkt)?;
-        self.writer.write(&self.buf).map_err(|e| Error::Io(e))
+        //FIXME: we should have proper management of the buffer's index
+        match self.writer.write_all(&self.buf) {
+          Ok(()) => {
+            let len = self.buf.len();
+            self.buf.clear();
+            Ok(len)
+          },
+          Err(e) => Err(Error::Io(e)),
+        }
     }
 
     pub fn write_trailer(&mut self) -> Result<usize> {
         self.muxer.write_trailer(&mut self.buf)?;
-        self.writer.write(&self.buf).map_err(|e| Error::Io(e))
+        //FIXME: we should have proper management of the buffer's index
+        match self.writer.write_all(&self.buf) {
+          Ok(()) => {
+            let len = self.buf.len();
+            self.buf.clear();
+            Ok(len)
+          },
+          Err(e) => Err(Error::Io(e)),
+        }
     }
 
     pub fn set_global_info(&mut self, info: GlobalInfo) -> Result<()> {
