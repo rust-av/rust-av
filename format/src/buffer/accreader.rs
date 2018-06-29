@@ -24,7 +24,7 @@ pub struct AccReader<R> {
 
 impl<R: Read + Seek> AccReader<R> {
     pub fn new(inner: R) -> AccReader<R> {
-        AccReader::with_capacity(10, inner)
+        AccReader::with_capacity(4096, inner)
     }
 
     pub fn with_capacity(cap: usize, inner: R) -> AccReader<R> {
