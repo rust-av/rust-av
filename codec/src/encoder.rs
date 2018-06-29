@@ -4,6 +4,7 @@ use std::convert::Into;
 use data::packet::Packet;
 use data::frame::ArcFrame;
 use data::value::Value;
+use data::params::CodecParams;
 
 use error::*;
 
@@ -16,6 +17,9 @@ pub trait Encoder : Send {
     fn configure(&mut self) -> Result<()>;
     fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
     // fn get_option(&mut self, key: &str) -> Option<Value>;
+    //
+    fn set_params(&mut self, params: &CodecParams) -> Result<()>;
+    fn get_params(&self) -> Result<CodecParams>;
 }
 
 pub struct Context {
@@ -39,6 +43,14 @@ impl Context {
 
     pub fn configure(&mut self) -> Result<()> {
         self.enc.configure()
+    }
+
+    pub fn set_params(&mut self, params: &CodecParams) -> Result<()> {
+        self.enc.set_params(params)
+    }
+
+    pub fn get_params(&self) -> Result<CodecParams> {
+        self.enc.get_params()
     }
 
     pub fn set_option<'a, V>(&mut self, key: &str, val: V) -> Result<()>
@@ -167,6 +179,41 @@ mod test {
 
                 Ok(())
             }
+
+            fn set_params(&mut self, params: &CodecParams) -> Result<()> {
+                use data::params::*;
+
+                if let Some(MediaKind::Video(ref info)) = params.kind {
+                    self.w = Some(info.width);
+                    self.h = Some(info.height);
+                    self.format = info.format.clone();
+                }
+                Ok(())
+            }
+
+            fn get_params(&self) -> Result<CodecParams> {
+                use data::params::*;
+
+                if self.w.is_none() ||
+                    self.w.is_none() ||
+                        self.format.is_none() {
+                    return Err(Error::ConfigurationIncomplete);
+                }
+
+                Ok(CodecParams {
+                    kind: Some(MediaKind::Video(VideoInfo {
+                        height: self.w.unwrap(),
+                        width: self.h.unwrap(),
+                        format: self.format.clone()
+                    })),
+                    codec_id: Some("dummy".to_owned()),
+                    extradata: self.get_extradata(),
+                    bit_rate: 0,
+                    convergence_window: 0,
+                    delay: 0
+                })
+            }
+
             fn flush(&mut self) -> Result<()> {
                 Ok(())
             }
