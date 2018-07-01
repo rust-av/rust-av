@@ -55,6 +55,10 @@ pub trait WritePacket: Write {
 impl<R: Read + ?Sized> ReadPacket for R {}
 impl<W: Write + ?Sized> WritePacket for W {}
 
+use std::sync::Arc;
+
+pub type ArcPacket = Arc<Packet>;
+
 #[cfg(test)]
 mod test {
     use std::io::Cursor;
