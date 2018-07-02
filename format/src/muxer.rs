@@ -3,6 +3,7 @@ use data::value::*;
 use data::packet::Packet;
 use std::sync::Arc;
 use std::io::Write;
+use std::any::Any;
 
 use error::*;
 
@@ -20,6 +21,7 @@ pub struct Context {
     muxer: Box<Muxer>,
     writer: Box<Write>,
     buf: Vec<u8>,
+    pub user_private: Option<Box<Any + Send>>,
 }
 
 impl Context {
@@ -28,6 +30,7 @@ impl Context {
             muxer: muxer,
             writer: writer,
             buf: Vec::new(),
+            user_private: None,
         }
     }
 

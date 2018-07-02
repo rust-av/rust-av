@@ -2,13 +2,14 @@ use error::*;
 
 use buffer::Buffered;
 use std::io::SeekFrom;
+use std::any::Any;
 
 use common::*;
 
 use stream::Stream;
 use data::packet::Packet;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Event {
     NewPacket(Packet),
     NewStream(Stream),
@@ -40,6 +41,7 @@ pub struct Context {
     demuxer: Box<Demuxer>,
     reader: Box<Buffered>,
     pub info: GlobalInfo,
+    pub user_private: Option<Box<Any + Send>>,
 }
 
 impl Context {
@@ -52,6 +54,7 @@ impl Context {
                 timebase: None,
                 streams: Vec::with_capacity(2),
             },
+            user_private: None,
         }
     }
 
