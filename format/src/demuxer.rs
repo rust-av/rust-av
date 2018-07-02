@@ -3,6 +3,7 @@ use error::*;
 use buffer::Buffered;
 use std::io::SeekFrom;
 use std::any::Any;
+use std::sync::Arc;
 
 use common::*;
 
@@ -41,7 +42,7 @@ pub struct Context {
     demuxer: Box<Demuxer>,
     reader: Box<Buffered>,
     pub info: GlobalInfo,
-    pub user_private: Option<Box<Any + Send>>,
+    pub user_private: Option<Arc<Any + Send + Sync>>,
 }
 
 impl Context {

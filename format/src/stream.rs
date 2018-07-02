@@ -1,6 +1,7 @@
 use data::params::CodecParams;
 use rational::Rational64;
 use std::any::Any;
+use std::sync::Arc;
 
 /*
 #[derive(Debug)]
@@ -40,7 +41,7 @@ impl PartialEq for UserPrivate {
 }
 */
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Stream {
     /// Format-specific track identifier.
     ///
@@ -55,22 +56,8 @@ pub struct Stream {
     pub duration: Option<u64>,
     pub timebase: Rational64,
     /// User Private field, will not be cloned
-    pub user_private: Option<Box<Any + Send>>,
+    pub user_private: Option<Arc<Any + Send + Sync>>,
     //  seek_index : SeekIndex
-}
-
-impl Clone for Stream {
-    fn clone(&self) -> Self {
-        Stream {
-            id: self.id.clone(),
-            index: self.index.clone(),
-            params: self.params.clone(),
-            start: self.start.clone(),
-            duration: self.duration.clone(),
-            timebase: self.timebase.clone(),
-            user_private: None,
-        }
-    }
 }
 
 impl Stream {

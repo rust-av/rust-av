@@ -21,7 +21,7 @@ pub struct Context {
     muxer: Box<Muxer>,
     writer: Box<Write>,
     buf: Vec<u8>,
-    pub user_private: Option<Box<Any + Send>>,
+    pub user_private: Option<Box<Any + Send + Sync>>,
 }
 
 impl Context {
