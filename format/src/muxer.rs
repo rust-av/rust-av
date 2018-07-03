@@ -7,7 +7,7 @@ use std::any::Any;
 
 use error::*;
 
-pub trait Muxer {
+pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
     fn write_header(&mut self, buf: &mut Vec<u8>) -> Result<()>;
     fn write_packet(&mut self, buf: &mut Vec<u8>, pkt: Arc<Packet>) -> Result<()>;
@@ -18,14 +18,14 @@ pub trait Muxer {
 }
 
 pub struct Context {
-    muxer: Box<Muxer>,
-    writer: Box<Write>,
+    muxer: Box<Muxer + Send>,
+    writer: Box<Write + Send>,
     buf: Vec<u8>,
     pub user_private: Option<Box<Any + Send + Sync>>,
 }
 
 impl Context {
-    pub fn new<W: Write + 'static>(muxer: Box<Muxer>, writer: Box<W>) -> Self {
+    pub fn new<W: Write + 'static + Send>(muxer: Box<Muxer + Send>, writer: Box<W>) -> Self {
         Context {
             muxer: muxer,
             writer: writer,
