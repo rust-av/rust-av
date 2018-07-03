@@ -9,11 +9,16 @@ pub struct GlobalInfo {
 }
 
 impl GlobalInfo {
-    pub fn add_stream(&mut self, mut st: Stream) {
-        st.index = self.streams.len();
+    pub fn add_stream(&mut self, mut st: Stream) -> usize {
+        let idx = self.streams.len();
+
         if st.id < 0 {
             st.id = st.index as isize;
         }
+        st.index = idx;
+
         self.streams.push(st);
+
+        idx
     }
 }
