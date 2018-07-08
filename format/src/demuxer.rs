@@ -15,6 +15,7 @@ pub enum Event {
     NewPacket(Packet),
     NewStream(Stream),
     MoreDataNeeded(usize),
+    Eof,
 }
 
 pub trait Demuxer : Send {
