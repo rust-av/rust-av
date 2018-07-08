@@ -131,7 +131,7 @@ impl Context {
                         self.reader.grow(needed);
                         self.reader.fill_buf()?;
                         if self.reader.data().len() <= len {
-                            return Err(Error::Io(Eio::UnexpectedEof.into()));
+                            return Ok(Event::Eof);
                         }
                     },
                     _ => return Err(e)
