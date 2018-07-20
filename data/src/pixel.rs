@@ -286,6 +286,9 @@ macro_rules! chromaton {
     (yuv8; $hs: expr, $vs: expr, $co: expr) => ({
         chromaton!($hs, $vs, false, 8, 0, $co, 1)
     });
+    (yuv_hb; $hs: expr, $vs: expr, $co: expr, $d: expr) => ({
+        chromaton!($hs, $vs, false, $d, 0, $co, 1)
+    });
     (packrgb; $d: expr, $s: expr, $co: expr, $ne: expr) => ({
         chromaton!(0, 0, true, $d, $s, $co, $ne)
     });
@@ -363,6 +366,76 @@ pub mod formats {
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 2, 1, 1),
                     chromaton!(yuv8; 2, 1, 2),
+                    None,
+                    None],
+        elem_size: 0,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const YUV444_10: &Formaton = &Formaton {
+        model: Trichromatic(YUV(YCbCr(Limited))),
+        components: 3,
+        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
+                    chromaton!(yuv_hb; 0, 0, 1, 10),
+                    chromaton!(yuv_hb; 0, 0, 2, 10),
+                    None,
+                    None],
+        elem_size: 0,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const YUV422_10: &Formaton = &Formaton {
+        model: Trichromatic(YUV(YCbCr(Limited))),
+        components: 3,
+        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
+                    chromaton!(yuv_hb; 0, 1, 1, 10),
+                    chromaton!(yuv_hb; 0, 1, 2, 10),
+                    None,
+                    None],
+        elem_size: 0,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const YUV420_10: &Formaton = &Formaton {
+        model: Trichromatic(YUV(YCbCr(Limited))),
+        components: 3,
+        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
+                    chromaton!(yuv_hb; 1, 1, 1, 10),
+                    chromaton!(yuv_hb; 1, 1, 2, 10),
+                    None,
+                    None],
+        elem_size: 0,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const YUV411_10: &Formaton = &Formaton {
+        model: Trichromatic(YUV(YCbCr(Limited))),
+        components: 3,
+        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
+                    chromaton!(yuv_hb; 2, 0, 1, 10),
+                    chromaton!(yuv_hb; 2, 0, 2, 10),
+                    None,
+                    None],
+        elem_size: 0,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const YUV410_10: &Formaton = &Formaton {
+        model: Trichromatic(YUV(YCbCr(Limited))),
+        components: 3,
+        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
+                    chromaton!(yuv_hb; 2, 1, 1, 10),
+                    chromaton!(yuv_hb; 2, 1, 2, 10),
                     None,
                     None],
         elem_size: 0,
