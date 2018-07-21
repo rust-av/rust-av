@@ -55,7 +55,7 @@ impl VideoInfo {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
@@ -66,6 +66,13 @@ pub struct AudioInfo {
 impl AudioInfo {
     fn size(&self, align: usize) -> usize {
         self.format.get_audio_size(self.samples, align) * self.map.len()
+    }
+}
+
+impl PartialEq for AudioInfo {
+
+    fn eq(&self, info2: &AudioInfo) -> bool {
+        self.rate == info2.rate && self.map == info2.map && self.format == info2.format
     }
 }
 
@@ -379,3 +386,29 @@ impl Frame {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use audiosample::formats;
+
+    #[test]
+    fn test_format_cmp() {
+        let mut map = ChannelMap::new();
+        map.add_channel(ChannelType::C);
+        let sn = Arc::new(formats::S16);
+        let info1 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+        let sn = Arc::new(formats::S16);
+        let info2 = AudioInfo{samples: 4242, rate: 48000, map: map.clone(), format: sn};
+
+        assert_eq!(info1 == info2, true);
+
+        let mut map = ChannelMap::new();
+        map.add_channel(ChannelType::C);
+        let sn = Arc::new(formats::S16);
+        let info1 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+        let sn = Arc::new(formats::S32);
+        let info2 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+
+        assert_eq!(info1 == info2, false);
+    }
+}
