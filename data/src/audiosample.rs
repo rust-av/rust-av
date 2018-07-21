@@ -243,8 +243,24 @@ pub mod formats {
         float: false,
         signed: true,
     };
+    pub const S32: Soniton = Soniton {
+        bits: 32,
+        be: false,
+        packed: false,
+        planar: false,
+        float: false,
+        signed: true,
+    };
     pub const F32: Soniton = Soniton {
         bits: 32,
+        be: false,
+        packed: false,
+        planar: false,
+        float: true,
+        signed: true,
+    };
+    pub const F64: Soniton = Soniton {
+        bits: 64,
         be: false,
         packed: false,
         planar: false,
