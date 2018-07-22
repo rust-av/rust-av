@@ -35,7 +35,7 @@ pub enum PictureType {
     BI,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct VideoInfo {
     pub pic_type: PictureType,
     pub width: usize,
@@ -73,6 +73,13 @@ impl PartialEq for AudioInfo {
 
     fn eq(&self, info2: &AudioInfo) -> bool {
         self.rate == info2.rate && self.map == info2.map && self.format == info2.format
+    }
+}
+
+impl PartialEq for VideoInfo {
+
+    fn eq(&self, info2: &VideoInfo) -> bool {
+        self.width == info2.width && self.height == info2.height && self.format == info2.format
     }
 }
 
@@ -408,6 +415,29 @@ mod test {
         let info1 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
         let sn = Arc::new(formats::S32);
         let info2 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+
+        assert_eq!(info1 == info2, false);
+    }
+
+    use pixel::formats::{RGB565, YUV420};
+
+    #[test]
+    fn test_video_format_cmp() {
+        let yuv420: Formaton = *YUV420;
+        let fm = Arc::new(yuv420);
+        let info1 = VideoInfo{pic_type: PictureType::I, width: 42, height: 42, format: fm};
+        let yuv420: Formaton = *YUV420;
+        let fm = Arc::new(yuv420);
+        let info2 = VideoInfo{pic_type: PictureType::P, width: 42, height: 42, format: fm};
+
+        assert_eq!(info1 == info2, true);
+
+        let yuv420: Formaton = *YUV420;
+        let fm = Arc::new(yuv420);
+        let info1 = VideoInfo{pic_type: PictureType::I, width: 42, height: 42, format: fm};
+        let rgb565: Formaton = *RGB565;
+        let fm = Arc::new(rgb565);
+        let info2 = VideoInfo{pic_type: PictureType::I, width: 42, height: 42, format: fm};
 
         assert_eq!(info1 == info2, false);
     }
