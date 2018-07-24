@@ -5,7 +5,7 @@ use timeinfo::TimeInfo;
 
 // use data::SideData;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Packet {
     pub data : Vec<u8>,
     pub pos : Option<usize>,
