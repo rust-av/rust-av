@@ -9,7 +9,7 @@ use std::io::{BufRead, Read, Result, Seek, SeekFrom};
 use std::iter::Iterator;
 use std::cmp;
 use std::iter;
-use buffer::Buffered;
+use crate::buffer::Buffered;
 // use std::fmt;
 // use std::str;
 
@@ -191,7 +191,7 @@ impl<R: Read + Seek> Seek for AccReader<R> {
 mod tests {
     use super::*;
     use std::io::{Cursor, BufRead};
-    use buffer::Buffered;
+    use crate::buffer::Buffered;
 
     #[test]
     fn acc_reader_test() {
