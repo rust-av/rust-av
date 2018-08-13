@@ -26,7 +26,7 @@ pub struct Descr {
 }
 
 pub struct Context {
-    dec: Box<Decoder>,
+    dec: Box<dyn Decoder>,
     // TODO: Queue up packets/frames
 }
 
@@ -59,16 +59,16 @@ impl Context {
 }
 
 pub trait Descriptor {
-    fn create(&self) -> Box<Decoder>;
+    fn create(&self) -> Box<dyn Decoder>;
     fn describe<'a>(&'a self) -> &'a Descr;
 }
 
 pub struct Codecs {
-    list: HashMap<&'static str, Vec<&'static Descriptor>>
+    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>
 }
 
 impl CodecList for Codecs {
-    type D = Descriptor;
+    type D = dyn Descriptor;
 
     fn new() -> Codecs {
         Codecs { list: HashMap::new() }
@@ -109,7 +109,7 @@ mod test {
         }
 
         impl Descriptor for Des {
-            fn create(&self) -> Box<Decoder> {
+            fn create(&self) -> Box<dyn Decoder> {
                 box Dec { state: 0, format: None }
             }
             fn describe<'a>(&'a self) -> &'a Descr {

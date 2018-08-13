@@ -44,7 +44,7 @@ impl Soniton {
 }
 
 impl fmt::Display for Soniton {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let fmt = if self.float {
             "float"
         } else if self.signed {
@@ -146,7 +146,7 @@ impl ChannelType {
 }
 
 impl fmt::Display for ChannelType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let name = match *self {
             ChannelType::C => "C".to_string(),
             ChannelType::L => "L".to_string(),

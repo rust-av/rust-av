@@ -130,14 +130,14 @@ pub trait FrameBufferConv<T: private::Supported> : FrameBuffer {
     }
 }
 
-impl FrameBufferConv<u8> for FrameBuffer {}
-impl FrameBufferConv<i16> for FrameBuffer {}
-impl FrameBufferConv<f32> for FrameBuffer {}
+impl FrameBufferConv<u8> for dyn FrameBuffer {}
+impl FrameBufferConv<i16> for dyn FrameBuffer {}
+impl FrameBufferConv<f32> for dyn FrameBuffer {}
 
 use std::fmt;
 
-impl fmt::Debug for FrameBuffer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl fmt::Debug for dyn FrameBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "FrameBuffer")
     }
 }
@@ -145,7 +145,7 @@ impl fmt::Debug for FrameBuffer {
 #[derive(Debug)]
 pub struct Frame {
     pub kind: MediaKind,
-    pub buf: Box<FrameBuffer>,
+    pub buf: Box<dyn FrameBuffer>,
     pub t: TimeInfo,
 }
 

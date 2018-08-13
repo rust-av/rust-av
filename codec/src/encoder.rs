@@ -23,7 +23,7 @@ pub trait Encoder : Send {
 }
 
 pub struct Context {
-    enc: Box<Encoder>,
+    enc: Box<dyn Encoder>,
     // TODO: Queue up packets/frames
     // TODO: Store here more information
     // TODO: Have a resource pool
@@ -86,23 +86,23 @@ pub struct Descr {
 }
 
 pub trait Descriptor {
-    fn create(&self) -> Box<Encoder>;
+    fn create(&self) -> Box<dyn Encoder>;
     fn describe<'a>(&'a self) -> &'a Descr;
 }
 
 pub struct Codecs {
-    list: HashMap<&'static str, Vec<&'static Descriptor>>
+    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>
 }
 
 pub use crate::common::CodecList;
 
 impl CodecList for Codecs {
-    type D = Descriptor;
+    type D = dyn Descriptor;
     fn new() -> Codecs {
         Codecs { list: HashMap::new() }
     }
     // TODO more lookup functions
-    fn by_name(&self, name: &str) -> Option<&'static Descriptor> {
+    fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor> {
         if let Some(descs) = self.list.get(name) {
             Some(descs[0])
         } else {
@@ -110,7 +110,7 @@ impl CodecList for Codecs {
         }
     }
 
-    fn append(&mut self, desc: &'static Descriptor) {
+    fn append(&mut self, desc: &'static dyn Descriptor) {
         let codec_name = desc.describe().codec;
 
         self.list.entry(codec_name).or_insert(Vec::new()).push(desc);
@@ -139,7 +139,7 @@ mod test {
         }
 
         impl Descriptor for Des {
-            fn create(&self) -> Box<Encoder> {
+            fn create(&self) -> Box<dyn Encoder> {
                 box Enc { state: 0, w: None, h: None, format: None }
             }
             fn describe<'a>(&'a self) -> &'a Descr {
