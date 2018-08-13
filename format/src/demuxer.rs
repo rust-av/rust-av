@@ -19,8 +19,8 @@ pub enum Event {
 }
 
 pub trait Demuxer : Send {
-    fn read_headers(&mut self, buf: &Box<Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
-    fn read_event(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event)>;
+    fn read_headers(&mut self, buf: &Box<dyn Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
+    fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)>;
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -33,21 +33,21 @@ pub struct Descr {
 }
 
 pub trait Descriptor {
-    fn create(&self) -> Box<Demuxer>;
+    fn create(&self) -> Box<dyn Demuxer>;
     fn describe<'a>(&'a self) -> &'a Descr;
 
     fn probe(&self, data: &[u8]) -> u8;
 }
 
 pub struct Context {
-    demuxer: Box<Demuxer>,
-    reader: Box<Buffered>,
+    demuxer: Box<dyn Demuxer>,
+    reader: Box<dyn Buffered>,
     pub info: GlobalInfo,
-    pub user_private: Option<Arc<Any + Send + Sync>>,
+    pub user_private: Option<Arc<dyn Any + Send + Sync>>,
 }
 
 impl Context {
-    pub fn new<R: Buffered + 'static>(demuxer: Box<Demuxer>, reader: Box<R>) -> Self {
+    pub fn new<R: Buffered + 'static>(demuxer: Box<dyn Demuxer>, reader: Box<R>) -> Self {
         Context {
             demuxer: demuxer,
             reader: reader,
@@ -150,13 +150,13 @@ pub const PROBE_SCORE_EXTENSION: u8 = 50;
 // IntoIterator<Item = &'static Descriptor> is confusing
 
 pub trait Probe {
-    fn probe(&self, data: &[u8]) -> Option<&'static Descriptor>;
+    fn probe(&self, data: &[u8]) -> Option<&'static dyn Descriptor>;
 }
 
-impl<'a> Probe for [&'static Descriptor] {
-    fn probe(&self, data: &[u8]) -> Option<&'static Descriptor> {
+impl<'a> Probe for [&'static dyn Descriptor] {
+    fn probe(&self, data: &[u8]) -> Option<&'static dyn Descriptor> {
         let mut max = u8::min_value();
-        let mut candidate: Option<&'static Descriptor> = None;
+        let mut candidate: Option<&'static dyn Descriptor> = None;
         for desc in self {
             let score = desc.probe(data);
 
@@ -187,7 +187,7 @@ mod test {
     struct DummyDemuxer {}
 
     impl Demuxer for DummyDemuxer {
-        fn read_headers(&mut self, buf: &Box<Buffered>, _info: &mut GlobalInfo) -> Result<SeekFrom> {
+        fn read_headers(&mut self, buf: &Box<dyn Buffered>, _info: &mut GlobalInfo) -> Result<SeekFrom> {
             let len = buf.data().len();
             if 9 > len {
                 let needed = 9 - len;
@@ -196,7 +196,7 @@ mod test {
                 Ok(SeekFrom::Current(9))
             }
         }
-        fn read_event(&mut self, buf: &Box<Buffered>) -> Result<(SeekFrom, Event)> {
+        fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)> {
             let size = 2;
             let len = buf.data().len();
             if size > len {
@@ -217,7 +217,7 @@ mod test {
     }
 
     impl Descriptor for DummyDes {
-        fn create(&self) -> Box<Demuxer> {
+        fn create(&self) -> Box<dyn Demuxer> {
             Box::new(DummyDemuxer {})
         }
         fn describe<'a>(&'a self) -> &'a Descr {
@@ -231,7 +231,7 @@ mod test {
         }
     }
 
-    const DUMMY_DES: &Descriptor = &DummyDes {
+    const DUMMY_DES: &dyn Descriptor = &DummyDes {
         d: Descr {
             name: "dummy",
             demuxer: "dummy",
@@ -243,7 +243,7 @@ mod test {
 
     #[test]
     fn probe() {
-        let demuxers: &[&'static Descriptor] = &[DUMMY_DES];
+        let demuxers: &[&'static dyn Descriptor] = &[DUMMY_DES];
 
         demuxers.probe(b"dummy").unwrap();
     }

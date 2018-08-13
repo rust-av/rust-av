@@ -18,14 +18,14 @@ pub trait Muxer: Send {
 }
 
 pub struct Context {
-    muxer: Box<Muxer + Send>,
-    writer: Box<Write + Send>,
+    muxer: Box<dyn Muxer + Send>,
+    writer: Box<dyn Write + Send>,
     buf: Vec<u8>,
-    pub user_private: Option<Box<Any + Send + Sync>>,
+    pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
 impl Context {
-    pub fn new<W: Write + 'static + Send>(muxer: Box<Muxer + Send>, writer: Box<W>) -> Self {
+    pub fn new<W: Write + 'static + Send>(muxer: Box<dyn Muxer + Send>, writer: Box<W>) -> Self {
         Context {
             muxer: muxer,
             writer: writer,
@@ -97,16 +97,16 @@ pub struct Descr {
 }
 
 pub trait Descriptor {
-    fn create(&self) -> Box<Muxer>;
+    fn create(&self) -> Box<dyn Muxer>;
     fn describe<'a>(&'a self) -> &'a Descr;
 }
 
 pub trait Lookup {
-    fn by_name(&self, name: &str) -> Option<&'static Descriptor>;
+    fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor>;
 }
 
-impl Lookup for [&'static Descriptor] {
-    fn by_name(&self, name: &str) -> Option<&'static Descriptor> {
+impl Lookup for [&'static dyn Descriptor] {
+    fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor> {
         self.iter()
             .find(|&&d| d.describe().name == name)
             .map(|v| *v)

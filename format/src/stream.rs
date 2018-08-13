@@ -56,7 +56,7 @@ pub struct Stream {
     pub duration: Option<u64>,
     pub timebase: Rational64,
     /// User Private field, will not be cloned
-    pub user_private: Option<Arc<Any + Send + Sync>>,
+    pub user_private: Option<Arc<dyn Any + Send + Sync>>,
     //  seek_index : SeekIndex
 }
 

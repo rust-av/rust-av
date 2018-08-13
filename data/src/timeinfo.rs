@@ -8,5 +8,5 @@ pub struct TimeInfo {
     pub dts: Option<i64>,
     pub duration: Option<u64>,
     pub timebase: Option<Rational64>,
-    pub user_private: Option<Arc<Any + Send + Sync>>,
+    pub user_private: Option<Arc<dyn Any + Send + Sync>>,
 }

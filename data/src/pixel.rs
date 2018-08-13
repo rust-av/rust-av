@@ -9,7 +9,7 @@ pub enum YUVRange {
 }
 
 impl fmt::Display for YUVRange {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             YUVRange::Limited => write!(f, "Limited range"),
             YUVRange::Full => write!(f, "Full range")
@@ -25,7 +25,7 @@ pub enum YUVSystem {
 }
 
 impl fmt::Display for YUVSystem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use self::YUVSystem::*;
         match *self {
             YCbCr(range) => write!(f, "YCbCr ({})", range),
@@ -43,7 +43,7 @@ pub enum TrichromaticEncodingSystem {
 }
 
 impl fmt::Display for TrichromaticEncodingSystem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use self::TrichromaticEncodingSystem::*;
         match *self {
             YUV(system) => write!(f, "{}", system),
@@ -62,7 +62,7 @@ pub enum ColorModel {
 }
 
 impl fmt::Display for ColorModel {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use self::ColorModel::*;
         match *self {
             Trichromatic(system) => write!(f, "{}", system),
@@ -134,7 +134,7 @@ impl Chromaton {
 }
 
 impl fmt::Display for Chromaton {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let pfmt = if self.packed {
             let mask = ((1 << self.depth) - 1) << self.shift;
             format!("packed(+{},{:X}, step {})",
@@ -241,7 +241,7 @@ impl<'a> IntoIterator for &'a Formaton {
 }
 
 impl fmt::Display for Formaton {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let end = if self.be {
             "BE"
         } else {

@@ -240,7 +240,7 @@ fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) 
 }
 
 impl<S: Copy> Codebook<S> {
-    pub fn new(cb: &mut CodebookDescReader<S>, mode: CodebookMode) -> Result<Self, CodebookError> {
+    pub fn new(cb: &mut dyn CodebookDescReader<S>, mode: CodebookMode) -> Result<Self, CodebookError> {
         let mut maxbits = 0;
         let mut nnz = 0;
         let mut escape_list: EscapeCodes = HashMap::new();
