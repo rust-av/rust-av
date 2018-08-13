@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use data::packet::Packet;
-use data::frame::ArcFrame;
+use crate::data::packet::Packet;
+use crate::data::frame::ArcFrame;
 
-use error::*;
-pub use common::CodecList;
+use crate::error::*;
+pub use crate::common::CodecList;
 
 pub trait Decoder : Send {
     // TODO support codec configuration using set_option
@@ -97,7 +97,7 @@ mod test {
     mod dummy {
         use super::super::*;
         use std::sync::Arc;
-        use data::pixel::Formaton;
+        use crate::data::pixel::Formaton;
 
         struct Dec {
             state: usize,

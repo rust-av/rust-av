@@ -1,4 +1,4 @@
-use bitread::*;
+use crate::bitread::*;
 use std::collections::HashMap;
 use std::cmp::{min, max};
 

@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::convert::Into;
 
-use data::packet::Packet;
-use data::frame::ArcFrame;
-use data::value::Value;
-use data::params::CodecParams;
+use crate::data::packet::Packet;
+use crate::data::frame::ArcFrame;
+use crate::data::value::Value;
+use crate::data::params::CodecParams;
 
-use error::*;
+use crate::error::*;
 
 pub trait Encoder : Send {
     fn get_extradata(&self) -> Option<Vec<u8>>;
@@ -94,7 +94,7 @@ pub struct Codecs {
     list: HashMap<&'static str, Vec<&'static Descriptor>>
 }
 
-pub use common::CodecList;
+pub use crate::common::CodecList;
 
 impl CodecList for Codecs {
     type D = Descriptor;
@@ -124,7 +124,7 @@ mod test {
     mod dummy {
         use super::super::*;
         use std::sync::Arc;
-        use data::pixel::Formaton;
+        use crate::data::pixel::Formaton;
         use super::super::super::error::Error;
 
         struct Enc {
@@ -181,7 +181,7 @@ mod test {
             }
 
             fn set_params(&mut self, params: &CodecParams) -> Result<()> {
-                use data::params::*;
+                use crate::data::params::*;
 
                 if let Some(MediaKind::Video(ref info)) = params.kind {
                     self.w = Some(info.width);
@@ -192,7 +192,7 @@ mod test {
             }
 
             fn get_params(&self) -> Result<CodecParams> {
-                use data::params::*;
+                use crate::data::params::*;
 
                 if self.w.is_none() ||
                     self.w.is_none() ||

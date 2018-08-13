@@ -1,5 +1,5 @@
-use data::rational::Rational64;
-use stream::Stream;
+use crate::data::rational::Rational64;
+use crate::stream::Stream;
 
 #[derive(Debug, Clone)]
 pub struct GlobalInfo {

@@ -298,7 +298,7 @@ macro_rules! chromaton {
 }
 
 pub mod formats {
-    use pixel::*;
+    use crate::pixel::*;
     use self::ColorModel::*;
     use self::TrichromaticEncodingSystem::*;
     use self::YUVSystem::*;

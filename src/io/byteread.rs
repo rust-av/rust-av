@@ -1,7 +1,7 @@
 use std::io::{Error, Read, BufRead, Result};
 use std::io::ErrorKind::*;
 
-use bitstream::byteread::*;
+use crate::bitstream::byteread::*;
 
 #[allow(dead_code)]
 fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
@@ -157,7 +157,7 @@ impl<R: BufRead + ?Sized> BytePeek for R {}
 #[cfg(test)]
 mod test {
     use std::io::{Cursor, BufReader};
-    use io::byteread::*;
+    use crate::io::byteread::*;
 
     macro_rules! test_read {
         {$fun: ident, $val: expr, $len: expr} => {
