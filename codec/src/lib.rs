@@ -2,7 +2,7 @@
 #![allow(unused_doc_comments)]
 
 // language extensions
-#![feature(box_syntax, plugin)]
+#![feature(box_syntax, plugin, rust_2018_preview)]
 
 extern crate av_data as data;
 extern crate num_rational as rational;
