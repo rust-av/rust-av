@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]
-failure = "0.1.1"
+failure = "0.1"
 
 [dev-dependencies]
 assert_matches = "1.1"
