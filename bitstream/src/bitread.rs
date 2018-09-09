@@ -1,4 +1,4 @@
-use crate::byteread::*;
+use byteread::*;
 
 pub trait BitReadEndian {
     fn peek_val(&mut self, n:usize) -> u64;

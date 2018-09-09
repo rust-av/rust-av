@@ -1,5 +1,5 @@
 // language extensions
-#![feature(rust_2018_preview)]
+// #![feature(rust_2018_preview)]
 
 #[macro_use]
 extern crate failure;
