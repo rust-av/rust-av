@@ -14,7 +14,6 @@ pub trait BitReadFill {
 }
 
 pub trait BitReadInternal : BitReadEndian + BitReadFill {
-    #[inline]
     fn left(&self) -> usize;
     fn refill32(&mut self) -> ();
     fn refill64(&mut self) -> ();
@@ -24,7 +23,7 @@ pub trait BitReadInternal : BitReadEndian + BitReadFill {
 
         self.skip_rem(n);
 
-        return ret;
+        ret
     }
 
 }
@@ -38,7 +37,7 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
 
     #[inline]
     fn get_bit(&mut self) -> bool {
-        if self.left() <= 0 {
+        if self.left() == 0 {
             self.refill64();
         }
 
@@ -74,7 +73,7 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
             self.refill32();
         }
 
-        return self.get_val(n) as u32;
+        self.get_val(n) as u32
     }
 
 
@@ -203,7 +202,7 @@ macro_rules! little_endian_reader {
             }
             #[inline]
             fn skip_rem(&mut self, n:usize) -> () {
-                self.cache = self.cache >> n;
+                self.cache >>= n;
                 self.left = self.left.saturating_sub(n);
             }
             #[inline]
@@ -227,7 +226,7 @@ impl <'a> BitReadFill for BitReadLE<'a> {
     }
     #[inline(always)]
     fn fill32(&self) -> u64 {
-        get_u32l(&self.buffer[self.index..]) as u64
+        u64::from(get_u32l(&self.buffer[self.index..]))
     }
     #[inline(always)]
     fn fill64(&self) -> u64 {
@@ -247,7 +246,7 @@ macro_rules! big_endian_reader {
             }
             #[inline]
             fn skip_rem(&mut self, n:usize) -> () {
-                self.cache = self.cache << n;
+                self.cache <<= n;
                 self.left = self.left.saturating_sub(n);
             }
             #[inline]
@@ -271,7 +270,7 @@ impl <'a> BitReadFill for BitReadBE<'a> {
     }
     #[inline(always)]
     fn fill32(&self) -> u64 {
-        get_u32b(&self.buffer[self.index..]) as u64
+        u64::from(get_u32b(&self.buffer[self.index..]))
     }
     #[inline(always)]
     fn fill64(&self) -> u64 {

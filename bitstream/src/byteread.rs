@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
-use std::mem::transmute;
-
+use std::ptr;
 /**
  * Unsafe building blocks
  */
@@ -11,9 +10,13 @@ use std::mem::transmute;
 
 macro_rules! read_num_bytes {
     ($ty:ty, $size:expr, $src:expr, $which:ident) => ({
+        let mut data: $ty = 0;
         unsafe {
-            (*($src.as_ptr() as *const $ty)).$which()
+            ptr::copy_nonoverlapping($src.as_ptr(),
+                &mut data as *mut $ty as *mut u8,
+                $size);
         }
+        data.$which()
     });
 }
 
@@ -89,20 +92,20 @@ pub fn get_i64b(buf:&[u8]) -> i64 {
 
 #[inline]
 pub fn get_f32l(buf:&[u8]) -> f32 {
-    unsafe { transmute(get_u32l(buf)) }
+    f32::from_bits(get_u32l(buf))
 }
 
 #[inline]
 pub fn get_f32b(buf:&[u8]) -> f32 {
-    unsafe { transmute(get_u32b(buf)) }
+    f32::from_bits(get_u32b(buf))
 }
 
 #[inline]
 pub fn get_f64l(buf:&[u8]) -> f64 {
-    unsafe { transmute(get_u64l(buf)) }
+    f64::from_bits(get_u64l(buf))
 }
 
 #[inline]
 pub fn get_f64b(buf:&[u8]) -> f64 {
-    unsafe { transmute(get_u64b(buf)) }
+    f64::from_bits(get_u64b(buf))
 }

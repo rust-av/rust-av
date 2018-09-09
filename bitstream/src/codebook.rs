@@ -2,6 +2,7 @@ use crate::bitread::*;
 use std::collections::HashMap;
 use std::cmp::{min, max};
 
+
 #[derive(Fail, Debug)]
 pub enum CodebookError {
     #[fail(display = "Invalid Codebook")]
@@ -30,10 +31,12 @@ pub struct ShortCodebookDesc {
 }
 
 pub trait CodebookDescReader<S> {
-    fn bits(&mut self, idx: usize) -> u8;
-    fn code(&mut self, idx: usize) -> u32;
-    fn sym(&mut self, idx: usize) -> S;
-    fn len(&mut self) -> usize;
+    fn bits(&self, idx: usize) -> u8;
+    fn code(&self, idx: usize) -> u32;
+    fn sym(&self, idx: usize) -> S;
+
+    fn len(&self) -> usize;
+    fn is_empty(&self) -> bool;
 }
 
 #[allow(dead_code)]
@@ -54,8 +57,8 @@ pub fn reverse_bits(inval: u32) -> u32 {
     let mut ret = 0;
     let mut val = inval;
     for _ in 0..8 {
-        ret = (ret << 4) | (REV_TAB[(val & 0xF) as usize] as u32);
-        val = val >> 4;
+        ret = (ret << 4) | u32::from(REV_TAB[(val & 0xF) as usize]);
+        val >>= 4;
     }
     ret
 }
@@ -74,14 +77,14 @@ fn fill_lut_msb(table: &mut Vec<u32>,
         let fill_len = lut_bits - bits;
         let fill_size = 1 << fill_len;
         let fill_code = code << (lut_bits - bits);
-        let lut_value = (symidx << 8) | (bits as u32);
+        let lut_value = (symidx << 8) | u32::from(bits);
         for j in 0..fill_size {
             let idx = (fill_code + j) as usize;
             table[idx + off] = lut_value;
         }
     } else {
         let idx = (code as usize) + off;
-        table[idx] = (symidx << 8) | 0x80 | (bits as u32);
+        table[idx] = (symidx << 8) | 0x80 | u32::from(bits);
     }
 }
 
@@ -99,11 +102,11 @@ fn fill_lut_lsb(table: &mut Vec<u32>,
         let step = lut_bits - fill_len;
         for j in 0..fill_size {
             let idx = (fill_code + (j << step)) as usize;
-            table[idx + off] = (symidx << 8) | (bits as u32);
+            table[idx + off] = (symidx << 8) | u32::from(bits);
         }
     } else {
         let idx = (code as usize) + off;
-        table[idx] = (symidx << 8) | 0x80 | (bits as u32);
+        table[idx] = (symidx << 8) | 0x80 | u32::from(bits);
     }
 }
 
@@ -179,19 +182,12 @@ impl CodeBucket {
 type EscapeCodes = HashMap<u32, CodeBucket>;
 
 fn add_esc_code(cc: &mut EscapeCodes, key: u32, code: u32, bits: u8, idx: usize) {
-    if !cc.contains_key(&key) {
-        cc.insert(key, CodeBucket::new());
-    }
-    let b = cc.get_mut(&key);
-    if let Some(bucket) = b {
-        bucket.add_code(Code {
-            code: code,
-            bits: bits,
-            idx: idx,
-        });
-    } else {
-        panic!("no bucket when expected!");
-    }
+    let bucket = cc.entry(key).or_insert_with(CodeBucket::new);
+    bucket.add_code(Code {
+        code,
+        bits,
+        idx,
+    });
 }
 
 fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) -> Result<(), CodebookError> {
@@ -232,7 +228,7 @@ fn build_esc_lut(table: &mut Vec<u32>, mode: CodebookMode, bucket: &CodeBucket) 
         sec_bucket.offset = new_off as usize;
     }
 
-    for (_, sec_bucket) in &escape_list {
+    for sec_bucket in escape_list.values() {
         build_esc_lut(table, mode, sec_bucket)?;
     }
 
@@ -249,7 +245,7 @@ impl<S: Copy> Codebook<S> {
         for i in 0..cb.len() {
             let bits = cb.bits(i);
             if bits > 0 {
-                nnz = nnz + 1;
+                nnz += 1;
             }
             maxbits = max(bits, maxbits);
             if bits > MAX_LUT_BITS {
@@ -259,7 +255,7 @@ impl<S: Copy> Codebook<S> {
                 add_esc_code(&mut escape_list, ckey, cval, bits - MAX_LUT_BITS, symidx);
             }
             if bits > 0 {
-                symidx = symidx + 1;
+                symidx += 1;
             }
         }
         if maxbits == 0 {
@@ -303,10 +299,10 @@ impl<S: Copy> Codebook<S> {
                     }
                 }
             }
-            symidx = symidx + 1;
+            symidx += 1;
         }
 
-        for (_, bucket) in &escape_list {
+        for bucket in escape_list.values() {
             build_esc_lut(&mut table, mode, &bucket)?;
         }
 
@@ -317,8 +313,8 @@ impl<S: Copy> Codebook<S> {
         }
 
         Ok(Codebook {
-            table: table,
-            syms: syms,
+            table,
+            syms,
             lut_bits: maxbits,
         })
     }
@@ -354,32 +350,38 @@ impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
 }
 
 impl<S: Copy> CodebookDescReader<S> for Vec<FullCodebookDesc<S>> {
-    fn bits(&mut self, idx: usize) -> u8 {
+    fn bits(&self, idx: usize) -> u8 {
         self[idx].bits
     }
-    fn code(&mut self, idx: usize) -> u32 {
+    fn code(&self, idx: usize) -> u32 {
         self[idx].code
     }
-    fn sym(&mut self, idx: usize) -> S {
+    fn sym(&self, idx: usize) -> S {
         self[idx].sym
     }
-    fn len(&mut self) -> usize {
+    fn len(&self) -> usize {
         Vec::len(self)
+    }
+    fn is_empty(&self) -> bool {
+        Vec::is_empty(self)
     }
 }
 
 impl CodebookDescReader<u32> for Vec<ShortCodebookDesc> {
-    fn bits(&mut self, idx: usize) -> u8 {
+    fn bits(&self, idx: usize) -> u8 {
         self[idx].bits
     }
-    fn code(&mut self, idx: usize) -> u32 {
+    fn code(&self, idx: usize) -> u32 {
         self[idx].code
     }
-    fn sym(&mut self, idx: usize) -> u32 {
+    fn sym(&self, idx: usize) -> u32 {
         idx as u32
     }
-    fn len(&mut self) -> usize {
+    fn len(&self) -> usize {
         Vec::len(self)
+    }
+    fn is_empty(&self) -> bool {
+        Vec::is_empty(self)
     }
 }
 
