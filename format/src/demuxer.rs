@@ -68,7 +68,7 @@ impl Context {
             Ok(seek) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
-                println!("stream now at index: {:?}", res);
+                trace!("stream now at index: {:?}", res);
                 Ok(())
             }
         }
@@ -202,7 +202,7 @@ mod test {
             if size > len {
                 Err(Error::MoreDataNeeded(size - len))
             } else {
-                println!("{:?}", buf.data());
+                debug!("{:?}", buf.data());
                 match &buf.data()[..2] {
                     b"p1" => {
                         Ok((SeekFrom::Current(3), Event::NewPacket(Packet::new())))

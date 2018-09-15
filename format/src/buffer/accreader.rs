@@ -57,10 +57,10 @@ impl<R: Read + Seek> AccReader<R> {
     }
 
     pub fn reset_buffer_position(&mut self) {
-        // println!("resetting buffer at pos: {} capacity: {}", self.pos, self.end);
+        trace!("resetting buffer at pos: {} capacity: {}", self.pos, self.end);
         if self.end - self.pos > 0 {
             for i in 0..(self.end - self.pos) {
-                // println!("buf[{}] = buf[{}]", i, self.pos + i);
+                debug!("buf[{}] = buf[{}]", i, self.pos + i);
                 self.buf[i] = self.buf[self.pos + i];
             }
         }
@@ -69,7 +69,7 @@ impl<R: Read + Seek> AccReader<R> {
     }
 
     pub fn current_slice(&self) -> &[u8] {
-        // println!("current slice pos: {}, cap: {}", self.pos, self.end);
+        debug!("current slice pos: {}, cap: {}", self.pos, self.end);
         &self.buf[self.pos..self.end]
     }
 
@@ -90,7 +90,7 @@ impl<R: Read + Seek + Send> Buffered for AccReader<R> {
 
 impl<R: Read + Seek> Read for AccReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        // println!("read pos: {} cap: {} buflen: {}", self.pos, self.end, buf.len());
+        debug!("read pos: {} cap: {} buflen: {}", self.pos, self.end, buf.len());
         if buf.len() < self.end - self.pos {
             match (&self.buf[self.pos..(self.pos + buf.len())]).read(buf) {
                 Ok(len) => {
@@ -126,19 +126,19 @@ impl<R: Read + Seek> Read for AccReader<R> {
 
 impl<R: Read + Seek> BufRead for AccReader<R> {
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
-        // println!("fillbuf current: {:?}", str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
+        // trace!("fillbuf current: {:?}", str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
         if self.pos != 0 || self.end != self.buf.len() {
             self.reset_buffer_position();
-            // println!("buffer reset ended");
+            debug!("buffer reset ended");
             let read = try!(self.inner.read(&mut self.buf[self.end..]));
             self.end += read;
-            // println!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
+            debug!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, std::str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
         }
         Ok(&self.buf[self.pos..self.end])
     }
 
     fn consume(&mut self, amt: usize) {
-        // println!("consumed {} bytes", amt);
+        trace!("consumed {} bytes", amt);
         self.pos = cmp::min(self.pos + amt, self.end);
         self.index += amt;
     }
@@ -200,9 +200,9 @@ mod tests {
 
         let acc = AccReader::with_capacity(20, c);
 
-        // for l in acc.lines() {
-        // println!("l: {:?}", l);
-        // }
+        for l in acc.lines() {
+            trace!("l: {:?}", l);
+        }
         // assert!(false);
         assert_eq!(4, acc.lines().count());
     }

@@ -13,6 +13,8 @@ extern crate num_rational;
 extern crate bitflags;
 #[macro_use]
 extern crate failure;
+#[macro_use]
+extern crate log;
 
 extern crate byte_slice_cast;
 
