@@ -7,6 +7,7 @@ license = "MIT"
 
 [dependencies]
 failure = "0.1.1"
+log = "0.4"
 
 [dependencies.av-data]
 path = "../data"
