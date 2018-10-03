@@ -1,5 +1,5 @@
-use crate::data::params::CodecParams;
-use crate::rational::Rational64;
+use data::params::CodecParams;
+use rational::Rational64;
 use std::any::Any;
 use std::sync::Arc;
 

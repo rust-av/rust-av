@@ -1,11 +1,11 @@
-use crate::common::*;
-use crate::data::value::*;
-use crate::data::packet::Packet;
+use common::*;
+use data::value::*;
+use data::packet::Packet;
 use std::sync::Arc;
 use std::io::Write;
 use std::any::Any;
 
-use crate::error::*;
+use error::*;
 
 pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;

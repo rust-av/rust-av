@@ -1,14 +1,14 @@
-use crate::error::*;
+use error::*;
 
-use crate::buffer::Buffered;
+use buffer::Buffered;
 use std::io::SeekFrom;
 use std::any::Any;
 use std::sync::Arc;
 
-use crate::common::*;
+use common::*;
 
-use crate::stream::Stream;
-use crate::data::packet::Packet;
+use stream::Stream;
+use data::packet::Packet;
 
 #[derive(Clone, Debug)]
 pub enum Event {
@@ -121,7 +121,6 @@ impl Context {
     }
 
     pub fn read_event(&mut self) -> Result<Event> {
-        use std::io::ErrorKind as Eio;
         // TODO: guard against infiniloops and maybe factor the loop.
         loop {
             match self.read_event_internal() {
@@ -178,7 +177,7 @@ impl<'a> Probe for [&'static dyn Descriptor] {
 mod test {
     use super::*;
     use std::io::SeekFrom;
-    use crate::data::packet::Packet;
+    use data::packet::Packet;
 
     struct DummyDes {
         d: Descr,
@@ -249,7 +248,7 @@ mod test {
     }
 
     use std::io::Cursor;
-    use crate::buffer::*;
+    use buffer::*;
 
     #[test]
     fn read_headers() {

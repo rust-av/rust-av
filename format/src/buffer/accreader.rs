@@ -9,9 +9,9 @@ use std::io::{BufRead, Read, Result, Seek, SeekFrom};
 use std::iter::Iterator;
 use std::cmp;
 use std::iter;
-use crate::buffer::Buffered;
+use buffer::Buffered;
 // use std::fmt;
-// use std::str;
+use std::str;
 
 pub struct AccReader<R> {
     inner: R,
@@ -132,7 +132,7 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
             debug!("buffer reset ended");
             let read = try!(self.inner.read(&mut self.buf[self.end..]));
             self.end += read;
-            debug!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, std::str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
+            debug!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
         }
         Ok(&self.buf[self.pos..self.end])
     }
@@ -191,7 +191,7 @@ impl<R: Read + Seek> Seek for AccReader<R> {
 mod tests {
     use super::*;
     use std::io::{Cursor, BufRead};
-    use crate::buffer::Buffered;
+    use buffer::Buffered;
 
     #[test]
     fn acc_reader_test() {
@@ -200,10 +200,6 @@ mod tests {
 
         let acc = AccReader::with_capacity(20, c);
 
-        for l in acc.lines() {
-            trace!("l: {:?}", l);
-        }
-        // assert!(false);
         assert_eq!(4, acc.lines().count());
     }
 

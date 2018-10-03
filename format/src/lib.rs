@@ -1,9 +1,3 @@
-// workarounds
-#![allow(unused_doc_comments)]
-
-// language extensions
-#![feature(rust_2018_preview)]
-
 // crates
 #[macro_use]
 extern crate failure;
