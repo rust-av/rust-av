@@ -1,5 +1,5 @@
-use crate::pixel::Formaton;
-use crate::audiosample::Soniton;
+use pixel::Formaton;
+use audiosample::Soniton;
 
 use std::sync::Arc;
 use std::convert::From;

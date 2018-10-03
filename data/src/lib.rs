@@ -1,12 +1,4 @@
-// workarounds
-#![allow(unused_doc_comments)]
-
-// language extensions
-#![feature(box_syntax, plugin, allocator_api, alloc, rust_2018_preview)]
-#![cfg_attr(feature = "assignment_operators", feature(augmented_assignments, op_assign_traits))]
-
 // crates
-extern crate alloc;
 extern crate bytes;
 extern crate num_rational;
 #[macro_use]

@@ -1,12 +1,12 @@
 #![allow(dead_code, unused_variables)]
-use alloc::alloc::{Global, Alloc, Layout};
+use std::alloc::{Layout, alloc, };
 use bytes::BytesMut;
 
 use std::sync::Arc;
 
-use crate::audiosample::*;
-use crate::pixel::*;
-use crate::timeinfo::*;
+use audiosample::*;
+use pixel::*;
+use timeinfo::*;
 
 use byte_slice_cast::*;
 
@@ -192,10 +192,8 @@ impl DefaultFrameBuffer {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe {
-                    Global.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
-                        .unwrap()
+                    alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
                 };
-                let data = data.as_ptr() as *mut u8;
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
@@ -217,10 +215,8 @@ impl DefaultFrameBuffer {
             &Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
                 let data = unsafe {
-                    Global.alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
-                        .unwrap()
+                    alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
                 };
-                let data = data.as_ptr() as *mut u8;
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
@@ -249,7 +245,7 @@ where T: Into<MediaKind> + Clone
 
     Frame {
         kind: k,
-        buf: box buf,
+        buf: Box::new(buf),
         t: t.unwrap_or_default(),
     }
 }
@@ -396,7 +392,7 @@ impl Frame {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::audiosample::formats;
+    use audiosample::formats;
 
     #[test]
     fn test_format_cmp() {
@@ -419,7 +415,7 @@ mod test {
         assert_eq!(info1 == info2, false);
     }
 
-    use crate::pixel::formats::{RGB565, YUV420};
+    use pixel::formats::{RGB565, YUV420};
 
     #[test]
     fn test_video_format_cmp() {

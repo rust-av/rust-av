@@ -1,6 +1,6 @@
 use std::sync::Arc;
-use crate::audiosample::{Soniton, ChannelMap};
-use crate::pixel::Formaton;
+use audiosample::{Soniton, ChannelMap};
+use pixel::Formaton;
 
 #[derive(Clone,Debug,PartialEq)]
 pub struct VideoInfo {
