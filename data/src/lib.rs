@@ -3,8 +3,6 @@ extern crate bytes;
 extern crate num_rational;
 #[macro_use]
 extern crate failure;
-#[macro_use]
-extern crate log;
 
 extern crate byte_slice_cast;
 
