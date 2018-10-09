@@ -159,19 +159,8 @@ pub struct Formaton {
     palette: bool,
 }
 
-bitflags! {
-    pub flags Flags: u8 {
-        const BE       = 0x01,
-        const ALPHA    = 0x02,
-        const PALETTE  = 0x04,
-    }
-}
-
 impl Formaton {
-    pub fn new(model: ColorModel, components: &[Chromaton], flags: Flags, elem_size: u8) -> Self {
-        let be = flags.contains(BE);
-        let alpha = flags.contains(ALPHA);
-        let palette = flags.contains(PALETTE);
+    pub fn new(model: ColorModel, components: &[Chromaton], elem_size: u8, be: bool, alpha: bool, palette: bool) -> Self {
         let mut c: [Option<Chromaton>; 5] = [None; 5];
 
         if components.len() > 5 {
