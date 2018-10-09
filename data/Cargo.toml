@@ -7,7 +7,7 @@ license = "MIT"
 
 [dependencies]
 failure = "0.1.1"
-num-rational = "0.1"
+num-rational = "0.2"
 bytes = "0.4.4"
 bitflags = "0.5.0"
 byte-slice-cast = "0.2.0"
