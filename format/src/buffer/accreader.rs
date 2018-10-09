@@ -10,8 +10,6 @@ use std::iter::Iterator;
 use std::cmp;
 use std::iter;
 use buffer::Buffered;
-// use std::fmt;
-use std::str;
 
 pub struct AccReader<R> {
     inner: R,
@@ -60,7 +58,7 @@ impl<R: Read + Seek> AccReader<R> {
         trace!("resetting buffer at pos: {} capacity: {}", self.pos, self.end);
         if self.end - self.pos > 0 {
             for i in 0..(self.end - self.pos) {
-                debug!("buf[{}] = buf[{}]", i, self.pos + i);
+                trace!("buf[{}] = buf[{}]", i, self.pos + i);
                 self.buf[i] = self.buf[self.pos + i];
             }
         }
@@ -69,7 +67,7 @@ impl<R: Read + Seek> AccReader<R> {
     }
 
     pub fn current_slice(&self) -> &[u8] {
-        debug!("current slice pos: {}, cap: {}", self.pos, self.end);
+        trace!("current slice pos: {}, cap: {}", self.pos, self.end);
         &self.buf[self.pos..self.end]
     }
 
@@ -90,7 +88,7 @@ impl<R: Read + Seek + Send> Buffered for AccReader<R> {
 
 impl<R: Read + Seek> Read for AccReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        debug!("read pos: {} cap: {} buflen: {}", self.pos, self.end, buf.len());
+        trace!("read pos: {} cap: {} buflen: {}", self.pos, self.end, buf.len());
         if buf.len() < self.end - self.pos {
             match (&self.buf[self.pos..(self.pos + buf.len())]).read(buf) {
                 Ok(len) => {
@@ -129,10 +127,10 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
         // trace!("fillbuf current: {:?}", str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
         if self.pos != 0 || self.end != self.buf.len() {
             self.reset_buffer_position();
-            debug!("buffer reset ended");
+            trace!("buffer reset ended");
             let read = try!(self.inner.read(&mut self.buf[self.end..]));
             self.end += read;
-            debug!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
+            trace!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, &self.buf[self.pos..self.end]);
         }
         Ok(&self.buf[self.pos..self.end])
     }
