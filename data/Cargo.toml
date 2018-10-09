@@ -4,6 +4,7 @@ description = "Multimedia data structures"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
+readme = "README.md"
 
 [dependencies]
 failure = "0.1.1"
