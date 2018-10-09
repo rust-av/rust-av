@@ -30,6 +30,17 @@ impl Packet {
         }
     }
 
+    pub fn zeroed(size: usize) -> Self {
+        Packet {
+            data : vec![0; size],
+            t: TimeInfo::default(),
+            pos : None,
+            stream_index : -1,
+            is_key: false,
+            is_corrupted: false,
+        }
+    }
+
     pub fn new() -> Self {
         Self::with_capacity(0)
     }
@@ -37,11 +48,8 @@ impl Packet {
 
 pub trait ReadPacket: Read {
     fn get_packet(&mut self, len: usize) -> Result<Packet> {
-        let mut pkt = Packet::with_capacity(len);
-        unsafe {
-            pkt.data.set_len(len);
-            try!(self.read(pkt.data.as_mut_slice()));
-        }
+        let mut pkt = Packet::zeroed(len);
+        self.read(pkt.data.as_mut_slice())?;
         Ok(pkt)
     }
 }
@@ -66,10 +74,11 @@ mod test {
 
     #[test]
     fn read_packet() {
-        let mut buf = Cursor::new(vec![0; 1024]);
+        let data: Vec<u8> = (0..128).collect();
+        let mut buf = Cursor::new(data.clone());
 
-        match buf.get_packet(1024) {
-            Ok(pkt) => assert!(pkt.data[0] == 0),
+        match buf.get_packet(64) {
+            Ok(pkt) => assert_eq!(pkt.data, &data[..64]),
             _ => assert!(false)
         }
     }
