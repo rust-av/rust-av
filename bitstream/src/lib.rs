@@ -3,6 +3,7 @@
 
 #[macro_use]
 extern crate failure;
+extern crate num_traits;
 
 #[cfg(test)]
 #[macro_use]

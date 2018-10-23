@@ -1,7 +1,8 @@
 use bitread::*;
 use std::collections::HashMap;
 use std::cmp::{min, max};
-
+use std::marker::PhantomData;
+use num_traits::AsPrimitive;
 
 #[derive(Fail, Debug)]
 pub enum CodebookError {
@@ -382,6 +383,35 @@ impl CodebookDescReader<u32> for Vec<ShortCodebookDesc> {
     }
     fn is_empty(&self) -> bool {
         Vec::is_empty(self)
+    }
+}
+
+pub struct TableCodebookDescReader<CodeType: 'static, SymType> {
+    bits: &'static [u8],
+    codes: &'static [CodeType],
+    _sym: PhantomData<SymType>,
+}
+
+impl<CodeType, SymType> CodebookDescReader<SymType> for TableCodebookDescReader<CodeType, SymType>
+where
+    CodeType: Copy + Into<u32> + 'static,
+    SymType: Copy + 'static,
+    usize: AsPrimitive<SymType>,
+{
+    fn bits(&self, idx: usize) -> u8 {
+        self.bits[idx]
+    }
+    fn code(&self, idx: usize) -> u32 {
+        self.codes[idx].into()
+    }
+    fn sym(&self, idx: usize) -> SymType {
+        idx.as_()
+    }
+    fn len(&self) -> usize {
+        self.bits.len()
+    }
+    fn is_empty(&self) -> bool {
+        self.bits.is_empty()
     }
 }
 

@@ -8,6 +8,7 @@ repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]
 failure = "0.1"
+num-traits = "0.2"
 
 [dev-dependencies]
 assert_matches = "1.1"
