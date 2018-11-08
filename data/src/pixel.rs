@@ -18,6 +18,135 @@ impl fmt::Display for YUVRange {
 }
 
 #[derive(Debug,Clone,Copy,PartialEq)]
+pub enum YUVMatrixCoefficients {
+    Identity = 0,
+    BT709,
+    Unspecified,
+    Reserved,
+    BT470M,
+    BT470BG,
+    ST170M,
+    ST240M,
+    YCgCo,
+    BT2020NonConstantLuminance,
+    BT2020ConstantLuminance,
+    ST2085,
+    ChromaticityDerivedNonConstantLuminance,
+    ChromaticityDerivedConstantLuminance,
+    ICtCp,
+}
+
+impl fmt::Display for YUVMatrixCoefficients {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            YUVMatrixCoefficients::Identity => write!(f, "Identity"),
+            YUVMatrixCoefficients::BT709 => write!(f, "ITU BT.709"),
+            YUVMatrixCoefficients::Unspecified => write!(f, "Unspecified"),
+            YUVMatrixCoefficients::Reserved => write!(f, "Reserved"),
+            YUVMatrixCoefficients::BT470M => write!(f, "ITU BT.470M"),
+            YUVMatrixCoefficients::BT470BG => write!(f, "ITU BT.470BG"),
+            YUVMatrixCoefficients::ST170M => write!(f, "SMPTE ST-170M"),
+            YUVMatrixCoefficients::ST240M => write!(f, "SMPTE ST-240M"),
+            YUVMatrixCoefficients::YCgCo => write!(f, "YCgCo"),
+            YUVMatrixCoefficients::BT2020NonConstantLuminance => write!(f, "ITU BT.2020 (Non Constant Luminance)"),
+            YUVMatrixCoefficients::BT2020ConstantLuminance => write!(f, "ITU BT.2020 (Constant Luminance)"),
+            YUVMatrixCoefficients::ST2085 => write!(f, "SMPTE ST-2085"),
+            YUVMatrixCoefficients::ChromaticityDerivedNonConstantLuminance => write!(f, "Chromaticity Derived (Non ConstantLuminance)"),
+            YUVMatrixCoefficients::ChromaticityDerivedConstantLuminance => write!(f, "Chromaticity Derived (Constant Luminance)"),
+            YUVMatrixCoefficients::ICtCp => write!(f, "ICtCp"),
+        }
+    }
+}
+
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub enum YUVColorPrimaries {
+    Reserved0 = 0,
+    BT709,
+    Unspecified,
+    Reserved,
+    BT470M,
+    BT470BG,
+    ST170M,
+    ST240M,
+    Film,
+    BT2020,
+    ST428,
+    P3DCI,
+    P3Display,
+    Tech3213 = 22,
+}
+
+impl fmt::Display for YUVColorPrimaries {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            YUVColorPrimaries::Reserved0 => write!(f, "Identity"),
+            YUVColorPrimaries::BT709 => write!(f, "ITU BT.709"),
+            YUVColorPrimaries::Unspecified => write!(f, "Unspecified"),
+            YUVColorPrimaries::Reserved => write!(f, "Reserved"),
+            YUVColorPrimaries::BT470M => write!(f, "ITU BT.470M"),
+            YUVColorPrimaries::BT470BG => write!(f, "ITU BT.470BG"),
+            YUVColorPrimaries::ST170M => write!(f, "SMPTE ST-170M"),
+            YUVColorPrimaries::ST240M => write!(f, "SMPTE ST-240M"),
+            YUVColorPrimaries::Film => write!(f, "Film"),
+            YUVColorPrimaries::BT2020 => write!(f, "ITU BT.2020"),
+            YUVColorPrimaries::ST428 => write!(f, "SMPTE ST-428"),
+            YUVColorPrimaries::P3DCI => write!(f, "DCI P3"),
+            YUVColorPrimaries::P3Display => write!(f, "Display P3"),
+            YUVColorPrimaries::Tech3213 => write!(f, "EBU Tech3213"),
+        }
+    }
+}
+
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub enum YUVTransferCharacteristic {
+    Reserved0 = 0,
+    BT1886,
+    Unspecified,
+    Reserved,
+    BT470M,
+    BT470BG,
+    ST170M,
+    ST240M,
+    Linear,
+    Logarithmic100,
+    Logarithmic316,
+    XVYCC,
+    BT1361E,
+    SRGB,
+    BT2020Ten,
+    BT2020Twelve,
+    PerceptualQuantizer,
+    ST428,
+    HybridLogGamma,
+}
+
+impl fmt::Display for YUVTransferCharacteristic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            YUVTransferCharacteristic::Reserved0 => write!(f, "Identity"),
+            YUVTransferCharacteristic::BT1886 => write!(f, "ITU BT.1886"),
+            YUVTransferCharacteristic::Unspecified => write!(f, "Unspecified"),
+            YUVTransferCharacteristic::Reserved => write!(f, "Reserved"),
+            YUVTransferCharacteristic::BT470M => write!(f, "ITU BT.470M"),
+            YUVTransferCharacteristic::BT470BG => write!(f, "ITU BT.470BG"),
+            YUVTransferCharacteristic::ST170M => write!(f, "SMPTE ST-170M"),
+            YUVTransferCharacteristic::ST240M => write!(f, "SMPTE ST-240M"),
+            YUVTransferCharacteristic::Linear => write!(f, "Linear"),
+            YUVTransferCharacteristic::Logarithmic100 => write!(f, "Logarithmic 100:1 range"),
+            YUVTransferCharacteristic::Logarithmic316 => write!(f, "Logarithmic 316:1 range"),
+            YUVTransferCharacteristic::XVYCC => write!(f, "XVYCC"),
+            YUVTransferCharacteristic::BT1361E => write!(f, "ITU BT.1361 Extended Color Gamut"),
+            YUVTransferCharacteristic::SRGB => write!(f, "sRGB"),
+            YUVTransferCharacteristic::BT2020Ten => write!(f, "ITU BT.2020 for 10bit systems"),
+            YUVTransferCharacteristic::BT2020Twelve => write!(f, "ITU BT.2020 for 12bit systems"),
+            YUVTransferCharacteristic::PerceptualQuantizer => write!(f, "Perceptual Quantizer"),
+            YUVTransferCharacteristic::ST428 => write!(f, "SMPTE ST-428"),
+            YUVTransferCharacteristic::HybridLogGamma => write!(f, "Hybrid Log-Gamma"),
+        }
+    }
+}
+
+#[derive(Debug,Clone,Copy,PartialEq)]
 pub enum YUVSystem {
     YCbCr(YUVRange),
     YCoCg,
