@@ -18,7 +18,7 @@ impl fmt::Display for YUVRange {
 }
 
 #[derive(Debug,Clone,Copy,PartialEq)]
-pub enum YUVMatrixCoefficients {
+pub enum MatrixCoefficients {
     Identity = 0,
     BT709,
     Unspecified,
@@ -36,30 +36,30 @@ pub enum YUVMatrixCoefficients {
     ICtCp,
 }
 
-impl fmt::Display for YUVMatrixCoefficients {
+impl fmt::Display for MatrixCoefficients {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            YUVMatrixCoefficients::Identity => write!(f, "Identity"),
-            YUVMatrixCoefficients::BT709 => write!(f, "ITU BT.709"),
-            YUVMatrixCoefficients::Unspecified => write!(f, "Unspecified"),
-            YUVMatrixCoefficients::Reserved => write!(f, "Reserved"),
-            YUVMatrixCoefficients::BT470M => write!(f, "ITU BT.470M"),
-            YUVMatrixCoefficients::BT470BG => write!(f, "ITU BT.470BG"),
-            YUVMatrixCoefficients::ST170M => write!(f, "SMPTE ST-170M"),
-            YUVMatrixCoefficients::ST240M => write!(f, "SMPTE ST-240M"),
-            YUVMatrixCoefficients::YCgCo => write!(f, "YCgCo"),
-            YUVMatrixCoefficients::BT2020NonConstantLuminance => write!(f, "ITU BT.2020 (Non Constant Luminance)"),
-            YUVMatrixCoefficients::BT2020ConstantLuminance => write!(f, "ITU BT.2020 (Constant Luminance)"),
-            YUVMatrixCoefficients::ST2085 => write!(f, "SMPTE ST-2085"),
-            YUVMatrixCoefficients::ChromaticityDerivedNonConstantLuminance => write!(f, "Chromaticity Derived (Non ConstantLuminance)"),
-            YUVMatrixCoefficients::ChromaticityDerivedConstantLuminance => write!(f, "Chromaticity Derived (Constant Luminance)"),
-            YUVMatrixCoefficients::ICtCp => write!(f, "ICtCp"),
+            MatrixCoefficients::Identity => write!(f, "Identity"),
+            MatrixCoefficients::BT709 => write!(f, "ITU BT.709"),
+            MatrixCoefficients::Unspecified => write!(f, "Unspecified"),
+            MatrixCoefficients::Reserved => write!(f, "Reserved"),
+            MatrixCoefficients::BT470M => write!(f, "ITU BT.470M"),
+            MatrixCoefficients::BT470BG => write!(f, "ITU BT.470BG"),
+            MatrixCoefficients::ST170M => write!(f, "SMPTE ST-170M"),
+            MatrixCoefficients::ST240M => write!(f, "SMPTE ST-240M"),
+            MatrixCoefficients::YCgCo => write!(f, "YCgCo"),
+            MatrixCoefficients::BT2020NonConstantLuminance => write!(f, "ITU BT.2020 (Non Constant Luminance)"),
+            MatrixCoefficients::BT2020ConstantLuminance => write!(f, "ITU BT.2020 (Constant Luminance)"),
+            MatrixCoefficients::ST2085 => write!(f, "SMPTE ST-2085"),
+            MatrixCoefficients::ChromaticityDerivedNonConstantLuminance => write!(f, "Chromaticity Derived (Non ConstantLuminance)"),
+            MatrixCoefficients::ChromaticityDerivedConstantLuminance => write!(f, "Chromaticity Derived (Constant Luminance)"),
+            MatrixCoefficients::ICtCp => write!(f, "ICtCp"),
         }
     }
 }
 
 #[derive(Debug,Clone,Copy,PartialEq)]
-pub enum YUVColorPrimaries {
+pub enum ColorPrimaries {
     Reserved0 = 0,
     BT709,
     Unspecified,
@@ -76,29 +76,29 @@ pub enum YUVColorPrimaries {
     Tech3213 = 22,
 }
 
-impl fmt::Display for YUVColorPrimaries {
+impl fmt::Display for ColorPrimaries {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            YUVColorPrimaries::Reserved0 => write!(f, "Identity"),
-            YUVColorPrimaries::BT709 => write!(f, "ITU BT.709"),
-            YUVColorPrimaries::Unspecified => write!(f, "Unspecified"),
-            YUVColorPrimaries::Reserved => write!(f, "Reserved"),
-            YUVColorPrimaries::BT470M => write!(f, "ITU BT.470M"),
-            YUVColorPrimaries::BT470BG => write!(f, "ITU BT.470BG"),
-            YUVColorPrimaries::ST170M => write!(f, "SMPTE ST-170M"),
-            YUVColorPrimaries::ST240M => write!(f, "SMPTE ST-240M"),
-            YUVColorPrimaries::Film => write!(f, "Film"),
-            YUVColorPrimaries::BT2020 => write!(f, "ITU BT.2020"),
-            YUVColorPrimaries::ST428 => write!(f, "SMPTE ST-428"),
-            YUVColorPrimaries::P3DCI => write!(f, "DCI P3"),
-            YUVColorPrimaries::P3Display => write!(f, "Display P3"),
-            YUVColorPrimaries::Tech3213 => write!(f, "EBU Tech3213"),
+            ColorPrimaries::Reserved0 => write!(f, "Identity"),
+            ColorPrimaries::BT709 => write!(f, "ITU BT.709"),
+            ColorPrimaries::Unspecified => write!(f, "Unspecified"),
+            ColorPrimaries::Reserved => write!(f, "Reserved"),
+            ColorPrimaries::BT470M => write!(f, "ITU BT.470M"),
+            ColorPrimaries::BT470BG => write!(f, "ITU BT.470BG"),
+            ColorPrimaries::ST170M => write!(f, "SMPTE ST-170M"),
+            ColorPrimaries::ST240M => write!(f, "SMPTE ST-240M"),
+            ColorPrimaries::Film => write!(f, "Film"),
+            ColorPrimaries::BT2020 => write!(f, "ITU BT.2020"),
+            ColorPrimaries::ST428 => write!(f, "SMPTE ST-428"),
+            ColorPrimaries::P3DCI => write!(f, "DCI P3"),
+            ColorPrimaries::P3Display => write!(f, "Display P3"),
+            ColorPrimaries::Tech3213 => write!(f, "EBU Tech3213"),
         }
     }
 }
 
 #[derive(Debug,Clone,Copy,PartialEq)]
-pub enum YUVTransferCharacteristic {
+pub enum TransferCharacteristic {
     Reserved0 = 0,
     BT1886,
     Unspecified,
@@ -120,28 +120,28 @@ pub enum YUVTransferCharacteristic {
     HybridLogGamma,
 }
 
-impl fmt::Display for YUVTransferCharacteristic {
+impl fmt::Display for TransferCharacteristic {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            YUVTransferCharacteristic::Reserved0 => write!(f, "Identity"),
-            YUVTransferCharacteristic::BT1886 => write!(f, "ITU BT.1886"),
-            YUVTransferCharacteristic::Unspecified => write!(f, "Unspecified"),
-            YUVTransferCharacteristic::Reserved => write!(f, "Reserved"),
-            YUVTransferCharacteristic::BT470M => write!(f, "ITU BT.470M"),
-            YUVTransferCharacteristic::BT470BG => write!(f, "ITU BT.470BG"),
-            YUVTransferCharacteristic::ST170M => write!(f, "SMPTE ST-170M"),
-            YUVTransferCharacteristic::ST240M => write!(f, "SMPTE ST-240M"),
-            YUVTransferCharacteristic::Linear => write!(f, "Linear"),
-            YUVTransferCharacteristic::Logarithmic100 => write!(f, "Logarithmic 100:1 range"),
-            YUVTransferCharacteristic::Logarithmic316 => write!(f, "Logarithmic 316:1 range"),
-            YUVTransferCharacteristic::XVYCC => write!(f, "XVYCC"),
-            YUVTransferCharacteristic::BT1361E => write!(f, "ITU BT.1361 Extended Color Gamut"),
-            YUVTransferCharacteristic::SRGB => write!(f, "sRGB"),
-            YUVTransferCharacteristic::BT2020Ten => write!(f, "ITU BT.2020 for 10bit systems"),
-            YUVTransferCharacteristic::BT2020Twelve => write!(f, "ITU BT.2020 for 12bit systems"),
-            YUVTransferCharacteristic::PerceptualQuantizer => write!(f, "Perceptual Quantizer"),
-            YUVTransferCharacteristic::ST428 => write!(f, "SMPTE ST-428"),
-            YUVTransferCharacteristic::HybridLogGamma => write!(f, "Hybrid Log-Gamma"),
+            TransferCharacteristic::Reserved0 => write!(f, "Identity"),
+            TransferCharacteristic::BT1886 => write!(f, "ITU BT.1886"),
+            TransferCharacteristic::Unspecified => write!(f, "Unspecified"),
+            TransferCharacteristic::Reserved => write!(f, "Reserved"),
+            TransferCharacteristic::BT470M => write!(f, "ITU BT.470M"),
+            TransferCharacteristic::BT470BG => write!(f, "ITU BT.470BG"),
+            TransferCharacteristic::ST170M => write!(f, "SMPTE ST-170M"),
+            TransferCharacteristic::ST240M => write!(f, "SMPTE ST-240M"),
+            TransferCharacteristic::Linear => write!(f, "Linear"),
+            TransferCharacteristic::Logarithmic100 => write!(f, "Logarithmic 100:1 range"),
+            TransferCharacteristic::Logarithmic316 => write!(f, "Logarithmic 316:1 range"),
+            TransferCharacteristic::XVYCC => write!(f, "XVYCC"),
+            TransferCharacteristic::BT1361E => write!(f, "ITU BT.1361 Extended Color Gamut"),
+            TransferCharacteristic::SRGB => write!(f, "sRGB"),
+            TransferCharacteristic::BT2020Ten => write!(f, "ITU BT.2020 for 10bit systems"),
+            TransferCharacteristic::BT2020Twelve => write!(f, "ITU BT.2020 for 12bit systems"),
+            TransferCharacteristic::PerceptualQuantizer => write!(f, "Perceptual Quantizer"),
+            TransferCharacteristic::ST428 => write!(f, "SMPTE ST-428"),
+            TransferCharacteristic::HybridLogGamma => write!(f, "Hybrid Log-Gamma"),
         }
     }
 }
@@ -280,6 +280,10 @@ impl fmt::Display for Chromaton {
 #[derive(Clone,Copy,PartialEq,Debug)]
 pub struct Formaton {
     model: ColorModel,
+    primaries: ColorPrimaries,
+    xfer: TransferCharacteristic,
+    matrix: MatrixCoefficients,
+
     components: u8,
     comp_info: [Option<Chromaton>; 5],
     elem_size: u8,
@@ -302,6 +306,11 @@ impl Formaton {
 
         Formaton {
             model: model,
+
+            primaries: ColorPrimaries::Unspecified,
+            xfer: TransferCharacteristic::Unspecified,
+            matrix: MatrixCoefficients::Unspecified,
+
             components: components.len() as u8,
             comp_info: c,
             elem_size: elem_size,
@@ -424,6 +433,9 @@ pub mod formats {
 
     pub const YUV444: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 0, 0, 1),
@@ -438,6 +450,9 @@ pub mod formats {
 
     pub const YUV422: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 0, 1, 1),
@@ -452,6 +467,9 @@ pub mod formats {
 
     pub const YUV420: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 1, 1, 1),
@@ -466,6 +484,9 @@ pub mod formats {
 
     pub const YUV411: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 2, 0, 1),
@@ -480,6 +501,9 @@ pub mod formats {
 
     pub const YUV410: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
                     chromaton!(yuv8; 2, 1, 1),
@@ -494,6 +518,9 @@ pub mod formats {
 
     pub const YUV444_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
                     chromaton!(yuv_hb; 0, 0, 1, 10),
@@ -508,6 +535,9 @@ pub mod formats {
 
     pub const YUV422_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
                     chromaton!(yuv_hb; 0, 1, 1, 10),
@@ -522,6 +552,9 @@ pub mod formats {
 
     pub const YUV420_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
                     chromaton!(yuv_hb; 1, 1, 1, 10),
@@ -536,6 +569,9 @@ pub mod formats {
 
     pub const YUV411_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
                     chromaton!(yuv_hb; 2, 0, 1, 10),
@@ -550,6 +586,9 @@ pub mod formats {
 
     pub const YUV410_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
                     chromaton!(yuv_hb; 2, 1, 1, 10),
@@ -564,6 +603,9 @@ pub mod formats {
 
     pub const PAL8: &Formaton = &Formaton {
         model: Trichromatic(RGB),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(pal8; 0), chromaton!(pal8; 1), chromaton!(pal8; 2), None, None],
         elem_size: 3,
@@ -574,6 +616,9 @@ pub mod formats {
 
     pub const RGB565: &Formaton = &Formaton {
         model: Trichromatic(RGB),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(packrgb; 5, 11, 0, 2),
                     chromaton!(packrgb; 6,  5, 0, 2),
@@ -588,6 +633,9 @@ pub mod formats {
 
     pub const RGB24: &Formaton = &Formaton {
         model: Trichromatic(RGB),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
         components: 3,
         comp_info: [chromaton!(packrgb; 8, 0, 2, 3),
                     chromaton!(packrgb; 8, 0, 1, 3),
