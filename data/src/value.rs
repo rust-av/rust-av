@@ -1,8 +1,8 @@
-use pixel::Formaton;
 use audiosample::Soniton;
+use pixel::Formaton;
 
-use std::sync::Arc;
 use std::convert::From;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub enum Value<'a> {
@@ -40,7 +40,7 @@ impl<'a> From<bool> for Value<'a> {
 }
 
 impl<'a> From<(i64, i64)> for Value<'a> {
-    fn from(v: (i64, i64)) ->Self {
+    fn from(v: (i64, i64)) -> Self {
         Value::Pair(v.0, v.1)
     }
 }
@@ -62,7 +62,10 @@ mod test {
     use super::*;
     use std::fmt::Debug;
 
-    fn p<'a, T>(v: T) where T: Into<Value<'a>>+Debug {
+    fn p<'a, T>(v: T)
+    where
+        T: Into<Value<'a>> + Debug,
+    {
         println!("{:?}", v);
     }
 

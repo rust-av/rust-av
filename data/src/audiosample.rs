@@ -1,7 +1,7 @@
-use std::string::*;
 use std::fmt;
+use std::string::*;
 
-#[derive(Debug,Copy,Clone,PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Soniton {
     pub bits: u8,
     pub be: bool,
@@ -52,22 +52,16 @@ impl fmt::Display for Soniton {
         } else {
             "uint"
         };
-        let end = if self.be {
-            "BE"
-        } else {
-            "LE"
-        };
-        write!(f,
-               "({} bps, {} planar: {} packed: {} {})",
-               self.bits,
-               end,
-               self.packed,
-               self.planar,
-               fmt)
+        let end = if self.be { "BE" } else { "LE" };
+        write!(
+            f,
+            "({} bps, {} planar: {} packed: {} {})",
+            self.bits, end, self.packed, self.planar, fmt
+        )
     }
 }
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ChannelType {
     C,
     L,
@@ -181,7 +175,7 @@ impl fmt::Display for ChannelType {
     }
 }
 
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ChannelMap {
     ids: Vec<ChannelType>,
 }
@@ -217,7 +211,7 @@ impl ChannelMap {
         let ids = match count {
             1 => vec![C],
             2 => vec![R, L],
-            _ => unimplemented!()
+            _ => unimplemented!(),
         };
 
         ChannelMap { ids }
@@ -268,7 +262,6 @@ pub mod formats {
         signed: true,
     };
 }
-
 
 #[cfg(test)]
 mod test {

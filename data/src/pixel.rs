@@ -1,23 +1,23 @@
-use std::slice;
 use std::fmt;
 use std::ops::Index;
+use std::slice;
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum YUVRange {
     Limited,
-    Full
+    Full,
 }
 
 impl fmt::Display for YUVRange {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             YUVRange::Limited => write!(f, "Limited range"),
-            YUVRange::Full => write!(f, "Full range")
+            YUVRange::Full => write!(f, "Full range"),
         }
     }
 }
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MatrixCoefficients {
     Identity = 0,
     BT709,
@@ -48,17 +48,25 @@ impl fmt::Display for MatrixCoefficients {
             MatrixCoefficients::ST170M => write!(f, "SMPTE ST-170M"),
             MatrixCoefficients::ST240M => write!(f, "SMPTE ST-240M"),
             MatrixCoefficients::YCgCo => write!(f, "YCgCo"),
-            MatrixCoefficients::BT2020NonConstantLuminance => write!(f, "ITU BT.2020 (Non Constant Luminance)"),
-            MatrixCoefficients::BT2020ConstantLuminance => write!(f, "ITU BT.2020 (Constant Luminance)"),
+            MatrixCoefficients::BT2020NonConstantLuminance => {
+                write!(f, "ITU BT.2020 (Non Constant Luminance)")
+            }
+            MatrixCoefficients::BT2020ConstantLuminance => {
+                write!(f, "ITU BT.2020 (Constant Luminance)")
+            }
             MatrixCoefficients::ST2085 => write!(f, "SMPTE ST-2085"),
-            MatrixCoefficients::ChromaticityDerivedNonConstantLuminance => write!(f, "Chromaticity Derived (Non ConstantLuminance)"),
-            MatrixCoefficients::ChromaticityDerivedConstantLuminance => write!(f, "Chromaticity Derived (Constant Luminance)"),
+            MatrixCoefficients::ChromaticityDerivedNonConstantLuminance => {
+                write!(f, "Chromaticity Derived (Non ConstantLuminance)")
+            }
+            MatrixCoefficients::ChromaticityDerivedConstantLuminance => {
+                write!(f, "Chromaticity Derived (Constant Luminance)")
+            }
             MatrixCoefficients::ICtCp => write!(f, "ICtCp"),
         }
     }
 }
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ColorPrimaries {
     Reserved0 = 0,
     BT709,
@@ -97,7 +105,7 @@ impl fmt::Display for ColorPrimaries {
     }
 }
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TransferCharacteristic {
     Reserved0 = 0,
     BT1886,
@@ -146,11 +154,11 @@ impl fmt::Display for TransferCharacteristic {
     }
 }
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum YUVSystem {
     YCbCr(YUVRange),
     YCoCg,
-    ICtCp
+    ICtCp,
 }
 
 impl fmt::Display for YUVSystem {
@@ -164,11 +172,11 @@ impl fmt::Display for YUVSystem {
     }
 }
 
-#[derive(Debug, Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TrichromaticEncodingSystem {
     RGB,
     YUV(YUVSystem),
-    XYZ
+    XYZ,
 }
 
 impl fmt::Display for TrichromaticEncodingSystem {
@@ -182,7 +190,7 @@ impl fmt::Display for TrichromaticEncodingSystem {
     }
 }
 
-#[derive(Debug, Clone,Copy,PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ColorModel {
     Trichromatic(TrichromaticEncodingSystem),
     CMYK,
@@ -211,7 +219,7 @@ impl ColorModel {
     }
 }
 
-#[derive(Clone,Copy,Debug,PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Chromaton {
     h_ss: u8,
     v_ss: u8,
@@ -266,10 +274,10 @@ impl fmt::Display for Chromaton {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let pfmt = if self.packed {
             let mask = ((1 << self.depth) - 1) << self.shift;
-            format!("packed(+{},{:X}, step {})",
-                    self.comp_offs,
-                    mask,
-                    self.next_elem)
+            format!(
+                "packed(+{},{:X}, step {})",
+                self.comp_offs, mask, self.next_elem
+            )
         } else {
             format!("planar({},{})", self.comp_offs, self.next_elem)
         };
@@ -277,7 +285,7 @@ impl fmt::Display for Chromaton {
     }
 }
 
-#[derive(Clone,Copy,PartialEq,Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Formaton {
     model: ColorModel,
     primaries: ColorPrimaries,
@@ -293,7 +301,14 @@ pub struct Formaton {
 }
 
 impl Formaton {
-    pub fn new(model: ColorModel, components: &[Chromaton], elem_size: u8, be: bool, alpha: bool, palette: bool) -> Self {
+    pub fn new(
+        model: ColorModel,
+        components: &[Chromaton],
+        elem_size: u8,
+        be: bool,
+        alpha: bool,
+        palette: bool,
+    ) -> Self {
         let mut c: [Option<Chromaton>; 5] = [None; 5];
 
         if components.len() > 5 {
@@ -369,27 +384,13 @@ impl<'a> IntoIterator for &'a Formaton {
 
 impl fmt::Display for Formaton {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let end = if self.be {
-            "BE"
-        } else {
-            "LE"
-        };
-        let palstr = if self.palette {
-            "palette "
-        } else {
-            ""
-        };
-        let astr = if self.alpha {
-            "alpha "
-        } else {
-            ""
-        };
-        let mut str = format!("Formaton for {} ({}{}elem {} size {}): ",
-                              self.model,
-                              palstr,
-                              astr,
-                              end,
-                              self.elem_size);
+        let end = if self.be { "BE" } else { "LE" };
+        let palstr = if self.palette { "palette " } else { "" };
+        let astr = if self.alpha { "alpha " } else { "" };
+        let mut str = format!(
+            "Formaton for {} ({}{}elem {} size {}): ",
+            self.model, palstr, astr, end, self.elem_size
+        );
         for &i in self.into_iter() {
             if let Some(chr) = i {
                 str = format!("{} {}", str, chr);
@@ -400,36 +401,37 @@ impl fmt::Display for Formaton {
 }
 
 macro_rules! chromaton {
-    ($hs: expr, $vs: expr, $pck: expr, $d: expr, $sh: expr, $co: expr, $ne: expr) => ({
+    ($hs: expr, $vs: expr, $pck: expr, $d: expr, $sh: expr, $co: expr, $ne: expr) => {{
         Some(Chromaton {
-                h_ss: $hs,
-                v_ss: $vs,
-                packed: $pck,
-                depth: $d,
-                shift: $sh,
-                comp_offs: $co,
-                next_elem: $ne })
-    });
-    (yuv8; $hs: expr, $vs: expr, $co: expr) => ({
+            h_ss: $hs,
+            v_ss: $vs,
+            packed: $pck,
+            depth: $d,
+            shift: $sh,
+            comp_offs: $co,
+            next_elem: $ne,
+        })
+    }};
+    (yuv8; $hs: expr, $vs: expr, $co: expr) => {{
         chromaton!($hs, $vs, false, 8, 0, $co, 1)
-    });
-    (yuv_hb; $hs: expr, $vs: expr, $co: expr, $d: expr) => ({
+    }};
+    (yuv_hb; $hs: expr, $vs: expr, $co: expr, $d: expr) => {{
         chromaton!($hs, $vs, false, $d, 0, $co, 1)
-    });
-    (packrgb; $d: expr, $s: expr, $co: expr, $ne: expr) => ({
+    }};
+    (packrgb; $d: expr, $s: expr, $co: expr, $ne: expr) => {{
         chromaton!(0, 0, true, $d, $s, $co, $ne)
-    });
-    (pal8; $co: expr) => ({
+    }};
+    (pal8; $co: expr) => {{
         chromaton!(0, 0, true, 8, 0, $co, 3)
-    });
+    }};
 }
 
 pub mod formats {
-    use pixel::*;
     use self::ColorModel::*;
     use self::TrichromaticEncodingSystem::*;
-    use self::YUVSystem::*;
     use self::YUVRange::*;
+    use self::YUVSystem::*;
+    use pixel::*;
 
     pub const YUV444: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
@@ -437,11 +439,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
-                    chromaton!(yuv8; 0, 0, 1),
-                    chromaton!(yuv8; 0, 0, 2),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 8, 0, 0, 1),
+            chromaton!(yuv8; 0, 0, 1),
+            chromaton!(yuv8; 0, 0, 2),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -454,11 +458,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
-                    chromaton!(yuv8; 0, 1, 1),
-                    chromaton!(yuv8; 0, 1, 2),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 8, 0, 0, 1),
+            chromaton!(yuv8; 0, 1, 1),
+            chromaton!(yuv8; 0, 1, 2),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -471,11 +477,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
-                    chromaton!(yuv8; 1, 1, 1),
-                    chromaton!(yuv8; 1, 1, 2),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 8, 0, 0, 1),
+            chromaton!(yuv8; 1, 1, 1),
+            chromaton!(yuv8; 1, 1, 2),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -488,11 +496,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
-                    chromaton!(yuv8; 2, 0, 1),
-                    chromaton!(yuv8; 2, 0, 2),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 8, 0, 0, 1),
+            chromaton!(yuv8; 2, 0, 1),
+            chromaton!(yuv8; 2, 0, 2),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -505,11 +515,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 8, 0, 0, 1),
-                    chromaton!(yuv8; 2, 1, 1),
-                    chromaton!(yuv8; 2, 1, 2),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 8, 0, 0, 1),
+            chromaton!(yuv8; 2, 1, 1),
+            chromaton!(yuv8; 2, 1, 2),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -522,11 +534,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
-                    chromaton!(yuv_hb; 0, 0, 1, 10),
-                    chromaton!(yuv_hb; 0, 0, 2, 10),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 10, 0, 0, 1),
+            chromaton!(yuv_hb; 0, 0, 1, 10),
+            chromaton!(yuv_hb; 0, 0, 2, 10),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -539,11 +553,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
-                    chromaton!(yuv_hb; 0, 1, 1, 10),
-                    chromaton!(yuv_hb; 0, 1, 2, 10),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 10, 0, 0, 1),
+            chromaton!(yuv_hb; 0, 1, 1, 10),
+            chromaton!(yuv_hb; 0, 1, 2, 10),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -556,11 +572,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
-                    chromaton!(yuv_hb; 1, 1, 1, 10),
-                    chromaton!(yuv_hb; 1, 1, 2, 10),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 10, 0, 0, 1),
+            chromaton!(yuv_hb; 1, 1, 1, 10),
+            chromaton!(yuv_hb; 1, 1, 2, 10),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -573,11 +591,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
-                    chromaton!(yuv_hb; 2, 0, 1, 10),
-                    chromaton!(yuv_hb; 2, 0, 2, 10),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 10, 0, 0, 1),
+            chromaton!(yuv_hb; 2, 0, 1, 10),
+            chromaton!(yuv_hb; 2, 0, 2, 10),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -590,11 +610,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(0, 0, false, 10, 0, 0, 1),
-                    chromaton!(yuv_hb; 2, 1, 1, 10),
-                    chromaton!(yuv_hb; 2, 1, 2, 10),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(0, 0, false, 10, 0, 0, 1),
+            chromaton!(yuv_hb; 2, 1, 1, 10),
+            chromaton!(yuv_hb; 2, 1, 2, 10),
+            None,
+            None,
+        ],
         elem_size: 0,
         be: false,
         alpha: false,
@@ -607,7 +629,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(pal8; 0), chromaton!(pal8; 1), chromaton!(pal8; 2), None, None],
+        comp_info: [
+            chromaton!(pal8; 0),
+            chromaton!(pal8; 1),
+            chromaton!(pal8; 2),
+            None,
+            None,
+        ],
         elem_size: 3,
         be: false,
         alpha: false,
@@ -620,11 +648,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(packrgb; 5, 11, 0, 2),
-                    chromaton!(packrgb; 6,  5, 0, 2),
-                    chromaton!(packrgb; 5,  0, 0, 2),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(packrgb; 5, 11, 0, 2),
+            chromaton!(packrgb; 6,  5, 0, 2),
+            chromaton!(packrgb; 5,  0, 0, 2),
+            None,
+            None,
+        ],
         elem_size: 2,
         be: false,
         alpha: false,
@@ -637,11 +667,13 @@ pub mod formats {
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
         components: 3,
-        comp_info: [chromaton!(packrgb; 8, 0, 2, 3),
-                    chromaton!(packrgb; 8, 0, 1, 3),
-                    chromaton!(packrgb; 8, 0, 0, 3),
-                    None,
-                    None],
+        comp_info: [
+            chromaton!(packrgb; 8, 0, 2, 3),
+            chromaton!(packrgb; 8, 0, 1, 3),
+            chromaton!(packrgb; 8, 0, 0, 3),
+            None,
+            None,
+        ],
         elem_size: 3,
         be: false,
         alpha: false,
