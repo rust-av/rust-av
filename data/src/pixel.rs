@@ -1,3 +1,4 @@
+use num_traits::FromPrimitive;
 use std::fmt;
 use std::ops::Index;
 use std::slice;
@@ -17,23 +18,23 @@ impl fmt::Display for YUVRange {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Primitive)]
 pub enum MatrixCoefficients {
     Identity = 0,
-    BT709,
-    Unspecified,
-    Reserved,
-    BT470M,
-    BT470BG,
-    ST170M,
-    ST240M,
-    YCgCo,
-    BT2020NonConstantLuminance,
-    BT2020ConstantLuminance,
-    ST2085,
-    ChromaticityDerivedNonConstantLuminance,
-    ChromaticityDerivedConstantLuminance,
-    ICtCp,
+    BT709 = 1,
+    Unspecified = 2,
+    Reserved = 3,
+    BT470M = 4,
+    BT470BG = 5,
+    ST170M = 6,
+    ST240M = 7,
+    YCgCo = 8,
+    BT2020NonConstantLuminance = 9,
+    BT2020ConstantLuminance = 10,
+    ST2085 = 11,
+    ChromaticityDerivedNonConstantLuminance = 12,
+    ChromaticityDerivedConstantLuminance = 13,
+    ICtCp = 14,
 }
 
 impl fmt::Display for MatrixCoefficients {
@@ -66,21 +67,21 @@ impl fmt::Display for MatrixCoefficients {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Primitive)]
 pub enum ColorPrimaries {
     Reserved0 = 0,
-    BT709,
-    Unspecified,
-    Reserved,
-    BT470M,
-    BT470BG,
-    ST170M,
-    ST240M,
-    Film,
-    BT2020,
-    ST428,
-    P3DCI,
-    P3Display,
+    BT709 = 1,
+    Unspecified = 2,
+    Reserved = 3,
+    BT470M = 4,
+    BT470BG = 5,
+    ST170M = 6,
+    ST240M = 7,
+    Film = 8,
+    BT2020 = 9,
+    ST428 = 10,
+    P3DCI = 11,
+    P3Display = 12,
     Tech3213 = 22,
 }
 
@@ -105,27 +106,27 @@ impl fmt::Display for ColorPrimaries {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Primitive)]
 pub enum TransferCharacteristic {
     Reserved0 = 0,
-    BT1886,
-    Unspecified,
-    Reserved,
-    BT470M,
-    BT470BG,
-    ST170M,
-    ST240M,
-    Linear,
-    Logarithmic100,
-    Logarithmic316,
-    XVYCC,
-    BT1361E,
-    SRGB,
-    BT2020Ten,
-    BT2020Twelve,
-    PerceptualQuantizer,
-    ST428,
-    HybridLogGamma,
+    BT1886 = 1,
+    Unspecified = 2,
+    Reserved = 3,
+    BT470M = 4,
+    BT470BG = 5,
+    ST170M = 6,
+    ST240M = 7,
+    Linear = 8,
+    Logarithmic100 = 9,
+    Logarithmic316 = 10,
+    XVYCC = 11,
+    BT1361E = 12,
+    SRGB = 13,
+    BT2020Ten = 14,
+    BT2020Twelve = 15,
+    PerceptualQuantizer = 16,
+    ST428 = 17,
+    HybridLogGamma = 18,
 }
 
 impl fmt::Display for TransferCharacteristic {
@@ -338,6 +339,55 @@ impl Formaton {
     pub fn get_model(&self) -> ColorModel {
         self.model
     }
+
+    pub fn get_primaries(&self) -> ColorPrimaries {
+        self.primaries
+    }
+
+    pub fn set_primaries(mut self, pc: ColorPrimaries) {
+        self.primaries = pc;
+    }
+
+    pub fn set_primaries_from_u32(mut self, pc: u32) -> Option<ColorPrimaries> {
+        let parsed_pc = ColorPrimaries::from_u32(pc);
+        if let Some(pc) = parsed_pc {
+            self.primaries = pc
+        }
+        parsed_pc
+    }
+
+    pub fn get_xfer(&self) -> TransferCharacteristic {
+        self.xfer
+    }
+
+    pub fn set_xfer(mut self, pc: TransferCharacteristic) {
+        self.xfer = pc;
+    }
+
+    pub fn set_xfer_from_u32(mut self, tc: u32) -> Option<TransferCharacteristic> {
+        let parsed_tc = TransferCharacteristic::from_u32(tc);
+        if let Some(tc) = parsed_tc {
+            self.xfer = tc
+        }
+        parsed_tc
+    }
+
+    pub fn get_matrix(&self) -> MatrixCoefficients {
+        self.matrix
+    }
+
+    pub fn set_matrix(mut self, mc: MatrixCoefficients) {
+        self.matrix = mc;
+    }
+
+    pub fn set_matrix_from_u32(mut self, mc: u32) -> Option<MatrixCoefficients> {
+        let parsed_mc = MatrixCoefficients::from_u32(mc);
+        if let Some(mc) = parsed_mc {
+            self.matrix = mc
+        }
+        parsed_mc
+    }
+
     pub fn get_num_comp(&self) -> usize {
         self.components as usize
     }
