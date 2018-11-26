@@ -1,6 +1,6 @@
 use rational::Rational64;
-use std::sync::Arc;
 use std::any::Any;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, Default)]
 pub struct TimeInfo {

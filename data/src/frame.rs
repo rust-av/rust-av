@@ -1,6 +1,6 @@
 #![allow(dead_code, unused_variables)]
-use std::alloc::{Layout, alloc, };
 use bytes::BytesMut;
+use std::alloc::{alloc, Layout};
 
 use std::sync::Arc;
 
@@ -70,14 +70,12 @@ impl AudioInfo {
 }
 
 impl PartialEq for AudioInfo {
-
     fn eq(&self, info2: &AudioInfo) -> bool {
         self.rate == info2.rate && self.map == info2.map && self.format == info2.format
     }
 }
 
 impl PartialEq for VideoInfo {
-
     fn eq(&self, info2: &VideoInfo) -> bool {
         self.width == info2.width && self.height == info2.height && self.format == info2.format
     }
@@ -105,7 +103,7 @@ impl From<AudioInfo> for MediaKind {
 
 use self::MediaKind::*;
 
-pub trait FrameBuffer : Send + Sync {
+pub trait FrameBuffer: Send + Sync {
     fn linesize(&self, idx: usize) -> Result<usize, FrameError>;
     fn count(&self) -> usize;
     fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8], FrameError>;
@@ -121,12 +119,16 @@ mod private {
     impl Supported for f32 {}
 }
 
-pub trait FrameBufferConv<T: private::Supported> : FrameBuffer {
+pub trait FrameBufferConv<T: private::Supported>: FrameBuffer {
     fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T], FrameError> {
-        self.as_slice_inner(idx)?.as_slice_of::<T>().map_err(|e| InvalidConversion)
+        self.as_slice_inner(idx)?
+            .as_slice_of::<T>()
+            .map_err(|e| InvalidConversion)
     }
     fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [T], FrameError> {
-        self.as_mut_slice_inner(idx)?.as_mut_slice_of::<T>().map_err(|e| InvalidConversion)
+        self.as_mut_slice_inner(idx)?
+            .as_mut_slice_of::<T>()
+            .map_err(|e| InvalidConversion)
     }
 }
 
@@ -191,9 +193,7 @@ impl DefaultFrameBuffer {
         match kind {
             &Video(ref video) => {
                 let size = video.size(ALIGNMENT);
-                let data = unsafe {
-                    alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
-                };
+                let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
@@ -211,12 +211,10 @@ impl DefaultFrameBuffer {
                     }
                 }
                 buffer
-            },
+            }
             &Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
-                let data = unsafe {
-                    alloc(Layout::from_size_align(size, ALIGNMENT).unwrap())
-                };
+                let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
@@ -230,7 +228,7 @@ impl DefaultFrameBuffer {
                     });
                 }
                 buffer
-            },
+            }
         }
     }
 }
@@ -238,7 +236,8 @@ impl DefaultFrameBuffer {
 pub type ArcFrame = Arc<Frame>;
 
 pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> Frame
-where T: Into<MediaKind> + Clone
+where
+    T: Into<MediaKind> + Clone,
 {
     let k = kind.into();
     let buf = DefaultFrameBuffer::new(&k);
@@ -399,18 +398,38 @@ mod test {
         let mut map = ChannelMap::new();
         map.add_channel(ChannelType::C);
         let sn = Arc::new(formats::S16);
-        let info1 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+        let info1 = AudioInfo {
+            samples: 42,
+            rate: 48000,
+            map: map.clone(),
+            format: sn,
+        };
         let sn = Arc::new(formats::S16);
-        let info2 = AudioInfo{samples: 4242, rate: 48000, map: map.clone(), format: sn};
+        let info2 = AudioInfo {
+            samples: 4242,
+            rate: 48000,
+            map: map.clone(),
+            format: sn,
+        };
 
         assert_eq!(info1 == info2, true);
 
         let mut map = ChannelMap::new();
         map.add_channel(ChannelType::C);
         let sn = Arc::new(formats::S16);
-        let info1 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+        let info1 = AudioInfo {
+            samples: 42,
+            rate: 48000,
+            map: map.clone(),
+            format: sn,
+        };
         let sn = Arc::new(formats::S32);
-        let info2 = AudioInfo{samples: 42, rate: 48000, map: map.clone(), format: sn};
+        let info2 = AudioInfo {
+            samples: 42,
+            rate: 48000,
+            map: map.clone(),
+            format: sn,
+        };
 
         assert_eq!(info1 == info2, false);
     }
@@ -421,19 +440,39 @@ mod test {
     fn test_video_format_cmp() {
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
-        let info1 = VideoInfo{pic_type: PictureType::I, width: 42, height: 42, format: fm};
+        let info1 = VideoInfo {
+            pic_type: PictureType::I,
+            width: 42,
+            height: 42,
+            format: fm,
+        };
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
-        let info2 = VideoInfo{pic_type: PictureType::P, width: 42, height: 42, format: fm};
+        let info2 = VideoInfo {
+            pic_type: PictureType::P,
+            width: 42,
+            height: 42,
+            format: fm,
+        };
 
         assert_eq!(info1 == info2, true);
 
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
-        let info1 = VideoInfo{pic_type: PictureType::I, width: 42, height: 42, format: fm};
+        let info1 = VideoInfo {
+            pic_type: PictureType::I,
+            width: 42,
+            height: 42,
+            format: fm,
+        };
         let rgb565: Formaton = *RGB565;
         let fm = Arc::new(rgb565);
-        let info2 = VideoInfo{pic_type: PictureType::I, width: 42, height: 42, format: fm};
+        let info2 = VideoInfo {
+            pic_type: PictureType::I,
+            width: 42,
+            height: 42,
+            format: fm,
+        };
 
         assert_eq!(info1 == info2, false);
     }

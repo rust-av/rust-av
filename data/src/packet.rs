@@ -1,19 +1,18 @@
 #![allow(dead_code)]
 
-use std::io::{Read, Write, Result};
+use std::io::{Read, Result, Write};
 use timeinfo::TimeInfo;
 
 // use data::SideData;
 
 #[derive(Debug, Clone)]
 pub struct Packet {
-    pub data : Vec<u8>,
-    pub pos : Option<usize>,
-    pub stream_index : isize,
+    pub data: Vec<u8>,
+    pub pos: Option<usize>,
+    pub stream_index: isize,
     pub t: TimeInfo,
 
     // side_data : SideData;
-
     pub is_key: bool,
     pub is_corrupted: bool,
 }
@@ -21,10 +20,10 @@ pub struct Packet {
 impl Packet {
     pub fn with_capacity(capacity: usize) -> Self {
         Packet {
-            data : Vec::with_capacity(capacity),
+            data: Vec::with_capacity(capacity),
             t: TimeInfo::default(),
-            pos : None,
-            stream_index : -1,
+            pos: None,
+            stream_index: -1,
             is_key: false,
             is_corrupted: false,
         }
@@ -32,10 +31,10 @@ impl Packet {
 
     pub fn zeroed(size: usize) -> Self {
         Packet {
-            data : vec![0; size],
+            data: vec![0; size],
             t: TimeInfo::default(),
-            pos : None,
-            stream_index : -1,
+            pos: None,
+            stream_index: -1,
             is_key: false,
             is_corrupted: false,
         }
@@ -69,8 +68,8 @@ pub type ArcPacket = Arc<Packet>;
 
 #[cfg(test)]
 mod test {
-    use std::io::Cursor;
     use super::*;
+    use std::io::Cursor;
 
     #[test]
     fn read_packet() {
@@ -79,7 +78,7 @@ mod test {
 
         match buf.get_packet(64) {
             Ok(pkt) => assert_eq!(pkt.data, &data[..64]),
-            _ => assert!(false)
+            _ => assert!(false),
         }
     }
 
