@@ -156,6 +156,32 @@ impl fmt::Display for TransferCharacteristic {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ChromaLocation {
+    Unspecified = 0,
+    Left,
+    Center,
+    TopLeft,
+    Top,
+    BottomLeft,
+    Bottom,
+}
+
+impl fmt::Display for ChromaLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use self::ChromaLocation::*;
+        match *self {
+            Unspecified => write!(f, "Unspecified"),
+            Left => write!(f, "Left"),
+            Center => write!(f, "Center"),
+            TopLeft => write!(f, "TopLeft"),
+            Top => write!(f, "Top"),
+            BottomLeft => write!(f, "BottomLeft"),
+            Bottom => write!(f, "Bottom"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum YUVSystem {
     YCbCr(YUVRange),
     YCoCg,
@@ -292,6 +318,7 @@ pub struct Formaton {
     primaries: ColorPrimaries,
     xfer: TransferCharacteristic,
     matrix: MatrixCoefficients,
+    chroma_location: ChromaLocation,
 
     components: u8,
     comp_info: [Option<Chromaton>; 5],
@@ -326,6 +353,7 @@ impl Formaton {
             primaries: ColorPrimaries::Unspecified,
             xfer: TransferCharacteristic::Unspecified,
             matrix: MatrixCoefficients::Unspecified,
+            chroma_location: ChromaLocation::Unspecified,
 
             components: components.len() as u8,
             comp_info: c,
@@ -488,6 +516,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -507,6 +536,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -526,6 +556,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -545,6 +576,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -564,6 +596,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 8, 0, 0, 1),
@@ -583,6 +616,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 10, 0, 0, 1),
@@ -602,6 +636,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 10, 0, 0, 1),
@@ -621,6 +656,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 10, 0, 0, 1),
@@ -640,6 +676,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 10, 0, 0, 1),
@@ -659,6 +696,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(0, 0, false, 10, 0, 0, 1),
@@ -678,6 +716,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(pal8; 0),
@@ -697,6 +736,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(packrgb; 5, 11, 0, 2),
@@ -716,6 +756,7 @@ pub mod formats {
         primaries: ColorPrimaries::Unspecified,
         xfer: TransferCharacteristic::Unspecified,
         matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
             chromaton!(packrgb; 8, 0, 2, 3),
