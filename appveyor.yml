@@ -14,7 +14,7 @@ environment:
       channel: nightly
 matrix:
   allow_failures:
-    - platform: stable
+    - channel: stable
     - platform: arm64
 
 install:
