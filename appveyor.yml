@@ -6,11 +6,15 @@ environment:
     - platform: x86_64
       target: x86_64-pc-windows-msvc
       channel: stable
+    - platform: x86_64
+      target: x86_64-pc-windows-msvc
+      channel: stable
     - platform: arm64
       target: aarch64-pc-windows-msvc
       channel: nightly
 matrix:
   allow_failures:
+    - platform: stable
     - platform: arm64
 
 install:
