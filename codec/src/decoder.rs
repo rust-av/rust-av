@@ -110,7 +110,7 @@ mod test {
 
         impl Descriptor for Des {
             fn create(&self) -> Box<dyn Decoder> {
-                box Dec { state: 0, format: None }
+                Box::new(Dec { state: 0, format: None })
             }
             fn describe<'a>(&'a self) -> &'a Descr {
                 &self.descr

@@ -140,7 +140,7 @@ mod test {
 
         impl Descriptor for Des {
             fn create(&self) -> Box<dyn Encoder> {
-                box Enc { state: 0, w: None, h: None, format: None }
+                Box::new(Enc { state: 0, w: None, h: None, format: None })
             }
             fn describe<'a>(&'a self) -> &'a Descr {
                 &self.descr
