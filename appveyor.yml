@@ -5,7 +5,7 @@ environment:
   matrix:
     - platform: x86_64
       target: x86_64-pc-windows-msvc
-      channel: stable
+      channel: nightly
     - platform: x86_64
       target: x86_64-pc-windows-msvc
       channel: stable
