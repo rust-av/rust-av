@@ -34,5 +34,5 @@ test_script:
     - cargo test --target=%target% --verbose
 
 artifacts:
-    - path: target\$(target)\release\rust-av*.*
+    - path: target\$(target)\release\*.*
       name: rust-av-$(platform)
