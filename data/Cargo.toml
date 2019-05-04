@@ -4,6 +4,8 @@ description = "Multimedia data structures"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
+homepage = "https://github.com/rust-av/rust-av"
+keywords = ["multimedia"]
 readme = "README.md"
 
 [dependencies]
