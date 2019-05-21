@@ -4,11 +4,10 @@ description = "Multimedia format decoding and encoding"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
+repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]
 num-rational = "0.2"
 failure = "0.1.1"
+av-data = "0.1"
 
-[dependencies.av-data]
-path = "../data"
-version = "*"
