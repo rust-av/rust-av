@@ -19,7 +19,7 @@ fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
 macro_rules! get {
     ($s: ident, $name: ident, $size: expr) => ({
         let mut buf = [0; $size];
-        try!(get_buffer($s, &mut buf));
+        get_buffer($s, &mut buf)?;
         Ok($name(&buf))
     })
 }
@@ -85,7 +85,7 @@ impl<R: Read + ?Sized> ByteRead for R {}
 
 macro_rules! peek {
    ($s: ident, $name: ident, $size: expr) => ({
-        let buf = try!($s.fill_buf());
+        let buf = $s.fill_buf()?;
         if buf.len() < $size {
             Err(Error::new(UnexpectedEof, "Empty"))
         } else {
