@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]
-num-rational = "0.2"
-failure = "0.1.1"
-av-data = "0.1"
+num-rational = "0.2.2"
+failure = "0.1.5"
+av-data = "0.1.0"
 

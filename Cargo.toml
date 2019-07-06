@@ -10,8 +10,7 @@ license = "MIT"
 nightly = []
 
 [dependencies.av-data]
-path = "data"
-version = "*"
+version = "0.1.0"
 
 [dependencies.av-format]
 path = "format"
