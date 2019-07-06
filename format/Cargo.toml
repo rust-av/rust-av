@@ -6,9 +6,8 @@ authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 
 [dependencies]
-failure = "0.1.1"
-log = "0.4"
+failure = "0.1.5"
+log = "0.4.6"
 
 [dependencies.av-data]
-path = "../data"
-version = "*"
+version = "0.1.0"

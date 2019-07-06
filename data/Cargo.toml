@@ -9,9 +9,9 @@ keywords = ["multimedia"]
 readme = "README.md"
 
 [dependencies]
-failure = "0.1.1"
-num-rational = "0.2"
-bytes = "0.4.4"
+failure = "0.1.5"
+num-rational = "0.2.2"
+bytes = "0.4.12"
 byte-slice-cast = "0.3.1"
-enum-primitive-derive = "^0.1"
-num-traits = "^0.2"
+enum-primitive-derive = "0.1.2"
+num-traits = "0.2.8"
