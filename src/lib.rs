@@ -1,9 +1,6 @@
 // workarounds
 #![allow(unused_doc_comments)]
 
-// language extensions
-#![feature(box_syntax, plugin, rust_2018_preview)]
-
 // crates
 
 // local crates
