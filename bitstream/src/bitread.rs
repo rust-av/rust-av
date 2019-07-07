@@ -1,4 +1,4 @@
-use byteread::*;
+use crate::byteread::*;
 
 pub trait BitReadEndian {
     fn peek_val(&mut self, n:usize) -> u64;
@@ -29,7 +29,7 @@ pub trait BitReadInternal : BitReadEndian + BitReadFill {
 }
 
 pub trait BitRead<'a>: BitReadInternal+Copy {
-    fn new(&'a[u8]) -> Self;
+    fn new(_: &'a[u8]) -> Self;
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
 
