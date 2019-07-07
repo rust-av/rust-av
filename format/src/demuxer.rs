@@ -1,14 +1,14 @@
-use error::*;
+use crate::error::*;
 
-use buffer::Buffered;
+use crate::buffer::Buffered;
 use std::io::SeekFrom;
 use std::any::Any;
 use std::sync::Arc;
 
-use common::*;
+use crate::common::*;
 
-use stream::Stream;
-use data::packet::Packet;
+use crate::stream::Stream;
+use crate::data::packet::Packet;
 
 #[derive(Clone, Debug)]
 pub enum Event {
@@ -177,7 +177,7 @@ impl<'a> Probe for [&'static dyn Descriptor] {
 mod test {
     use super::*;
     use std::io::SeekFrom;
-    use data::packet::Packet;
+    use crate::data::packet::Packet;
 
     struct DummyDes {
         d: Descr,
@@ -248,7 +248,7 @@ mod test {
     }
 
     use std::io::Cursor;
-    use buffer::*;
+    use crate::buffer::*;
 
     #[test]
     fn read_headers() {

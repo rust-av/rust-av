@@ -4,6 +4,7 @@ description = "Multimedia format demuxing and muxing"
 version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
+edition = "2018"
 
 [dependencies]
 failure = "0.1.5"
