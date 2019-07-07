@@ -5,6 +5,7 @@ version = "0.1.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 repository = "https://github.com/rust-av/rust-av"
+edition = "2018"
 
 [dependencies]
 num-rational = "0.2.2"

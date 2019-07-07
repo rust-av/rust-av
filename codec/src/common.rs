@@ -8,8 +8,8 @@ pub trait Descriptor {
 }
 */
 
-pub trait CodecList : Sized {
-    type D : ?Sized;
+pub trait CodecList: Sized {
+    type D: ?Sized;
 
     fn new() -> Self;
 
