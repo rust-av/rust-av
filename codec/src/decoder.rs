@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use crate::data::packet::Packet;
 use crate::data::frame::ArcFrame;
+use crate::data::packet::Packet;
 
-use crate::error::*;
 pub use crate::common::CodecList;
+use crate::error::*;
 
-pub trait Decoder : Send {
+pub trait Decoder: Send {
     // TODO support codec configuration using set_option
     // fn open(&mut self) -> Result<()>;
     fn set_extradata(&mut self, extra: &[u8]);
@@ -64,14 +64,16 @@ pub trait Descriptor {
 }
 
 pub struct Codecs {
-    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>
+    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>,
 }
 
 impl CodecList for Codecs {
     type D = dyn Descriptor;
 
     fn new() -> Codecs {
-        Codecs { list: HashMap::new() }
+        Codecs {
+            list: HashMap::new(),
+        }
     }
 
     // TODO more lookup functions
@@ -96,12 +98,12 @@ mod test {
 
     mod dummy {
         use super::super::*;
-        use std::sync::Arc;
         use crate::data::pixel::Formaton;
+        use std::sync::Arc;
 
         struct Dec {
             state: usize,
-            format: Option<Arc<Formaton>>
+            format: Option<Arc<Formaton>>,
         }
 
         pub struct Des {
@@ -110,7 +112,10 @@ mod test {
 
         impl Descriptor for Des {
             fn create(&self) -> Box<dyn Decoder> {
-                Box::new(Dec { state: 0, format: None })
+                Box::new(Dec {
+                    state: 0,
+                    format: None,
+                })
             }
             fn describe<'a>(&'a self) -> &'a Descr {
                 &self.descr
@@ -146,7 +151,7 @@ mod test {
                 name: "dummy",
                 desc: "Dummy encoder",
                 mime: "x-application/dummy",
-            }
+            },
         };
     }
     use self::dummy::DUMMY_DESCR;

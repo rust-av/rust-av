@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 use std::convert::Into;
 
-use crate::data::packet::Packet;
 use crate::data::frame::ArcFrame;
-use crate::data::value::Value;
+use crate::data::packet::Packet;
 use crate::data::params::CodecParams;
+use crate::data::value::Value;
 
 use crate::error::*;
 
-pub trait Encoder : Send {
+pub trait Encoder: Send {
     fn get_extradata(&self) -> Option<Vec<u8>>;
     fn send_frame(&mut self, pkt: &ArcFrame) -> Result<()>;
     fn receive_packet(&mut self) -> Result<Packet>;
@@ -54,7 +54,8 @@ impl Context {
     }
 
     pub fn set_option<'a, V>(&mut self, key: &str, val: V) -> Result<()>
-        where V: Into<Value<'a>>
+    where
+        V: Into<Value<'a>>,
     {
         // TODO: support more options
         self.enc.set_option(key, val.into())
@@ -91,7 +92,7 @@ pub trait Descriptor {
 }
 
 pub struct Codecs {
-    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>
+    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>,
 }
 
 pub use crate::common::CodecList;
@@ -99,7 +100,9 @@ pub use crate::common::CodecList;
 impl CodecList for Codecs {
     type D = dyn Descriptor;
     fn new() -> Codecs {
-        Codecs { list: HashMap::new() }
+        Codecs {
+            list: HashMap::new(),
+        }
     }
     // TODO more lookup functions
     fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor> {
@@ -122,16 +125,16 @@ mod test {
     use super::*;
 
     mod dummy {
-        use super::super::*;
-        use std::sync::Arc;
-        use crate::data::pixel::Formaton;
         use super::super::super::error::Error;
+        use super::super::*;
+        use crate::data::pixel::Formaton;
+        use std::sync::Arc;
 
         struct Enc {
             state: usize,
             w: Option<usize>,
             h: Option<usize>,
-            format: Option<Arc<Formaton>>
+            format: Option<Arc<Formaton>>,
         }
 
         pub struct Des {
@@ -140,7 +143,12 @@ mod test {
 
         impl Descriptor for Des {
             fn create(&self) -> Box<dyn Encoder> {
-                Box::new(Enc { state: 0, w: None, h: None, format: None })
+                Box::new(Enc {
+                    state: 0,
+                    w: None,
+                    h: None,
+                    format: None,
+                })
             }
             fn describe<'a>(&'a self) -> &'a Descr {
                 &self.descr
@@ -174,7 +182,7 @@ mod test {
                     ("w", Value::U64(v)) => self.w = Some(v as usize),
                     ("h", Value::U64(v)) => self.h = Some(v as usize),
                     ("format", Value::Formaton(f)) => self.format = Some(f),
-                    _ => return Err(Error::Unsupported(format!("{} key", key)))
+                    _ => return Err(Error::Unsupported(format!("{} key", key))),
                 }
 
                 Ok(())
@@ -194,9 +202,7 @@ mod test {
             fn get_params(&self) -> Result<CodecParams> {
                 use crate::data::params::*;
 
-                if self.w.is_none() ||
-                    self.w.is_none() ||
-                        self.format.is_none() {
+                if self.w.is_none() || self.w.is_none() || self.format.is_none() {
                     return Err(Error::ConfigurationIncomplete);
                 }
 
@@ -204,13 +210,13 @@ mod test {
                     kind: Some(MediaKind::Video(VideoInfo {
                         height: self.w.unwrap(),
                         width: self.h.unwrap(),
-                        format: self.format.clone()
+                        format: self.format.clone(),
                     })),
                     codec_id: Some("dummy".to_owned()),
                     extradata: self.get_extradata(),
                     bit_rate: 0,
                     convergence_window: 0,
-                    delay: 0
+                    delay: 0,
                 })
             }
 
@@ -225,7 +231,7 @@ mod test {
                 name: "dummy",
                 desc: "Dummy encoder",
                 mime: "x-application/dummy",
-            }
+            },
         };
     }
     use self::dummy::DUMMY_DESCR;
