@@ -227,12 +227,11 @@ pub enum ColorModel {
 
 impl fmt::Display for ColorModel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use self::ColorModel::*;
         match *self {
-            Trichromatic(system) => write!(f, "{}", system),
-            CMYK => write!(f, "CMYK"),
-            HSV => write!(f, "HSV"),
-            LAB => write!(f, "LAB"),
+            ColorModel::Trichromatic(system) => write!(f, "{}", system),
+            ColorModel::CMYK => write!(f, "CMYK"),
+            ColorModel::HSV => write!(f, "HSV"),
+            ColorModel::LAB => write!(f, "LAB"),
         }
     }
 }
@@ -509,7 +508,7 @@ pub mod formats {
     use self::TrichromaticEncodingSystem::*;
     use self::YUVRange::*;
     use self::YUVSystem::*;
-    use pixel::*;
+    use crate::pixel::*;
 
     pub const YUV444: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),

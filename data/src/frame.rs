@@ -4,9 +4,9 @@ use std::alloc::{alloc, Layout};
 
 use std::sync::Arc;
 
-use audiosample::*;
-use pixel::*;
-use timeinfo::*;
+use crate::audiosample::*;
+use crate::pixel::*;
+use crate::timeinfo::*;
 
 use byte_slice_cast::*;
 
@@ -391,7 +391,7 @@ impl Frame {
 #[cfg(test)]
 mod test {
     use super::*;
-    use audiosample::formats;
+    use crate::audiosample::formats;
 
     #[test]
     fn test_format_cmp() {
@@ -434,7 +434,7 @@ mod test {
         assert_eq!(info1 == info2, false);
     }
 
-    use pixel::formats::{RGB565, YUV420};
+    use crate::pixel::formats::{RGB565, YUV420};
 
     #[test]
     fn test_video_format_cmp() {

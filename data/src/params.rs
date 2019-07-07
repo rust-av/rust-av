@@ -1,5 +1,5 @@
-use audiosample::{ChannelMap, Soniton};
-use pixel::Formaton;
+use crate::audiosample::{ChannelMap, Soniton};
+use crate::pixel::Formaton;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
