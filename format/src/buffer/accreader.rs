@@ -9,7 +9,7 @@ use std::io::{BufRead, Read, Result, Seek, SeekFrom};
 use std::iter::Iterator;
 use std::cmp;
 use std::iter;
-use buffer::Buffered;
+use crate::buffer::Buffered;
 
 pub struct AccReader<R> {
     inner: R,
@@ -111,8 +111,8 @@ impl<R: Read + Seek> Read for AccReader<R> {
                 }
             } else {
                 let nread = {
-                    let mut rem = try!(self.fill_buf());
-                    try!(rem.read(buf))
+                    let mut rem = self.fill_buf()?;
+                    rem.read(buf)?
                 };
                 self.consume(nread);
                 Ok(nread)
@@ -128,7 +128,7 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
         if self.pos != 0 || self.end != self.buf.len() {
             self.reset_buffer_position();
             trace!("buffer reset ended");
-            let read = try!(self.inner.read(&mut self.buf[self.end..]));
+            let read = self.inner.read(&mut self.buf[self.end..])?;
             self.end += read;
             trace!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, &self.buf[self.pos..self.end]);
         }
@@ -169,7 +169,7 @@ impl<R: Read + Seek> Seek for AccReader<R> {
                 self.index = sz as usize;
                 self.pos = 0;
                 self.end = 0;
-                try!(self.fill_buf());
+                self.fill_buf()?;
                 Ok(sz)
             }
             Err(e) => Err(e),
@@ -189,7 +189,7 @@ impl<R: Read + Seek> Seek for AccReader<R> {
 mod tests {
     use super::*;
     use std::io::{Cursor, BufRead};
-    use buffer::Buffered;
+    use crate::buffer::Buffered;
 
     #[test]
     fn acc_reader_test() {
