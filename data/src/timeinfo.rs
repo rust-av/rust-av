@@ -1,4 +1,4 @@
-use rational::Rational64;
+use crate::rational::Rational64;
 use std::any::Any;
 use std::sync::Arc;
 
