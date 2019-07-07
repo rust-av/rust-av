@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use std::io::{Read, Result, Write};
 use crate::timeinfo::TimeInfo;
+use std::io::{Read, Result, Write};
 
 // use data::SideData;
 
