@@ -1,9 +1,9 @@
 use crate::common::*;
-use crate::data::value::*;
 use crate::data::packet::Packet;
-use std::sync::Arc;
-use std::io::Write;
+use crate::data::value::*;
 use std::any::Any;
+use std::io::Write;
+use std::sync::Arc;
 
 use crate::error::*;
 
@@ -42,12 +42,12 @@ impl Context {
         self.muxer.write_header(&mut self.buf)?;
         //FIXME: we should have proper management of the buffer's index
         match self.writer.write_all(&self.buf) {
-          Ok(()) => {
-            let len = self.buf.len();
-            self.buf.clear();
-            Ok(len)
-          },
-          Err(e) => Err(Error::Io(e)),
+            Ok(()) => {
+                let len = self.buf.len();
+                self.buf.clear();
+                Ok(len)
+            }
+            Err(e) => Err(Error::Io(e)),
         }
     }
 
@@ -55,12 +55,12 @@ impl Context {
         self.muxer.write_packet(&mut self.buf, pkt)?;
         //FIXME: we should have proper management of the buffer's index
         match self.writer.write_all(&self.buf) {
-          Ok(()) => {
-            let len = self.buf.len();
-            self.buf.clear();
-            Ok(len)
-          },
-          Err(e) => Err(Error::Io(e)),
+            Ok(()) => {
+                let len = self.buf.len();
+                self.buf.clear();
+                Ok(len)
+            }
+            Err(e) => Err(Error::Io(e)),
         }
     }
 
@@ -68,12 +68,12 @@ impl Context {
         self.muxer.write_trailer(&mut self.buf)?;
         //FIXME: we should have proper management of the buffer's index
         match self.writer.write_all(&self.buf) {
-          Ok(()) => {
-            let len = self.buf.len();
-            self.buf.clear();
-            Ok(len)
-          },
-          Err(e) => Err(Error::Io(e)),
+            Ok(()) => {
+                let len = self.buf.len();
+                self.buf.clear();
+                Ok(len)
+            }
+            Err(e) => Err(Error::Io(e)),
         }
     }
 
@@ -82,7 +82,9 @@ impl Context {
     }
 
     pub fn set_option<'a, V>(&mut self, key: &str, val: V) -> Result<()>
-        where V: Into<Value<'a>> {
+    where
+        V: Into<Value<'a>>,
+    {
         self.muxer.set_option(key, val.into())
     }
 }

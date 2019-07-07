@@ -3,13 +3,12 @@
 //! `current_slice`, and indicate with `consume` how many bytes
 //! were used
 
-
+use crate::buffer::Buffered;
+use std::cmp;
 use std::io;
 use std::io::{BufRead, Read, Result, Seek, SeekFrom};
-use std::iter::Iterator;
-use std::cmp;
 use std::iter;
-use crate::buffer::Buffered;
+use std::iter::Iterator;
 
 pub struct AccReader<R> {
     inner: R,
@@ -55,7 +54,11 @@ impl<R: Read + Seek> AccReader<R> {
     }
 
     pub fn reset_buffer_position(&mut self) {
-        trace!("resetting buffer at pos: {} capacity: {}", self.pos, self.end);
+        trace!(
+            "resetting buffer at pos: {} capacity: {}",
+            self.pos,
+            self.end
+        );
         if self.end - self.pos > 0 {
             for i in 0..(self.end - self.pos) {
                 trace!("buf[{}] = buf[{}]", i, self.pos + i);
@@ -88,7 +91,12 @@ impl<R: Read + Seek + Send> Buffered for AccReader<R> {
 
 impl<R: Read + Seek> Read for AccReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        trace!("read pos: {} cap: {} buflen: {}", self.pos, self.end, buf.len());
+        trace!(
+            "read pos: {} cap: {} buflen: {}",
+            self.pos,
+            self.end,
+            buf.len()
+        );
         if buf.len() < self.end - self.pos {
             match (&self.buf[self.pos..(self.pos + buf.len())]).read(buf) {
                 Ok(len) => {
@@ -121,7 +129,6 @@ impl<R: Read + Seek> Read for AccReader<R> {
     }
 }
 
-
 impl<R: Read + Seek> BufRead for AccReader<R> {
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         // trace!("fillbuf current: {:?}", str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
@@ -130,7 +137,12 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
             trace!("buffer reset ended");
             let read = self.inner.read(&mut self.buf[self.end..])?;
             self.end += read;
-            trace!("new pos: {} and cap: {} -> current: {:?}", self.pos, self.end, &self.buf[self.pos..self.end]);
+            trace!(
+                "new pos: {} and cap: {} -> current: {:?}",
+                self.pos,
+                self.end,
+                &self.buf[self.pos..self.end]
+            );
         }
         Ok(&self.buf[self.pos..self.end])
     }
@@ -188,8 +200,8 @@ impl<R: Read + Seek> Seek for AccReader<R> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{Cursor, BufRead};
     use crate::buffer::Buffered;
+    use std::io::{BufRead, Cursor};
 
     #[test]
     fn acc_reader_test() {
