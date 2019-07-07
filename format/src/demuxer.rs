@@ -1,14 +1,14 @@
 use crate::error::*;
 
 use crate::buffer::Buffered;
-use std::io::SeekFrom;
 use std::any::Any;
+use std::io::SeekFrom;
 use std::sync::Arc;
 
 use crate::common::*;
 
-use crate::stream::Stream;
 use crate::data::packet::Packet;
+use crate::stream::Stream;
 
 #[derive(Clone, Debug)]
 pub enum Event {
@@ -18,7 +18,7 @@ pub enum Event {
     Eof,
 }
 
-pub trait Demuxer : Send {
+pub trait Demuxer: Send {
     fn read_headers(&mut self, buf: &Box<dyn Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
     fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)>;
 }
@@ -82,14 +82,13 @@ impl Context {
                 Err(e) => match e {
                     Error::MoreDataNeeded(needed) => {
                         self.reader.grow(needed);
-                    },
-                    _ => return Err(e)
+                    }
+                    _ => return Err(e),
                 },
                 Ok(_) => return Ok(()),
             }
         }
     }
-
 
     fn read_event_internal(&mut self) -> Result<Event> {
         let ref mut demux = self.demuxer;
@@ -108,9 +107,12 @@ impl Context {
                 }
                 if let Event::NewPacket(ref mut pkt) = event {
                     if pkt.t.timebase.is_none() {
-                        if let Some(ref st) = self.info.streams.iter().find(|s| {
-                            s.index as isize == pkt.stream_index
-                        }) {
+                        if let Some(ref st) = self
+                            .info
+                            .streams
+                            .iter()
+                            .find(|s| s.index as isize == pkt.stream_index)
+                        {
                             pkt.t.timebase = Some(st.timebase);
                         }
                     }
@@ -132,15 +134,14 @@ impl Context {
                         if self.reader.data().len() <= len {
                             return Ok(Event::Eof);
                         }
-                    },
-                    _ => return Err(e)
+                    }
+                    _ => return Err(e),
                 },
                 Ok(ev) => return Ok(ev),
             }
         }
     }
 }
-
 
 pub const PROBE_DATA: usize = 4 * 1024;
 pub const PROBE_SCORE_EXTENSION: u8 = 50;
@@ -176,8 +177,8 @@ impl<'a> Probe for [&'static dyn Descriptor] {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::io::SeekFrom;
     use crate::data::packet::Packet;
+    use std::io::SeekFrom;
 
     struct DummyDes {
         d: Descr,
@@ -186,7 +187,11 @@ mod test {
     struct DummyDemuxer {}
 
     impl Demuxer for DummyDemuxer {
-        fn read_headers(&mut self, buf: &Box<dyn Buffered>, _info: &mut GlobalInfo) -> Result<SeekFrom> {
+        fn read_headers(
+            &mut self,
+            buf: &Box<dyn Buffered>,
+            _info: &mut GlobalInfo,
+        ) -> Result<SeekFrom> {
             let len = buf.data().len();
             if 9 > len {
                 let needed = 9 - len;
@@ -203,13 +208,9 @@ mod test {
             } else {
                 debug!("{:?}", buf.data());
                 match &buf.data()[..2] {
-                    b"p1" => {
-                        Ok((SeekFrom::Current(3), Event::NewPacket(Packet::new())))
-                    },
-                    b"e1" => {
-                        Ok((SeekFrom::Current(3), Event::MoreDataNeeded(0)))
-                    }
-                    _ => Err(Error::InvalidData.into())
+                    b"p1" => Ok((SeekFrom::Current(3), Event::NewPacket(Packet::new()))),
+                    b"e1" => Ok((SeekFrom::Current(3), Event::MoreDataNeeded(0))),
+                    _ => Err(Error::InvalidData.into()),
                 }
             }
         }
@@ -247,8 +248,8 @@ mod test {
         demuxers.probe(b"dummy").unwrap();
     }
 
-    use std::io::Cursor;
     use crate::buffer::*;
+    use std::io::Cursor;
 
     #[test]
     fn read_headers() {

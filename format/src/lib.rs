@@ -13,9 +13,9 @@ mod data {
 
 pub use av_data::rational;
 
-pub mod common;
 pub mod buffer;
-pub mod stream;
+pub mod common;
 pub mod demuxer;
-pub mod muxer;
 pub mod error;
+pub mod muxer;
+pub mod stream;
