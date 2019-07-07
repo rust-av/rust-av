@@ -1,10 +1,10 @@
 use crate::byteread::*;
 
 pub trait BitReadEndian {
-    fn peek_val(&mut self, n:usize) -> u64;
-    fn merge_val(msp:u64, lsp:u64, msb:usize, lsb:usize) -> u64;
-    fn build_cache(cache:u64, refill:u64, cache_size:usize) -> u64;
-    fn skip_rem(&mut self, n:usize) -> ();
+    fn peek_val(&mut self, n: usize) -> u64;
+    fn merge_val(msp: u64, lsp: u64, msb: usize, lsb: usize) -> u64;
+    fn build_cache(cache: u64, refill: u64, cache_size: usize) -> u64;
+    fn skip_rem(&mut self, n: usize) -> ();
 }
 
 pub trait BitReadFill {
@@ -13,27 +13,26 @@ pub trait BitReadFill {
     fn fill64(&self) -> u64;
 }
 
-pub trait BitReadInternal : BitReadEndian + BitReadFill {
+pub trait BitReadInternal: BitReadEndian + BitReadFill {
     fn left(&self) -> usize;
     fn refill32(&mut self) -> ();
     fn refill64(&mut self) -> ();
 
-    fn get_val(&mut self, n:usize) -> u64 {
+    fn get_val(&mut self, n: usize) -> u64 {
         let ret = self.peek_val(n);
 
         self.skip_rem(n);
 
         ret
     }
-
 }
 
-pub trait BitRead<'a>: BitReadInternal+Copy {
-    fn new(_: &'a[u8]) -> Self;
+pub trait BitRead<'a>: BitReadInternal + Copy {
+    fn new(_: &'a [u8]) -> Self;
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
 
-    fn skip_bits(&mut self, size : usize) -> ();
+    fn skip_bits(&mut self, size: usize) -> ();
 
     #[inline]
     fn get_bit(&mut self) -> bool {
@@ -45,7 +44,7 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
     }
 
     #[inline]
-    fn get_bits_64(&mut self, mut n:usize) -> u64 {
+    fn get_bits_64(&mut self, mut n: usize) -> u64 {
         let mut left = 0;
         let mut ret = 0;
 
@@ -54,9 +53,9 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
         }
 
         if self.left() < n {
-            n   -= self.left();
+            n -= self.left();
             left = self.left();
-            ret  = self.get_val(left);
+            ret = self.get_val(left);
             self.refill64();
         }
 
@@ -64,7 +63,7 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
     }
 
     #[inline]
-    fn get_bits_32(&mut self, n:usize) -> u32 {
+    fn get_bits_32(&mut self, n: usize) -> u32 {
         if n == 0 {
             return 0;
         }
@@ -76,7 +75,6 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
         self.get_val(n) as u32
     }
 
-
     #[inline]
     fn peek_bit(&mut self) -> bool {
         let mut tmp = *self;
@@ -85,14 +83,14 @@ pub trait BitRead<'a>: BitReadInternal+Copy {
     }
 
     #[inline]
-    fn peek_bits_32(&mut self, n:usize) -> u32 {
+    fn peek_bits_32(&mut self, n: usize) -> u32 {
         let mut tmp = *self;
 
         tmp.get_bits_32(n)
     }
 
     #[inline]
-    fn peek_bits_64(&self, n:usize) -> u64 {
+    fn peek_bits_64(&self, n: usize) -> u64 {
         let mut tmp = *self;
 
         tmp.get_bits_64(n)
@@ -217,9 +215,9 @@ macro_rules! little_endian_reader {
     }
 }
 
-little_endian_reader!{ BitReadLE }
+little_endian_reader! { BitReadLE }
 
-impl <'a> BitReadFill for BitReadLE<'a> {
+impl<'a> BitReadFill for BitReadLE<'a> {
     #[inline]
     fn can_refill(&self) -> bool {
         self.index + 8 <= self.buffer.len()
@@ -261,9 +259,9 @@ macro_rules! big_endian_reader {
     }
 }
 
-big_endian_reader!{ BitReadBE }
+big_endian_reader! { BitReadBE }
 
-impl <'a> BitReadFill for BitReadBE<'a> {
+impl<'a> BitReadFill for BitReadBE<'a> {
     #[inline]
     fn can_refill(&self) -> bool {
         self.index + 8 <= self.buffer.len()
@@ -277,7 +275,6 @@ impl <'a> BitReadFill for BitReadBE<'a> {
         get_u64b(&self.buffer[self.index..])
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -316,7 +313,7 @@ mod test {
                 buffer: &CHECKBOARD0101,
                 index: 0,
                 cache: 0,
-                left: 0
+                left: 0,
             };
 
             assert!(reader.peek_bits_64(1) == 1);
@@ -331,7 +328,7 @@ mod test {
                 buffer: &CHECKBOARD0101,
                 index: 0,
                 cache: 0,
-                left: 0
+                left: 0,
             };
 
             assert!(reader.get_bits_32(1) == 1);
@@ -389,7 +386,7 @@ mod test {
             let b = &CHECKBOARD0011;
             let mut reader = BitReadLE::new(b);
 
-            reader.skip_bits(128*8+2);
+            reader.skip_bits(128 * 8 + 2);
             reader.get_bits_64(6);
         }
     }
@@ -490,7 +487,7 @@ mod test {
             let b = &CHECKBOARD0011;
             let mut reader = BitReadBE::new(b);
 
-            reader.skip_bits(128*8+2);
+            reader.skip_bits(128 * 8 + 2);
             reader.get_bits_64(6);
         }
     }
