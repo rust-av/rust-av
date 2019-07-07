@@ -13,5 +13,3 @@ pub mod bitread;
 pub mod byteread;
 pub mod bytewrite;
 pub mod codebook;
-
-
