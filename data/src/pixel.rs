@@ -769,6 +769,86 @@ pub mod formats {
         alpha: false,
         palette: false,
     };
+
+    pub const BGR48BE: &Formaton = &Formaton {
+        model: Trichromatic(BGR),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 3,
+        comp_info: [
+            chromaton!(packrgb; 16, 0, 4, 6),
+            chromaton!(packrgb; 16, 0, 2, 6),
+            chromaton!(packrgb; 16, 0, 0, 6),
+            None,
+            None,
+        ],
+        elem_size: 6,
+        be: true,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const BGR48LE: &Formaton = &Formaton {
+        model: Trichromatic(BGR),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 3,
+        comp_info: [
+            chromaton!(packrgb; 16, 0, 4, 6),
+            chromaton!(packrgb; 16, 0, 2, 6),
+            chromaton!(packrgb; 16, 0, 0, 6),
+            None,
+            None,
+        ],
+        elem_size: 6,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const BGR48LE: &Formaton = &Formaton {
+        model: Trichromatic(BGR),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 3,
+        comp_info: [
+            chromaton!(packrgb; 16, 0, 0, 6),
+            chromaton!(packrgb; 16, 0, 2, 6),
+            chromaton!(packrgb; 16, 0, 4, 6),
+            None,
+            None,
+        ],
+        elem_size: 6,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    pub const BGR48BE: &Formaton = &Formaton {
+        model: Trichromatic(BGR),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 3,
+        comp_info: [
+            chromaton!(packrgb; 16, 0, 0, 6),
+            chromaton!(packrgb; 16, 0, 2, 6),
+            chromaton!(packrgb; 16, 0, 4, 6),
+            None,
+            None,
+        ],
+        elem_size: 6,
+        be: true,
+        alpha: false,
+        palette: false,
+    };
 }
 
 #[cfg(test)]
