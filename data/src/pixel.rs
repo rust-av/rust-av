@@ -1,4 +1,4 @@
-use num_traits::FromPrimitive;
+pub use num_traits::FromPrimitive;
 use std::fmt;
 use std::ops::Index;
 use std::slice;
