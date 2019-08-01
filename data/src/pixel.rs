@@ -1,3 +1,11 @@
+//!
+//! Expose all necessary  data structures to rappresent pixels.
+//!
+//! Re-exports num_traits::FromPrimitive in order to make easy to cast a parsed value into correct
+//! enum structures
+//!
+//!
+
 pub use num_traits::FromPrimitive;
 use std::fmt;
 use std::ops::Index;
@@ -18,6 +26,7 @@ impl fmt::Display for YUVRange {
     }
 }
 
+/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
 #[derive(Debug, Clone, Copy, PartialEq, Primitive)]
 pub enum MatrixCoefficients {
     Identity = 0,
@@ -67,6 +76,7 @@ impl fmt::Display for MatrixCoefficients {
     }
 }
 
+/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
 #[derive(Debug, Clone, Copy, PartialEq, Primitive)]
 pub enum ColorPrimaries {
     Reserved0 = 0,
@@ -106,6 +116,7 @@ impl fmt::Display for ColorPrimaries {
     }
 }
 
+/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
 #[derive(Debug, Clone, Copy, PartialEq, Primitive)]
 pub enum TransferCharacteristic {
     Reserved0 = 0,
@@ -155,6 +166,7 @@ impl fmt::Display for TransferCharacteristic {
     }
 }
 
+/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ChromaLocation {
     Unspecified = 0,
@@ -245,6 +257,7 @@ impl ColorModel {
     }
 }
 
+/// There are available multiple constructor for yuv/rgb
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Chromaton {
     h_ss: u8,
@@ -347,6 +360,11 @@ impl fmt::Display for Chromaton {
     }
 }
 
+/// Complete Video format representation
+///
+/// In order to rappresents Raw Video use set methods for primaries, xfers and matrix.
+///
+/// Can contain up to five color (Chromaton) compotents. Four colors and 0ne alpha.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Formaton {
     model: ColorModel,
@@ -514,6 +532,10 @@ impl fmt::Display for Formaton {
 }
 
 pub mod formats {
+    //!
+    //! Ready-to-use formaton
+    //!
+
     use self::ColorModel::*;
     use self::TrichromaticEncodingSystem::*;
     use self::YUVRange::*;
