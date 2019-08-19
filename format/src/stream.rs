@@ -72,7 +72,7 @@ impl Stream {
             user_private: None,
         }
     }
-    pub fn get_extradata<'a>(&'a self) -> Option<&'a [u8]> {
+    pub fn get_extradata(&self) -> Option<&[u8]> {
         self.params.extradata.as_ref().map(|e| e.as_slice())
     }
 }

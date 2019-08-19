@@ -97,7 +97,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
     }
 
     #[inline]
-    fn align_bits(&mut self) -> () {
+    fn align_bits(&mut self) {
         let left = self.left() & 7;
 
         self.skip_bits(left);

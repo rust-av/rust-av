@@ -27,8 +27,8 @@ pub struct Context {
 impl Context {
     pub fn new<W: Write + 'static + Send>(muxer: Box<dyn Muxer + Send>, writer: Box<W>) -> Self {
         Context {
-            muxer: muxer,
-            writer: writer,
+            muxer,
+            writer,
             buf: Vec::new(),
             user_private: None,
         }
@@ -100,7 +100,7 @@ pub struct Descr {
 
 pub trait Descriptor {
     fn create(&self) -> Box<dyn Muxer>;
-    fn describe<'a>(&'a self) -> &'a Descr;
+    fn describe(&self) -> &Descr;
 }
 
 pub trait Lookup {
@@ -109,8 +109,6 @@ pub trait Lookup {
 
 impl Lookup for [&'static dyn Descriptor] {
     fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor> {
-        self.iter()
-            .find(|&&d| d.describe().name == name)
-            .map(|v| *v)
+        self.iter().find(|&&d| d.describe().name == name).copied()
     }
 }

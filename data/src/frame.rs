@@ -106,8 +106,8 @@ use self::MediaKind::*;
 pub trait FrameBuffer: Send + Sync {
     fn linesize(&self, idx: usize) -> Result<usize, FrameError>;
     fn count(&self) -> usize;
-    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8], FrameError>;
-    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8], FrameError>;
+    fn as_slice_inner(&self, idx: usize) -> Result<&[u8], FrameError>;
+    fn as_mut_slice_inner(&mut self, idx: usize) -> Result<&mut [u8], FrameError>;
 }
 
 mod private {
@@ -120,12 +120,12 @@ mod private {
 }
 
 pub trait FrameBufferConv<T: private::Supported>: FrameBuffer {
-    fn as_slice<'a>(&'a self, idx: usize) -> Result<&'a [T], FrameError> {
+    fn as_slice(&self, idx: usize) -> Result<&[T], FrameError> {
         self.as_slice_inner(idx)?
             .as_slice_of::<T>()
             .map_err(|e| InvalidConversion)
     }
-    fn as_mut_slice<'a>(&'a mut self, idx: usize) -> Result<&'a mut [T], FrameError> {
+    fn as_mut_slice(&mut self, idx: usize) -> Result<&mut [T], FrameError> {
         self.as_mut_slice_inner(idx)?
             .as_mut_slice_of::<T>()
             .map_err(|e| InvalidConversion)
@@ -174,13 +174,13 @@ impl FrameBuffer for DefaultFrameBuffer {
         self.planes.len()
     }
 
-    fn as_slice_inner<'a>(&'a self, idx: usize) -> Result<&'a [u8], FrameError> {
+    fn as_slice_inner(&self, idx: usize) -> Result<&[u8], FrameError> {
         match self.planes.get(idx) {
             None => Err(InvalidIndex),
             Some(plane) => Ok(&plane.buf),
         }
     }
-    fn as_mut_slice_inner<'a>(&'a mut self, idx: usize) -> Result<&'a mut [u8], FrameError> {
+    fn as_mut_slice_inner(&mut self, idx: usize) -> Result<&mut [u8], FrameError> {
         match self.planes.get_mut(idx) {
             None => Err(InvalidIndex),
             Some(plane) => Ok(&mut plane.buf),
@@ -189,9 +189,9 @@ impl FrameBuffer for DefaultFrameBuffer {
 }
 
 impl DefaultFrameBuffer {
-    pub fn new<'a>(kind: &'a MediaKind) -> DefaultFrameBuffer {
-        match kind {
-            &Video(ref video) => {
+    pub fn new(kind: &MediaKind) -> DefaultFrameBuffer {
+        match *kind {
+            Video(ref video) => {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
@@ -206,18 +206,18 @@ impl DefaultFrameBuffer {
                         let linesize = c.get_linesize(video.width, ALIGNMENT);
                         buffer.planes.push(Plane {
                             buf: buffer.buf.split_to(planesize),
-                            linesize: linesize,
+                            linesize,
                         });
                     }
                 }
                 buffer
             }
-            &Audio(ref audio) => {
+            Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
                 let mut buffer = DefaultFrameBuffer {
-                    buf: buf,
+                    buf,
                     planes: Vec::new(),
                 };
                 for _ in 0..audio.map.len() {
@@ -328,7 +328,6 @@ where
     }
 }
 
-use std::mem;
 use std::slice;
 
 // TODO make it a separate trait
@@ -362,7 +361,7 @@ impl Frame {
         }
     }
 
-    pub fn copy_from_raw_parts<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
+    pub fn copy_from_raw_parts<I, IU>(&mut self, mut src: I, mut src_linesize: IU)
     where
         I: Iterator<Item = *const u8>,
         IU: Iterator<Item = usize>,
@@ -380,7 +379,6 @@ impl Frame {
                 let hb = c.unwrap().get_height(h);
                 let s = unsafe { slice::from_raw_parts(r, hb * s_linesize) };
                 copy_plane(d, d_linesize, s, s_linesize, c.unwrap().get_width(w), hb);
-                mem::forget(s);
             }
         } else {
             unimplemented!();

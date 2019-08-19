@@ -1,5 +1,5 @@
-use std::io::{Error, Read, BufRead, Result};
 use std::io::ErrorKind::*;
+use std::io::{BufRead, Error, Read, Result};
 
 use crate::bitstream::byteread::*;
 
@@ -17,11 +17,11 @@ fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
 }
 
 macro_rules! get {
-    ($s: ident, $name: ident, $size: expr) => ({
+    ($s: ident, $name: ident, $size: expr) => {{
         let mut buf = [0; $size];
         get_buffer($s, &mut buf)?;
         Ok($name(&buf))
-    })
+    }};
 }
 
 pub trait ByteRead: Read {
@@ -84,14 +84,14 @@ pub trait ByteRead: Read {
 impl<R: Read + ?Sized> ByteRead for R {}
 
 macro_rules! peek {
-   ($s: ident, $name: ident, $size: expr) => ({
+    ($s: ident, $name: ident, $size: expr) => {{
         let buf = $s.fill_buf()?;
         if buf.len() < $size {
             Err(Error::new(UnexpectedEof, "Empty"))
         } else {
             Ok($name(&buf))
         }
-    })
+    }};
 }
 
 // TODO: bind to a trait that is a bit more strict
@@ -156,8 +156,8 @@ impl<R: BufRead + ?Sized> BytePeek for R {}
 
 #[cfg(test)]
 mod test {
-    use std::io::{Cursor, BufReader};
     use crate::io::byteread::*;
+    use std::io::{BufReader, Cursor};
 
     macro_rules! test_read {
         {$fun: ident, $val: expr, $len: expr} => {
@@ -181,10 +181,10 @@ mod test {
     test_read! { get_i8, 1, 17 }
     test_read! { get_u16l, 257, 8 }
     test_read! { get_i16l, 257, 8 }
-    test_read! { get_u32l, 16843009, 4 }
-    test_read! { get_i32l, 16843009, 4 }
-    test_read! { get_u64l, 72340172838076673u64, 2 }
-    test_read! { get_i64l, 72340172838076673i64, 2 }
+    test_read! { get_u32l, 16_843_009, 4 }
+    test_read! { get_i32l, 16_843_009, 4 }
+    test_read! { get_u64l, 72_340_172_838_076_673u64, 2 }
+    test_read! { get_i64l, 72_340_172_838_076_673i64, 2 }
 
     macro_rules! test_peek {
         {$fun: ident, $val: expr, $len: expr} => {
@@ -205,8 +205,8 @@ mod test {
     test_peek! { peek_i8, 1, 17 }
     test_peek! { peek_u16l, 257, 9 }
     test_peek! { peek_i16l, 257, 9 }
-    test_peek! { peek_u32l, 16843009, 5 }
-    test_peek! { peek_i32l, 16843009, 5 }
-    test_peek! { peek_u64l, 72340172838076673u64, 3 }
-    test_peek! { peek_i64l, 72340172838076673i64, 3 }
+    test_peek! { peek_u32l, 16_843_009, 5 }
+    test_peek! { peek_i32l, 16_843_009, 5 }
+    test_peek! { peek_u64l, 72_340_172_838_076_673u64, 3 }
+    test_peek! { peek_i64l, 72_340_172_838_076_673i64, 3 }
 }

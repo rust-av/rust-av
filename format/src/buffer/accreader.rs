@@ -25,11 +25,11 @@ impl<R: Read + Seek> AccReader<R> {
     }
 
     pub fn with_capacity(cap: usize, inner: R) -> AccReader<R> {
-        let mut buf = Vec::with_capacity(cap);
+        let mut buf = vec![0; cap];
         buf.extend(iter::repeat(0).take(cap));
         AccReader {
-            inner: inner,
-            buf: buf,
+            inner,
+            buf,
             pos: 0,
             end: 0,
             index: 0,
@@ -65,7 +65,7 @@ impl<R: Read + Seek> AccReader<R> {
                 self.buf[i] = self.buf[self.pos + i];
             }
         }
-        self.end = self.end - self.pos;
+        self.end -= self.pos;
         self.pos = 0;
     }
 
