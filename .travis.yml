@@ -1,6 +1,6 @@
 sudo: required
 language: rust
-rust: nightly
+rust: stable
 
 # Cache cargo symbols for faster build
 cache: cargo

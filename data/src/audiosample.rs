@@ -23,16 +23,16 @@ fn round_to_byte(v: usize) -> usize {
 impl Soniton {
     pub fn new(bits: u8, be: bool, packed: bool, planar: bool, float: bool, signed: bool) -> Self {
         Soniton {
-            bits: bits,
-            be: be,
-            packed: packed,
-            planar: planar,
-            float: float,
-            signed: signed,
+            bits,
+            be,
+            packed,
+            planar,
+            float,
+            signed,
         }
     }
 
-    pub fn get_audio_size(&self, length: usize, alignment: usize) -> usize {
+    pub fn get_audio_size(self, length: usize, alignment: usize) -> usize {
         let s = if self.packed {
             round_to_byte(length * (self.bits as usize))
         } else {
@@ -94,8 +94,8 @@ pub enum ChannelType {
 }
 
 impl ChannelType {
-    pub fn is_center(&self) -> bool {
-        match *self {
+    pub fn is_center(self) -> bool {
+        match self {
             ChannelType::C => true,
             ChannelType::Ch => true,
             ChannelType::Cl => true,
@@ -107,8 +107,8 @@ impl ChannelType {
             _ => false,
         }
     }
-    pub fn is_left(&self) -> bool {
-        match *self {
+    pub fn is_left(self) -> bool {
+        match self {
             ChannelType::L => true,
             ChannelType::Ls => true,
             ChannelType::Lss => true,
@@ -122,8 +122,8 @@ impl ChannelType {
             _ => false,
         }
     }
-    pub fn is_right(&self) -> bool {
-        match *self {
+    pub fn is_right(self) -> bool {
+        match self {
             ChannelType::R => true,
             ChannelType::Rs => true,
             ChannelType::Rss => true,
@@ -175,7 +175,7 @@ impl fmt::Display for ChannelType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct ChannelMap {
     ids: Vec<ChannelType>,
 }
@@ -188,8 +188,8 @@ impl ChannelMap {
         self.ids.push(ch);
     }
     pub fn add_channels(&mut self, chs: &[ChannelType]) {
-        for i in 0..chs.len() {
-            self.ids.push(chs[i]);
+        for ch in chs {
+            self.ids.push(*ch);
         }
     }
     pub fn len(&self) -> usize {

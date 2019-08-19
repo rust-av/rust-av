@@ -3,9 +3,7 @@
 use crate::timeinfo::TimeInfo;
 use std::io::{Read, Result, Write};
 
-// use data::SideData;
-
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct Packet {
     pub data: Vec<u8>,
     pub pos: Option<usize>,
@@ -48,7 +46,7 @@ impl Packet {
 pub trait ReadPacket: Read {
     fn get_packet(&mut self, len: usize) -> Result<Packet> {
         let mut pkt = Packet::zeroed(len);
-        self.read(pkt.data.as_mut_slice())?;
+        self.read_exact(pkt.data.as_mut_slice())?;
         Ok(pkt)
     }
 }

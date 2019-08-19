@@ -34,7 +34,7 @@ pub struct Descr {
 
 pub trait Descriptor {
     fn create(&self) -> Box<dyn Demuxer>;
-    fn describe<'a>(&'a self) -> &'a Descr;
+    fn describe(&self) -> &Descr;
 
     fn probe(&self, data: &[u8]) -> u8;
 }
@@ -49,8 +49,8 @@ pub struct Context {
 impl Context {
     pub fn new<R: Buffered + 'static>(demuxer: Box<dyn Demuxer>, reader: Box<R>) -> Self {
         Context {
-            demuxer: demuxer,
-            reader: reader,
+            demuxer,
+            reader,
             info: GlobalInfo {
                 duration: None,
                 timebase: None,
@@ -61,7 +61,8 @@ impl Context {
     }
 
     fn read_headers_internal(&mut self) -> Result<()> {
-        let ref mut demux = self.demuxer;
+        let demux = &mut self.demuxer;
+
         let res = demux.read_headers(&self.reader, &mut self.info);
         match res {
             Err(e) => Err(e),
@@ -91,7 +92,7 @@ impl Context {
     }
 
     fn read_event_internal(&mut self) -> Result<Event> {
-        let ref mut demux = self.demuxer;
+        let demux = &mut self.demuxer;
 
         let res = demux.read_event(&self.reader);
         match res {
@@ -189,7 +190,7 @@ mod test {
     impl Demuxer for DummyDemuxer {
         fn read_headers(
             &mut self,
-            buf: &Box<dyn Buffered>,
+            buf: &Box<&dyn Buffered>,
             _info: &mut GlobalInfo,
         ) -> Result<SeekFrom> {
             let len = buf.data().len();
@@ -200,7 +201,7 @@ mod test {
                 Ok(SeekFrom::Current(9))
             }
         }
-        fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)> {
+        fn read_event(&mut self, buf: &Box<&dyn Buffered>) -> Result<(SeekFrom, Event)> {
             let size = 2;
             let len = buf.data().len();
             if size > len {

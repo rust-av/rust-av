@@ -237,8 +237,8 @@ impl fmt::Display for ColorModel {
 }
 
 impl ColorModel {
-    pub fn get_default_components(&self) -> usize {
-        match *self {
+    pub fn get_default_components(self) -> usize {
+        match self {
             ColorModel::CMYK => 4,
             _ => 3,
         }
@@ -261,36 +261,36 @@ fn align(v: usize, a: usize) -> usize {
 }
 
 impl Chromaton {
-    pub fn get_subsampling(&self) -> (u8, u8) {
+    pub fn get_subsampling(self) -> (u8, u8) {
         (self.h_ss, self.v_ss)
     }
-    pub fn is_packed(&self) -> bool {
+    pub fn is_packed(self) -> bool {
         self.packed
     }
-    pub fn get_depth(&self) -> u8 {
+    pub fn get_depth(self) -> u8 {
         self.depth
     }
-    pub fn get_shift(&self) -> u8 {
+    pub fn get_shift(self) -> u8 {
         self.shift
     }
-    pub fn get_offset(&self) -> u8 {
+    pub fn get_offset(self) -> u8 {
         self.comp_offs
     }
-    pub fn get_step(&self) -> u8 {
+    pub fn get_step(self) -> u8 {
         self.next_elem
     }
 
-    pub fn get_width(&self, width: usize) -> usize {
+    pub fn get_width(self, width: usize) -> usize {
         (width + ((1 << self.v_ss) - 1)) >> self.v_ss
     }
-    pub fn get_height(&self, height: usize) -> usize {
+    pub fn get_height(self, height: usize) -> usize {
         (height + ((1 << self.h_ss) - 1)) >> self.h_ss
     }
-    pub fn get_linesize(&self, width: usize, alignment: usize) -> usize {
+    pub fn get_linesize(self, width: usize, alignment: usize) -> usize {
         let d = self.depth as usize;
         align((self.get_width(width) * d + d - 1) >> 3, alignment)
     }
-    pub fn get_data_size(&self, width: usize, height: usize, align: usize) -> usize {
+    pub fn get_data_size(self, width: usize, height: usize, align: usize) -> usize {
         let nh = (height + ((1 << self.v_ss) - 1)) >> self.v_ss;
         self.get_linesize(width, align) * nh
     }
@@ -347,7 +347,7 @@ impl Formaton {
         }
 
         Formaton {
-            model: model,
+            model,
 
             primaries: ColorPrimaries::Unspecified,
             xfer: TransferCharacteristic::Unspecified,
@@ -356,10 +356,10 @@ impl Formaton {
 
             components: components.len() as u8,
             comp_info: c,
-            elem_size: elem_size,
-            be: be,
-            alpha: alpha,
-            palette: palette,
+            elem_size,
+            be,
+            alpha,
+            palette,
         }
     }
 
@@ -437,7 +437,7 @@ impl Formaton {
         self.elem_size
     }
 
-    pub fn iter<'a>(&'a self) -> slice::Iter<'a, Option<Chromaton>> {
+    pub fn iter(&self) -> slice::Iter<Option<Chromaton>> {
         self.comp_info.iter()
     }
 }

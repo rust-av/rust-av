@@ -35,7 +35,7 @@ impl Context {
     pub fn by_name(codecs: &Codecs, name: &str) -> Option<Context> {
         if let Some(builder) = codecs.by_name(name) {
             let dec = builder.create();
-            Some(Context { dec: dec })
+            Some(Context { dec })
         } else {
             None
         }
@@ -60,7 +60,7 @@ impl Context {
 
 pub trait Descriptor {
     fn create(&self) -> Box<dyn Decoder>;
-    fn describe<'a>(&'a self) -> &'a Descr;
+    fn describe(&self) -> &Descr;
 }
 
 pub struct Codecs {
@@ -88,7 +88,10 @@ impl CodecList for Codecs {
     fn append(&mut self, desc: &'static Self::D) {
         let codec_name = desc.describe().codec;
 
-        self.list.entry(codec_name).or_insert(Vec::new()).push(desc);
+        self.list
+            .entry(codec_name)
+            .or_insert_with(Vec::new)
+            .push(desc);
     }
 }
 
