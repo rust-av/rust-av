@@ -130,6 +130,12 @@ impl Context {
                 Err(e) => match e {
                     Error::MoreDataNeeded(needed) => {
                         let len = self.reader.data().len();
+
+                        // we might have sent MoreDatNeeded(0) to request a new call
+                        if len >= needed {
+                          println!("available length {} >= requested needed {}, continuing", len, needed);
+                          continue
+                        }
                         self.reader.grow(needed);
                         self.reader.fill_buf()?;
                         if self.reader.data().len() <= len {
