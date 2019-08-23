@@ -15,6 +15,7 @@ pub enum Event {
     NewPacket(Packet),
     NewStream(Stream),
     MoreDataNeeded(usize),
+    Continue,
     Eof,
 }
 
@@ -133,7 +134,6 @@ impl Context {
 
                         // we might have sent MoreDatNeeded(0) to request a new call
                         if len >= needed {
-                          println!("available length {} >= requested needed {}, continuing", len, needed);
                           continue
                         }
                         self.reader.grow(needed);
