@@ -25,11 +25,9 @@ impl<R: Read + Seek> AccReader<R> {
     }
 
     pub fn with_capacity(cap: usize, inner: R) -> AccReader<R> {
-        let mut buf = vec![0; cap];
-        buf.extend(iter::repeat(0).take(cap));
         AccReader {
             inner,
-            buf,
+            buf: iter::repeat(0).take(cap).collect::<Vec<_>>(),
             pos: 0,
             end: 0,
             index: 0,
@@ -220,7 +218,9 @@ mod tests {
 
         let mut acc = AccReader::with_capacity(4, c);
         acc.fill_buf().unwrap();
+        assert_eq!(b"abcd", acc.data());
         acc.consume(2);
+        assert_eq!(b"cd", acc.data());
         acc.grow(4);
         assert_eq!(b"cd", acc.data());
         acc.fill_buf().unwrap();
