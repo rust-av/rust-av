@@ -196,7 +196,7 @@ mod test {
     impl Demuxer for DummyDemuxer {
         fn read_headers(
             &mut self,
-            buf: &Box<&dyn Buffered>,
+            buf: &Box<dyn Buffered>,
             _info: &mut GlobalInfo,
         ) -> Result<SeekFrom> {
             let len = buf.data().len();
@@ -207,7 +207,7 @@ mod test {
                 Ok(SeekFrom::Current(9))
             }
         }
-        fn read_event(&mut self, buf: &Box<&dyn Buffered>) -> Result<(SeekFrom, Event)> {
+        fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)> {
             let size = 2;
             let len = buf.data().len();
             if size > len {
