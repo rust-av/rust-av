@@ -281,7 +281,23 @@ impl Chromaton {
         }
     }
 
-    pub fn get_subsampling(self) -> (u8, u8) {
+    pub const fn yuv8(h_ss: u8, v_ss: u8, comp_offs: u8) -> Chromaton {
+        Chromaton::new(h_ss, v_ss, false, 8, 0, comp_offs, 1)
+    }
+
+    pub const fn yuvhb(h_ss: u8, v_ss: u8, depth: u8, comp_offs: u8) -> Chromaton {
+        Chromaton::new(h_ss, v_ss, false, depth, 0, comp_offs, 1)
+    }
+
+    pub const fn packrgb(depth: u8, shift: u8, comp_offs: u8, next_elem: u8) -> Chromaton {
+        Chromaton::new(0, 0, true, depth, shift, comp_offs, next_elem)
+    }
+
+    pub const fn pal8(comp_offs: u8) -> Chromaton {
+        Chromaton::new(0, 0, true, 8, 0, comp_offs, 3)
+    }
+
+    pub fn get_subsampling(&self) -> (u8, u8) {
         (self.h_ss, self.v_ss)
     }
     pub fn is_packed(self) -> bool {
@@ -497,32 +513,6 @@ impl fmt::Display for Formaton {
     }
 }
 
-macro_rules! chromaton {
-    ($hs: expr, $vs: expr, $pck: expr, $d: expr, $sh: expr, $co: expr, $ne: expr) => {{
-        Some(Chromaton {
-            h_ss: $hs,
-            v_ss: $vs,
-            packed: $pck,
-            depth: $d,
-            shift: $sh,
-            comp_offs: $co,
-            next_elem: $ne,
-        })
-    }};
-    (yuv8; $hs: expr, $vs: expr, $co: expr) => {{
-        chromaton!($hs, $vs, false, 8, 0, $co, 1)
-    }};
-    (yuv_hb; $hs: expr, $vs: expr, $co: expr, $d: expr) => {{
-        chromaton!($hs, $vs, false, $d, 0, $co, 1)
-    }};
-    (packrgb; $d: expr, $s: expr, $co: expr, $ne: expr) => {{
-        chromaton!(0, 0, true, $d, $s, $co, $ne)
-    }};
-    (pal8; $co: expr) => {{
-        chromaton!(0, 0, true, 8, 0, $co, 3)
-    }};
-}
-
 pub mod formats {
     use self::ColorModel::*;
     use self::TrichromaticEncodingSystem::*;
@@ -538,9 +528,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 8, 0, 0, 1),
-            chromaton!(yuv8; 0, 0, 1),
-            chromaton!(yuv8; 0, 0, 2),
+            Some(Chromaton::new(0, 0, false, 8, 0, 0, 1)),
+            Some(Chromaton::yuv8(0, 0, 1)),
+            Some(Chromaton::yuv8(0, 0, 2)),
             None,
             None,
         ],
@@ -558,9 +548,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 8, 0, 0, 1),
-            chromaton!(yuv8; 0, 1, 1),
-            chromaton!(yuv8; 0, 1, 2),
+            Some(Chromaton::new(0, 0, false, 8, 0, 0, 1)),
+            Some(Chromaton::yuv8(0, 1, 1)),
+            Some(Chromaton::yuv8(0, 1, 2)),
             None,
             None,
         ],
@@ -578,9 +568,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 8, 0, 0, 1),
-            chromaton!(yuv8; 1, 1, 1),
-            chromaton!(yuv8; 1, 1, 2),
+            Some(Chromaton::new(0, 0, false, 8, 0, 0, 1)),
+            Some(Chromaton::yuv8(1, 1, 1)),
+            Some(Chromaton::yuv8(1, 1, 2)),
             None,
             None,
         ],
@@ -598,9 +588,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 8, 0, 0, 1),
-            chromaton!(yuv8; 2, 0, 1),
-            chromaton!(yuv8; 2, 0, 2),
+            Some(Chromaton::new(0, 0, false, 8, 0, 0, 1)),
+            Some(Chromaton::yuv8(2, 0, 1)),
+            Some(Chromaton::yuv8(2, 0, 2)),
             None,
             None,
         ],
@@ -618,9 +608,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 8, 0, 0, 1),
-            chromaton!(yuv8; 2, 1, 1),
-            chromaton!(yuv8; 2, 1, 2),
+            Some(Chromaton::new(0, 0, false, 8, 0, 0, 1)),
+            Some(Chromaton::yuv8(2, 1, 1)),
+            Some(Chromaton::yuv8(2, 1, 2)),
             None,
             None,
         ],
@@ -638,9 +628,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 10, 0, 0, 1),
-            chromaton!(yuv_hb; 0, 0, 1, 10),
-            chromaton!(yuv_hb; 0, 0, 2, 10),
+            Some(Chromaton::new(0, 0, false, 10, 0, 0, 1)),
+            Some(Chromaton::yuvhb(0, 0, 1, 10)),
+            Some(Chromaton::yuvhb(0, 0, 2, 10)),
             None,
             None,
         ],
@@ -658,9 +648,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 10, 0, 0, 1),
-            chromaton!(yuv_hb; 0, 1, 1, 10),
-            chromaton!(yuv_hb; 0, 1, 2, 10),
+            Some(Chromaton::new(0, 0, false, 10, 0, 0, 1)),
+            Some(Chromaton::yuvhb(0, 1, 1, 10)),
+            Some(Chromaton::yuvhb(0, 1, 2, 10)),
             None,
             None,
         ],
@@ -678,9 +668,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 10, 0, 0, 1),
-            chromaton!(yuv_hb; 1, 1, 1, 10),
-            chromaton!(yuv_hb; 1, 1, 2, 10),
+            Some(Chromaton::new(0, 0, false, 10, 0, 0, 1)),
+            Some(Chromaton::yuvhb(1, 1, 1, 10)),
+            Some(Chromaton::yuvhb(1, 1, 2, 10)),
             None,
             None,
         ],
@@ -698,9 +688,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 10, 0, 0, 1),
-            chromaton!(yuv_hb; 2, 0, 1, 10),
-            chromaton!(yuv_hb; 2, 0, 2, 10),
+            Some(Chromaton::new(0, 0, false, 10, 0, 0, 1)),
+            Some(Chromaton::yuvhb(2, 0, 1, 10)),
+            Some(Chromaton::yuvhb(2, 0, 2, 10)),
             None,
             None,
         ],
@@ -718,9 +708,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(0, 0, false, 10, 0, 0, 1),
-            chromaton!(yuv_hb; 2, 1, 1, 10),
-            chromaton!(yuv_hb; 2, 1, 2, 10),
+            Some(Chromaton::new(0, 0, false, 10, 0, 0, 1)),
+            Some(Chromaton::yuvhb(2, 1, 1, 10)),
+            Some(Chromaton::yuvhb(2, 1, 2, 10)),
             None,
             None,
         ],
@@ -738,9 +728,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(pal8; 0),
-            chromaton!(pal8; 1),
-            chromaton!(pal8; 2),
+            Some(Chromaton::pal8(0)),
+            Some(Chromaton::pal8(1)),
+            Some(Chromaton::pal8(2)),
             None,
             None,
         ],
@@ -758,9 +748,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(packrgb; 5, 11, 0, 2),
-            chromaton!(packrgb; 6,  5, 0, 2),
-            chromaton!(packrgb; 5,  0, 0, 2),
+            Some(Chromaton::packrgb(5, 11, 0, 2)),
+            Some(Chromaton::packrgb(6, 5, 0, 2)),
+            Some(Chromaton::packrgb(5, 0, 0, 2)),
             None,
             None,
         ],
@@ -778,9 +768,9 @@ pub mod formats {
         chroma_location: ChromaLocation::Unspecified,
         components: 3,
         comp_info: [
-            chromaton!(packrgb; 8, 0, 2, 3),
-            chromaton!(packrgb; 8, 0, 1, 3),
-            chromaton!(packrgb; 8, 0, 0, 3),
+            Some(Chromaton::packrgb(8, 0, 2, 3)),
+            Some(Chromaton::packrgb(8, 0, 1, 3)),
+            Some(Chromaton::packrgb(8, 0, 0, 3)),
             None,
             None,
         ],
