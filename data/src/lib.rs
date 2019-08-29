@@ -1,8 +1,6 @@
 // crates
 extern crate bytes;
 extern crate num_rational;
-#[macro_use]
-extern crate failure;
 
 extern crate byte_slice_cast;
 #[macro_use]

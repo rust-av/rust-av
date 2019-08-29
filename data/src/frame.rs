@@ -10,11 +10,11 @@ use crate::timeinfo::*;
 
 use byte_slice_cast::*;
 
-#[derive(Fail, Debug)]
+#[derive(err_derive::Error, Debug)]
 pub enum FrameError {
-    #[fail(display = "Invalid Index")]
+    #[error(display = "Invalid Index")]
     InvalidIndex,
-    #[fail(display = "Invalid Conversion")]
+    #[error(display = "Invalid Conversion")]
     InvalidConversion,
 }
 

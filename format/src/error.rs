@@ -1,12 +1,12 @@
 use std::io;
 
-#[derive(Debug, Fail)]
+#[derive(err_derive::Error, Debug)]
 pub enum Error {
-    #[fail(display = "Invalid Data")]
+    #[error(display = "Invalid Data")]
     InvalidData,
-    #[fail(display = "{} more bytes needed", _0)]
+    #[error(display = "{} more bytes needed", _0)]
     MoreDataNeeded(usize),
-    #[fail(display = "I/O error")]
+    #[error(display = "I/O error")]
     Io(#[cause] io::Error),
 }
 

@@ -4,11 +4,11 @@ use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-#[derive(Fail, Debug)]
+#[derive(err_derive::Error, Debug)]
 pub enum CodebookError {
-    #[fail(display = "Invalid Codebook")]
+    #[error(display = "Invalid Codebook")]
     InvalidCodebook,
-    #[fail(display = "Invalid Code")]
+    #[error(display = "Invalid Code")]
     InvalidCode,
 }
 
