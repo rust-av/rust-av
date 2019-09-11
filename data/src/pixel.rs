@@ -1,11 +1,12 @@
 //!
 //! Expose all necessary  data structures to rappresent pixels.
 //!
-//! Re-exports num_traits::FromPrimitive in order to make easy to cast a parsed value into correct
+//! Re-exports num_traits::FromPrimitive and  num_traits::cast::ToPrimitive in order to make easy to cast a parsed value into correct
 //! enum structures
 //!
 //!
 
+pub use num_traits::cast::ToPrimitive;
 pub use num_traits::FromPrimitive;
 use std::fmt;
 use std::ops::Index;
