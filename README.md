@@ -27,3 +27,18 @@ The code is still in flux and the API is getting slowly fleshed out, please refe
 ## License
 
 MIT as per `LICENSE`.
+
+## Developing
+I suggest to use the cargo [paths override](https://doc.rust-lang.org/cargo/reference/config.html) to have a local `rust-av`:
+
+```
+# Clone the trees
+$ git clone https://github.com/rust-av/rust-av
+$ git clone https://github.com/rust-av/${other package}
+# Setup the override
+$ cd ${other package}
+$ mkdir .cargo
+$ echo 'paths=["../rust-av"]' > .cargo/config
+# Check it is doing the right thing
+$ cargo build
+```
