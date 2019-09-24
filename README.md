@@ -17,12 +17,13 @@ cargo build
 ## Running tests
 
 ```bash
-cargo test
+cargo test --all
 ```
 
 ## Notes
 
 The code is still in flux and the API is getting slowly fleshed out, please refer to the sub-crates.
+Until we reach version `1.0` assume that the API could change a lot.
 
 ## License
 
