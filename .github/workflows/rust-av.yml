@@ -3,6 +3,26 @@ name: rust-av
 on: [push, pull_request]
 
 jobs:
+  clippy-rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - name: Install rustfmt and clippy
+      run: rustup component add rustfmt clippy
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all --all-features
+    - name: Run format
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
 
   test-x86_64:
     strategy:
@@ -14,7 +34,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Print rust version
-      run:  rustc -vV
+      run: rustc -vV
     - name: Run tests
       run: cargo test --all --all-features --verbose
     - name: Run bench
