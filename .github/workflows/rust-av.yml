@@ -3,26 +3,6 @@ name: rust-av
 on: [push, pull_request]
 
 jobs:
-  build-coveralls:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: Install kcov dependencies
-      env:
-        KCOV_PKG: libcurl4-openssl-dev libelf-dev libdw-dev binutils-dev
-      run: |
-        sudo apt-get update
-        sudo apt-get install $KCOV_PKG
-    - name: Install cargo-kcov
-      run: cargo install cargo-kcov
-    - name: Install kcov
-      run: cargo kcov --print-install-kcov-sh | sh
-    - name: Build and Coveralls
-      run: |
-        cargo build --all --all-features --tests --verbose
-        cargo kcov -v
 
   test-x86_64:
     strategy:
