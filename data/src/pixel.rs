@@ -8,6 +8,7 @@
 
 pub use num_traits::cast::ToPrimitive;
 pub use num_traits::FromPrimitive;
+use num_derive::{FromPrimitive, ToPrimitive};
 use std::fmt;
 use std::ops::Index;
 use std::slice;
@@ -28,7 +29,7 @@ impl fmt::Display for YUVRange {
 }
 
 /// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
-#[derive(Debug, Clone, Copy, PartialEq, Primitive)]
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum MatrixCoefficients {
     Identity = 0,
     BT709 = 1,
@@ -78,7 +79,7 @@ impl fmt::Display for MatrixCoefficients {
 }
 
 /// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
-#[derive(Debug, Clone, Copy, PartialEq, Primitive)]
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ColorPrimaries {
     Reserved0 = 0,
     BT709 = 1,
@@ -118,7 +119,7 @@ impl fmt::Display for ColorPrimaries {
 }
 
 /// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
-#[derive(Debug, Clone, Copy, PartialEq, Primitive)]
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum TransferCharacteristic {
     Reserved0 = 0,
     BT1886 = 1,

@@ -12,7 +12,7 @@ edition = "2018"
 [dependencies]
 byte-slice-cast = "0.3.1"
 bytes = "0.4.12"
-enum-primitive-derive = "0.1.2"
 err-derive = "0.1.6"
 num-rational = "0.2.2"
 num-traits = "0.2.8"
+num-derive = "0.3"

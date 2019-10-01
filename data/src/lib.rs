@@ -1,12 +1,3 @@
-// crates
-extern crate bytes;
-extern crate num_rational;
-
-extern crate byte_slice_cast;
-#[macro_use]
-extern crate enum_primitive_derive;
-extern crate num_traits;
-
 pub mod rational {
     pub use num_rational::*;
 }
