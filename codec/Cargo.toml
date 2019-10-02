@@ -1,14 +1,14 @@
 [package]
 name = "av-codec"
 description = "Multimedia format decoding and encoding"
-version = "0.1.0"
+version = "0.2.1"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 repository = "https://github.com/rust-av/rust-av"
 edition = "2018"
 
 [dependencies]
-av-data = "0.2.0"
-err-derive = "0.2.1"
+av-data = "0.2.1"
+err-derive = "0.2.3"
 num-rational = "0.2.2"
 
