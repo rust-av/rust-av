@@ -9,5 +9,5 @@ repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]
 log = "0.4.6"
-err-derive = "0.1.6"
+err-derive = "0.2.0"
 av-data = "0.2.0"
