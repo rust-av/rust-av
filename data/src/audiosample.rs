@@ -8,7 +8,7 @@ pub struct Soniton {
     pub bits: u8,
     /// True if the sample data is in big endian layout, false if little endian.
     pub be: bool,
-    /// For data which isn't a multiple of 8 this is true if there is no padding between samples,
+    /// For data which isn't a multiple of 8 bits this is true if there is no padding between samples,
     /// false if the data is padded.
     pub packed: bool,
     /// If true data is stored in a planar layout with channels occurring in sequence i.e. C1 C1
