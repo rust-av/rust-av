@@ -7,27 +7,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install clippy
-      run: rustup component add clippy
-    - uses: actions-rs/clippy-check@v1
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+        components: clippy, rustfmt
+    - name: Run clippy
+      uses: actions-rs/clippy-check@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all --all-features
+    - name: Run rustfmt
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
 
   test-x86_64:
     strategy:
       matrix:
-        platform: [ubuntu-latest, windows-latest]
+        platform: [macOS-latest, ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
     steps:
     - uses: actions/checkout@v1
-    - name: Print rust version
-      run: rustc -vV
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
     - name: Run tests
-      run: cargo test --all --all-features --verbose
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all --all-features --verbose
     - name: Run bench
-      run: cargo bench --all --all-features --verbose
+      uses: actions-rs/cargo@v1
+      with:
+        command: bench
+        args: --all --all-features --verbose
     - name: Run doc
-      run: cargo doc --all --all-features --verbose
+      uses: actions-rs/cargo@v1
+      with:
+        command: doc
+        args: --all --all-features --verbose
