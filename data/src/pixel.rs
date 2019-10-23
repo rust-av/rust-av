@@ -6,9 +6,9 @@
 //!
 //!
 
+use num_derive::{FromPrimitive, ToPrimitive};
 pub use num_traits::cast::ToPrimitive;
 pub use num_traits::FromPrimitive;
-use num_derive::{FromPrimitive, ToPrimitive};
 use std::fmt;
 use std::ops::Index;
 use std::slice;

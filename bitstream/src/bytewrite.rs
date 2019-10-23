@@ -135,5 +135,4 @@ mod test {
         put_i8(&mut buf[2..], -128);
         assert!(-128 == get_i8(&mut buf[2..]));
     }
-
 }
