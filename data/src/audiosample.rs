@@ -1,7 +1,7 @@
 use std::fmt;
 use std::string::*;
 
-/// Parameters describing the representation of an audio sample 
+/// Parameters describing the representation of an audio sample
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Soniton {
     /// Number of bits in each sample.
