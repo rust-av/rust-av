@@ -25,6 +25,38 @@ jobs:
         command: fmt
         args: --all -- --check
 
+  grcov-coveralls:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly-2019-12-02
+        override: true
+    - name: Run cargo clean
+      run: |
+        cargo clean
+    - name: Run tests
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: >
+          -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
+          -Zno-landing-pads
+      run: |
+        cargo test --all --all-features --verbose
+    - name: Run grcov
+      id: coverage
+      uses: actions-rs/grcov@v0.1
+    - name: Coveralls upload
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ${{ steps.coverage.outputs.report }}
+
   test-x86_64:
     strategy:
       matrix:
