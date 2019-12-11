@@ -1,3 +1,5 @@
+#![allow(clippy::borrowed_box)]
+
 use crate::error::*;
 
 use crate::buffer::Buffered;

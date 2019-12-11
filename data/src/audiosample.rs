@@ -224,6 +224,11 @@ impl ChannelMap {
         self.ids.len()
     }
 
+    /// Checks if the channel map is empty
+    pub fn is_empty(&self) -> bool {
+        self.ids.is_empty()
+    }
+
     /// Gets the channel type for the channel at the given index
     pub fn get_channel(&self, idx: usize) -> ChannelType {
         self.ids[idx]
