@@ -197,7 +197,7 @@ impl DefaultFrameBuffer {
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
                 let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
                 let mut buffer = DefaultFrameBuffer {
-                    buf: buf,
+                    buf,
                     planes: Vec::new(),
                 };
                 for &component in video.format.iter() {
@@ -299,28 +299,33 @@ fn copy_image<'a, IM, IU, I>(
 }
 
 // TODO: Add proper tests
-fn copy_to_frame<'a, I, IU>(dst: &mut Frame, mut src: I, mut src_linesize: IU, w: usize, h: usize)
-where
+fn copy_to_frame<'a, I, IU>(
+    dst: &mut Frame,
+    mut src: I,
+    mut src_linesize: IU,
+    width: usize,
+    height: usize,
+) where
     I: Iterator<Item = &'a [u8]>,
     IU: Iterator<Item = usize>,
 {
     if let MediaKind::Video(ref fmt) = dst.kind {
         let mut f_iter = fmt.format.iter();
-        let w = fmt.width;
-        let h = fmt.height;
+        let width = fmt.width;
+        let height = fmt.height;
         for i in 0..dst.buf.count() {
             let d_linesize = dst.buf.linesize(i).unwrap();
             let s_linesize = src_linesize.next().unwrap();
-            let d = dst.buf.as_mut_slice(i).unwrap();
-            let s = src.next().unwrap();
-            let c = f_iter.next().unwrap();
+            let data = dst.buf.as_mut_slice(i).unwrap();
+            let ss = src.next().unwrap();
+            let cc = f_iter.next().unwrap();
             copy_plane(
-                d,
+                data,
                 d_linesize,
-                s,
+                ss,
                 s_linesize,
-                c.unwrap().get_width(w),
-                c.unwrap().get_height(h),
+                cc.unwrap().get_width(width),
+                cc.unwrap().get_height(height),
             );
         }
     } else {
@@ -339,21 +344,21 @@ impl Frame {
     {
         if let MediaKind::Video(ref fmt) = self.kind {
             let mut f_iter = fmt.format.iter();
-            let w = fmt.width;
-            let h = fmt.height;
+            let width = fmt.width;
+            let height = fmt.height;
             for i in 0..self.buf.count() {
                 let d_linesize = self.buf.linesize(i).unwrap();
                 let s_linesize = src_linesize.next().unwrap();
-                let d = self.buf.as_mut_slice(i).unwrap();
-                let s = src.next().unwrap();
-                let c = f_iter.next().unwrap();
+                let data = self.buf.as_mut_slice(i).unwrap();
+                let ss = src.next().unwrap();
+                let cc = f_iter.next().unwrap();
                 copy_plane(
-                    d,
+                    data,
                     d_linesize,
-                    s,
+                    ss,
                     s_linesize,
-                    c.unwrap().get_width(w),
-                    c.unwrap().get_height(h),
+                    cc.unwrap().get_width(width),
+                    cc.unwrap().get_height(height),
                 );
             }
         } else {
@@ -368,17 +373,24 @@ impl Frame {
     {
         if let MediaKind::Video(ref fmt) = self.kind {
             let mut f_iter = fmt.format.iter();
-            let w = fmt.width;
-            let h = fmt.height;
+            let width = fmt.width;
+            let height = fmt.height;
             for i in 0..self.buf.count() {
                 let d_linesize = self.buf.linesize(i).unwrap();
                 let s_linesize = src_linesize.next().unwrap();
-                let d = self.buf.as_mut_slice(i).unwrap();
-                let c = f_iter.next().unwrap();
-                let r = src.next().unwrap();
-                let hb = c.unwrap().get_height(h);
-                let s = unsafe { slice::from_raw_parts(r, hb * s_linesize) };
-                copy_plane(d, d_linesize, s, s_linesize, c.unwrap().get_width(w), hb);
+                let data = self.buf.as_mut_slice(i).unwrap();
+                let cc = f_iter.next().unwrap();
+                let rr = src.next().unwrap();
+                let hb = cc.unwrap().get_height(height);
+                let ss = unsafe { slice::from_raw_parts(rr, hb * s_linesize) };
+                copy_plane(
+                    data,
+                    d_linesize,
+                    ss,
+                    s_linesize,
+                    cc.unwrap().get_width(width),
+                    hb,
+                );
             }
         } else {
             unimplemented!();

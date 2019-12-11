@@ -312,7 +312,7 @@ impl Chromaton {
         Chromaton::new(0, 0, true, 8, 0, comp_offs, 3)
     }
 
-    pub fn get_subsampling(&self) -> (u8, u8) {
+    pub fn get_subsampling(self) -> (u8, u8) {
         (self.h_ss, self.v_ss)
     }
     pub fn is_packed(self) -> bool {
