@@ -11,19 +11,19 @@ edition = "2018"
 nightly = []
 
 [dependencies.av-data]
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies.av-format]
 path = "format"
-version = "*"
+version = "0.2.0"
 
 [dependencies.av-bitstream]
 path = "bitstream"
-version = "*"
+version = "0.1.0"
 
 [dependencies.av-codec]
 path = "codec"
-version = "*"
+version = "0.1.0"
 
 [workspace]
 members = [
