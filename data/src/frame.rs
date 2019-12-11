@@ -195,7 +195,7 @@ impl DefaultFrameBuffer {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
-                let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
+                let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
                 let mut buffer = DefaultFrameBuffer {
                     buf: buf,
                     planes: Vec::new(),
@@ -215,7 +215,7 @@ impl DefaultFrameBuffer {
             Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
-                let buf = BytesMut::from(unsafe { Vec::from_raw_parts(data, size, size) });
+                let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
                 let mut buffer = DefaultFrameBuffer {
                     buf,
                     planes: Vec::new(),
