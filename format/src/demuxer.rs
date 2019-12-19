@@ -12,6 +12,7 @@ use crate::common::*;
 use crate::data::packet::Packet;
 use crate::stream::Stream;
 
+#[non_exhaustive]
 #[derive(Clone, Debug)]
 pub enum Event {
     NewPacket(Packet),
@@ -19,10 +20,6 @@ pub enum Event {
     MoreDataNeeded(usize),
     Continue,
     Eof,
-    // use #[non_exhaustive] once this works:
-    // https://github.com/rust-lang/rust/issues/44109
-    #[doc(hidden)]
-    __NonExaustive,
 }
 
 pub trait Demuxer: Send {
