@@ -1,6 +1,3 @@
-// language extensions
-// #![feature(rust_2018_preview)]
-
 extern crate num_traits;
 
 #[cfg(test)]

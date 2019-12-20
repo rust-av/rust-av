@@ -1,17 +1,15 @@
-#![allow(dead_code)]
+macro_rules! write_bytes_le {
+    ($buf:ident, $n:ident) => {
+        let bytes = $n.to_le_bytes();
+        $buf.to_vec().extend_from_slice(&bytes);
+    };
+}
 
-use std::mem::transmute;
-use std::ptr::copy_nonoverlapping;
-
-macro_rules! write_num_bytes {
-    ($ty:ty, $size:expr, $dst:expr, $n:expr, $which:ident) => {{
-        assert!($size <= $dst.len());
-        unsafe {
-            // N.B. https://github.com/rust-lang/rust/issues/22776
-            let bytes = transmute::<_, [u8; $size]>($n.$which());
-            copy_nonoverlapping((&bytes).as_ptr(), $dst.as_mut_ptr(), $size);
-        }
-    }};
+macro_rules! write_bytes_be {
+    ($buf:ident, $n:ident) => {
+        let bytes = $n.to_be_bytes();
+        $buf.to_vec().extend_from_slice(&bytes);
+    };
 }
 
 #[inline]
@@ -26,32 +24,32 @@ pub fn put_i8(buf: &mut [u8], n: i8) {
 
 #[inline]
 pub fn put_u16l(buf: &mut [u8], n: u16) {
-    write_num_bytes!(u16, 2, buf, n, to_le);
+    write_bytes_le!(buf, n);
 }
 
 #[inline]
 pub fn put_u16b(buf: &mut [u8], n: u16) {
-    write_num_bytes!(u16, 2, buf, n, to_be);
+    write_bytes_be!(buf, n);
 }
 
 #[inline]
 pub fn put_u32l(buf: &mut [u8], n: u32) {
-    write_num_bytes!(u32, 4, buf, n, to_le);
+    write_bytes_le!(buf, n);
 }
 
 #[inline]
 pub fn put_u32b(buf: &mut [u8], n: u32) {
-    write_num_bytes!(u32, 4, buf, n, to_be);
+    write_bytes_be!(buf, n);
 }
 
 #[inline]
 pub fn put_u64l(buf: &mut [u8], n: u64) {
-    write_num_bytes!(u64, 8, buf, n, to_le);
+    write_bytes_le!(buf, n);
 }
 
 #[inline]
 pub fn put_u64b(buf: &mut [u8], n: u64) {
-    write_num_bytes!(u64, 8, buf, n, to_be);
+    write_bytes_be!(buf, n);
 }
 
 #[inline]
@@ -86,22 +84,22 @@ pub fn put_i64b(buf: &mut [u8], n: i64) {
 
 #[inline]
 pub fn put_f32l(buf: &mut [u8], n: f32) {
-    put_u32l(buf, unsafe { transmute(n) });
+    write_bytes_le!(buf, n);
 }
 
 #[inline]
 pub fn put_f32b(buf: &mut [u8], n: f32) {
-    put_u32b(buf, unsafe { transmute(n) });
+    write_bytes_be!(buf, n);
 }
 
 #[inline]
 pub fn put_f64l(buf: &mut [u8], n: f64) {
-    put_u64l(buf, unsafe { transmute(n) });
+    write_bytes_le!(buf, n);
 }
 
 #[inline]
 pub fn put_f64b(buf: &mut [u8], n: f64) {
-    put_u64b(buf, unsafe { transmute(n) });
+    write_bytes_be!(buf, n);
 }
 
 #[cfg(test)]

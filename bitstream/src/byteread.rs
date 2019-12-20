@@ -1,61 +1,62 @@
-#![allow(dead_code)]
-
-use std::ptr;
-/**
- * Unsafe building blocks
- */
-
 // TODO: arch-specific version
 // TODO: aligned/non-aligned version
 
-macro_rules! read_num_bytes {
-    ($ty:ty, $size:expr, $src:expr, $which:ident) => {{
-        let mut data: $ty = 0;
-        unsafe {
-            ptr::copy_nonoverlapping($src.as_ptr(), &mut data as *mut $ty as *mut u8, $size);
-        }
-        data.$which()
-    }};
-}
-
 #[inline]
 pub fn get_u8(buf: &[u8]) -> u8 {
+    assert!(buf.len() > 0);
     buf[0] as u8
 }
 
 #[inline]
 pub fn get_i8(buf: &[u8]) -> i8 {
+    assert!(buf.len() > 0);
     buf[0] as i8
 }
 
 #[inline]
 pub fn get_u16l(buf: &[u8]) -> u16 {
-    read_num_bytes!(u16, 2, buf, to_le)
+    assert!(buf.len() > 1);
+    let data = [buf[0], buf[1]];
+    u16::from_le_bytes(data)
 }
 
 #[inline]
 pub fn get_u16b(buf: &[u8]) -> u16 {
-    read_num_bytes!(u16, 2, buf, to_be)
+    assert!(buf.len() > 1);
+    let data = [buf[0], buf[1]];
+    u16::from_be_bytes(data)
 }
 
 #[inline]
 pub fn get_u32l(buf: &[u8]) -> u32 {
-    read_num_bytes!(u32, 4, buf, to_le)
+    assert!(buf.len() > 3);
+    let data = [buf[0], buf[1], buf[2], buf[3]];
+    u32::from_le_bytes(data)
 }
 
 #[inline]
 pub fn get_u32b(buf: &[u8]) -> u32 {
-    read_num_bytes!(u32, 4, buf, to_be)
+    assert!(buf.len() > 3);
+    let data = [buf[0], buf[1], buf[2], buf[3]];
+    u32::from_be_bytes(data)
 }
 
 #[inline]
 pub fn get_u64l(buf: &[u8]) -> u64 {
-    read_num_bytes!(u64, 8, buf, to_le)
+    assert!(buf.len() > 7);
+    let data = [
+        buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
+    ];
+    u64::from_le_bytes(data)
 }
 
 #[inline]
 pub fn get_u64b(buf: &[u8]) -> u64 {
-    read_num_bytes!(u64, 8, buf, to_be)
+    assert!(buf.len() > 7);
+    let data = [
+        buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
+    ];
+    u64::from_be_bytes(data)
 }
 
 #[inline]
