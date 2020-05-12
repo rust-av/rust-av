@@ -5,7 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/rust-av/rust-av/badge.svg?branch=master)](https://coveralls.io/r/rust-av/rust-av?branch=master)
 [![dependency status](https://deps.rs/repo/github/rust-av/rust-av/status.svg)](https://deps.rs/repo/github/rust-av/rust-av)
 [![IRC](https://img.shields.io/badge/irc-%23rust--av-blue.svg)](http://webchat.freenode.net?channels=%23rust-av&uio=d4)
-[![Gitter](https://badges.gitter.im/rust-av.svg)](https://gitter.im/rust-av?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/rust-av.svg)](https://gitter.im/rust-av/Main?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Pure-rust implementation of multimedia primitives and eventually demuxer, muxers and codecs.
 
