@@ -1,14 +1,14 @@
 macro_rules! write_bytes_le {
     ($buf:ident, $n:ident) => {
         let bytes = $n.to_le_bytes();
-        $buf.to_vec().extend_from_slice(&bytes);
+        &mut $buf[..bytes.len()].copy_from_slice(&bytes);
     };
 }
 
 macro_rules! write_bytes_be {
     ($buf:ident, $n:ident) => {
         let bytes = $n.to_be_bytes();
-        $buf.to_vec().extend_from_slice(&bytes);
+        &mut $buf[..bytes.len()].copy_from_slice(&bytes);
     };
 }
 
@@ -107,30 +107,110 @@ mod test {
 
     use super::*;
     use crate::byteread::*;
+    use std::mem::size_of;
 
     #[test]
     fn put_and_get_u8() {
         let mut buf = [0; 3];
         put_u8(&mut buf, 1);
-        assert!(1 == get_u8(&mut buf));
+        assert!(1 == get_u8(&buf));
 
         put_u8(&mut buf[1..], 2);
-        assert!(2 == get_u8(&mut buf[1..]));
+        assert!(2 == get_u8(&buf[1..]));
 
         put_u8(&mut buf[2..], 255);
-        assert!(255 == get_u8(&mut buf[2..]));
+        assert!(255 == get_u8(&buf[2..]));
     }
 
     #[test]
     fn put_and_get_i8() {
         let mut buf = [0; 3];
         put_i8(&mut buf, 1);
-        assert!(1 == get_i8(&mut buf));
+        assert!(1 == get_i8(&buf));
 
         put_i8(&mut buf[1..], 2);
-        assert!(2 == get_i8(&mut buf[1..]));
+        assert!(2 == get_i8(&buf[1..]));
 
         put_i8(&mut buf[2..], -128);
-        assert!(-128 == get_i8(&mut buf[2..]));
+        assert!(-128 == get_i8(&buf[2..]));
     }
+
+    macro_rules! decl_put_and_get_endian_tests {
+        ($($TYPE:ty),*) => {
+            $(
+                paste::item! {
+                    #[test]
+                    fn [<put_and_get_ $TYPE _be>]() {
+                        let item_size = size_of::<$TYPE>();
+                        let mut buf = vec![0; 3 * item_size];
+                        [<put_ $TYPE b>](&mut buf, 1 as $TYPE);
+                        assert!(1 as $TYPE == [<get_ $TYPE b>](&buf));
+
+                        [<put_ $TYPE b>](&mut buf[(1 * item_size)..], 2 as $TYPE);
+                        assert!(2 as $TYPE == [<get_ $TYPE b>](&buf[(1 * item_size)..]));
+
+                        [<put_ $TYPE b>](&mut buf[(2 * item_size)..], 255 as $TYPE);
+                        assert!(255 as $TYPE == [<get_ $TYPE b>](&buf[(2 * item_size)..]));
+                    }
+                }
+
+                paste::item! {
+                    #[test]
+                    fn [<put_and_get_ $TYPE _l>]() {
+                        let item_size = size_of::<$TYPE>();
+                        let mut buf = vec![0; 3 * item_size];
+                        [<put_ $TYPE l>](&mut buf, 1 as $TYPE);
+                        assert!(1 as $TYPE == [<get_ $TYPE l>](&buf));
+
+                        [<put_ $TYPE l>](&mut buf[(1 * item_size)..], 2 as $TYPE);
+                        assert!(2 as $TYPE == [<get_ $TYPE l>](&buf[(1 * item_size)..]));
+
+                        [<put_ $TYPE l>](&mut buf[(2 * item_size)..], 255 as $TYPE);
+                        assert!(255 as $TYPE == [<get_ $TYPE l>](&buf[(2 * item_size)..]));
+                    }
+                }
+            )*
+        };
+    }
+
+    macro_rules! decl_put_and_get_endian_float_tests {
+        ($($TYPE:ty),*) => {
+            $(
+                paste::item! {
+                    #[test]
+                    fn [<put_and_get_ $TYPE _be>]() {
+                        let item_size = size_of::<$TYPE>();
+                        let mut buf = vec![0; 3 * item_size];
+                        [<put_ $TYPE b>](&mut buf, 1 as $TYPE);
+                        assert!(1 as $TYPE - [<get_ $TYPE b>](&buf) < ::std::$TYPE::EPSILON);
+
+                        [<put_ $TYPE b>](&mut buf[(1 * item_size)..], 2 as $TYPE);
+                        assert!(2 as $TYPE - [<get_ $TYPE b>](&buf[(1 * item_size)..]) < ::std::$TYPE::EPSILON);
+
+                        [<put_ $TYPE b>](&mut buf[(2 * item_size)..], 255 as $TYPE);
+                        assert!(255 as $TYPE - [<get_ $TYPE b>](&buf[(2 * item_size)..]) < ::std::$TYPE::EPSILON);
+                    }
+                }
+
+                paste::item! {
+                    #[test]
+                    fn [<put_and_get_ $TYPE _l>]() {
+                        let item_size = size_of::<$TYPE>();
+                        let mut buf = vec![0; 3 * item_size];
+                        [<put_ $TYPE l>](&mut buf, 1 as $TYPE);
+                        assert!(1 as $TYPE - [<get_ $TYPE l>](&buf) < ::std::$TYPE::EPSILON);
+
+                        [<put_ $TYPE l>](&mut buf[(1 * item_size)..], 2 as $TYPE);
+                        assert!(2 as $TYPE - [<get_ $TYPE l>](&buf[(1 * item_size)..]) < ::std::$TYPE::EPSILON);
+
+                        [<put_ $TYPE l>](&mut buf[(2 * item_size)..], 255 as $TYPE);
+                        assert!(255 as $TYPE - [<get_ $TYPE l>](&buf[(2 * item_size)..]) < ::std::$TYPE::EPSILON);
+                    }
+                }
+            )*
+        };
+    }
+
+    decl_put_and_get_endian_tests!(u16, i16, u32, i32, u64, i64);
+    decl_put_and_get_endian_float_tests!(f32, f64);
 }
