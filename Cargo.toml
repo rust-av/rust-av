@@ -17,7 +17,7 @@ version = "0.2.1"
 version = "0.2.0"
 
 [dependencies.av-bitstream]
-version = "0.1.1"
+version = "0.1.2"
 
 [dependencies.av-codec]
 version = "0.2.0"
