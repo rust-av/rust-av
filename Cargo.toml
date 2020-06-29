@@ -12,15 +12,19 @@ nightly = []
 
 [dependencies.av-data]
 version = "0.2.1"
+path = "data"
 
 [dependencies.av-format]
 version = "0.2.0"
+path = "format"
 
 [dependencies.av-bitstream]
 version = "0.1.2"
+path = "bitstream"
 
 [dependencies.av-codec]
 version = "0.2.0"
+path = "codec"
 
 [workspace]
 members = [
@@ -29,9 +33,3 @@ members = [
     "data",
     "format",
 ]
-
-[patch.crates-io]
-av-data = { path = "data" }
-av-format = { path = "format" }
-av-bitstream = { path = "bitstream" }
-av-codec = { path = "codec" }
