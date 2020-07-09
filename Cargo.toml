@@ -26,6 +26,14 @@ path = "bitstream"
 version = "0.2.0"
 path = "codec"
 
+[dev-dependencies]
+clap = "2.33.1"
+matroska = { version = "0.1.0", git = "https://github.com/rust-av/matroska" }
+
+[patch.crates-io]
+av-data = { path = 'data' }
+av-format = { path = 'format' }
+
 [workspace]
 members = [
     "bitstream",
