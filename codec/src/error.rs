@@ -1,14 +1,16 @@
-#[derive(err_derive::Error, Debug)]
+use thiserror::Error;
+
+#[derive(Debug, Error)]
 pub enum Error {
-    #[error(display = "Invalid Data")]
+    #[error("Invalid Data")]
     InvalidData,
-    #[error(display = "Additional data needed")]
+    #[error("Additional data needed")]
     MoreDataNeeded,
-    #[error(display = "Configuration Incomplete")]
+    #[error("Configuration Incomplete")]
     ConfigurationIncomplete,
-    #[error(display = "Configuration Invalid")]
+    #[error("Configuration Invalid")]
     ConfigurationInvalid,
-    #[error(display = "Unsupported feature {}", _0)]
+    #[error("Unsupported feature {0}")]
     Unsupported(String),
     // TODO add support for dependency-specific errors here
     // Inner(failure::Context)

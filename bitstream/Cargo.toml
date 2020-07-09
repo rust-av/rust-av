@@ -8,7 +8,7 @@ repository = "https://github.com/rust-av/rust-av"
 edition = "2018"
 
 [dependencies]
-err-derive = "0.2.3"
+thiserror = "1.0"
 num-traits = "0.2.8"
 
 [dev-dependencies]
