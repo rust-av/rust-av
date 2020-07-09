@@ -1,14 +1,17 @@
-use crate::bitread::*;
-use num_traits::AsPrimitive;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-#[derive(err_derive::Error, Debug)]
+use num_traits::AsPrimitive;
+use thiserror::Error;
+
+use crate::bitread::*;
+
+#[derive(Debug, Error)]
 pub enum CodebookError {
-    #[error(display = "Invalid Codebook")]
+    #[error("Invalid Codebook")]
     InvalidCodebook,
-    #[error(display = "Invalid Code")]
+    #[error("Invalid Code")]
     InvalidCode,
 }
 

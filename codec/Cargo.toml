@@ -9,6 +9,6 @@ edition = "2018"
 
 [dependencies]
 av-data = "0.2.1"
-err-derive = "0.2.3"
+thiserror = "1.0"
 num-rational = "0.3.0"
 

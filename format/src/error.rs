@@ -1,13 +1,15 @@
 use std::io;
 
-#[derive(err_derive::Error, Debug)]
+use thiserror::Error;
+
+#[derive(Debug, Error)]
 pub enum Error {
-    #[error(display = "Invalid Data")]
+    #[error("Invalid Data")]
     InvalidData,
-    #[error(display = "{} more bytes needed", _0)]
+    #[error("{0} more bytes needed")]
     MoreDataNeeded(usize),
-    #[error(display = "I/O error")]
-    Io(#[cause] io::Error),
+    #[error("I/O error")]
+    Io(#[from] io::Error),
 }
 
 pub type Result<T> = ::std::result::Result<T, Error>;

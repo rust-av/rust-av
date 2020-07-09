@@ -1,20 +1,21 @@
 #![allow(dead_code, unused_variables)]
-use bytes::BytesMut;
-use std::alloc::{alloc, Layout};
 
+use std::alloc::{alloc, Layout};
 use std::sync::Arc;
+
+use byte_slice_cast::*;
+use bytes::BytesMut;
+use thiserror::Error;
 
 use crate::audiosample::*;
 use crate::pixel::*;
 use crate::timeinfo::*;
 
-use byte_slice_cast::*;
-
-#[derive(err_derive::Error, Debug)]
+#[derive(Debug, Error)]
 pub enum FrameError {
-    #[error(display = "Invalid Index")]
+    #[error("Invalid Index")]
     InvalidIndex,
-    #[error(display = "Invalid Conversion")]
+    #[error("Invalid Conversion")]
     InvalidConversion,
 }
 
