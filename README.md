@@ -21,6 +21,18 @@ cargo build
 cargo test --all
 ```
 
+## Running examples
+
+```bash
+cargo run --example EXAMPLE_NAME -- [EXAMPLE_ARGUMENTS]
+```
+
+For example, if you want to run the `streams_info` example:
+
+```bash
+cargo run --example streams_info -- -i /path/to/your/matroska/file
+```
+
 ## Notes
 
 The code is still in flux and the API is getting slowly fleshed out, please refer to the sub-crates.
