@@ -31,6 +31,26 @@ jobs:
         args: --all --all-features
 
 
+  build-examples:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install nasm
+      run: |
+        sudo apt-get install nasm
+
+    - name: Install libvpx and opus
+      run: |
+        sudo apt-get install libvpx-dev libopus-dev
+
+    - name: Build examples
+      run: |
+        cargo build --examples
+
+
   grcov-coveralls:
 
     runs-on: ubuntu-latest
