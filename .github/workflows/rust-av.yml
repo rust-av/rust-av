@@ -4,9 +4,12 @@ on: [push, pull_request]
 
 jobs:
   clippy-rustfmt:
+
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+
     - name: Install stable
       uses: actions-rs/toolchain@v1
       with:
@@ -14,16 +17,19 @@ jobs:
         toolchain: stable
         override: true
         components: clippy, rustfmt
-    - name: Run clippy
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --all --all-features
+
     - name: Run rustfmt
       uses: actions-rs/cargo@v1
       with:
         command: fmt
         args: --all -- --check
+
+    - name: Run clippy
+      uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all --all-features
+
 
   grcov-coveralls:
 
@@ -31,26 +37,35 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Install nightly
+
+    - name: Install stable
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly-2019-12-02
+        toolchain: stable
         override: true
+
     - name: Run cargo clean
       run: |
         cargo clean
+
     - name: Run tests
       env:
         CARGO_INCREMENTAL: 0
+        RUSTC_BOOTSTRAP: 1
         RUSTFLAGS: >
           -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
-          -Zno-landing-pads
+          -Cpanic=abort -Zpanic_abort_tests
+        RUSTDOCFLAGS: >
+          -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
+          -Cpanic=abort -Zpanic_abort_tests
       run: |
         cargo test --all --all-features --verbose
+
     - name: Run grcov
       id: coverage
       uses: actions-rs/grcov@v0.1
+
     - name: Coveralls upload
       uses: coverallsapp/github-action@master
       with:
@@ -65,23 +80,27 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+
     - name: Install stable
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
         toolchain: stable
         override: true
+
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
         args: --all --all-features --verbose
+
     - name: Run bench
       uses: actions-rs/cargo@v1
       with:
         command: bench
         args: --all --all-features --verbose
+
     - name: Run doc
       uses: actions-rs/cargo@v1
       with:
