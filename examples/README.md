@@ -8,6 +8,9 @@ A series of some multimedia examples
 
 ## Build examples
 
+To build the examples, you need to install `libvpx` and `libopus` on your
+operating system.
+
 ```bash
 cargo build --examples
 ```

@@ -12,19 +12,22 @@ Pure-rust implementation of multimedia primitives and eventually demuxer, muxers
 ## Compiling
 
 ```bash
-cargo build
+cargo build --workspace
 ```
 
 ## Running tests
 
 ```bash
-cargo test --all
+cargo test --workspace --exclude av-examples
 ```
 
 ## Build examples
 
+To build the examples, first you need to install `libvpx` and `libopus` on your
+operating system.
+
 ```bash
-cargo build --all --examples
+cargo build --workspace --examples
 ```
 
 ## Running examples
@@ -41,7 +44,8 @@ cargo run --package av-examples --example streams_info -- -i /path/to/your/matro
 
 ## Notes
 
-The code is still in flux and the API is getting slowly fleshed out, please refer to the sub-crates.
+The code is still in flux and the API is getting slowly fleshed out, please
+refer to the sub-crates.
 Until we reach version `1.0` assume that the API could change a lot.
 
 ## License
@@ -49,6 +53,7 @@ Until we reach version `1.0` assume that the API could change a lot.
 MIT as per `LICENSE`.
 
 ## Developing
+
 I suggest to use the cargo [paths override](https://doc.rust-lang.org/cargo/reference/config.html) to have a local `rust-av`:
 
 ```
