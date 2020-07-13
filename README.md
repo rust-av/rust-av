@@ -21,16 +21,22 @@ cargo build
 cargo test --all
 ```
 
+## Build examples
+
+```bash
+cargo build --all --examples
+```
+
 ## Running examples
 
 ```bash
-cargo run --example EXAMPLE_NAME -- [EXAMPLE_ARGUMENTS]
+cargo run --package av-examples --example EXAMPLE_NAME -- [EXAMPLE_ARGUMENTS]
 ```
 
 For example, if you want to run the `streams_info` example:
 
 ```bash
-cargo run --example streams_info -- -i /path/to/your/matroska/file
+cargo run --package av-examples --example streams_info -- -i /path/to/your/matroska/file
 ```
 
 ## Notes

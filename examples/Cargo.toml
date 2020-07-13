@@ -1,0 +1,18 @@
+[package]
+name = "av-examples"
+description = "Multimedia examples"
+version = "0.0.1"
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
+repository = "https://github.com/rust-av/rust-av"
+edition = "2018"
+
+[dev_dependencies]
+av-codec = { path = "../codec" }
+av-data = { path = "../data" }
+av-format = { path = "../format" }
+clap = "2.33.1"
+matroska = { version = "0.1.0", git = "https://github.com/rust-av/matroska" }
+av-vorbis = { git = "https://github.com/rust-av/av-vorbis" }
+libopus = { version = "0.1.0", git = "https://github.com/rust-av/opus-rs", features = ["codec-trait"] }
+libvpx = { version = "0.1.0", git = "https://github.com/rust-av/vpx-rs", features = ["codec-trait"] }
