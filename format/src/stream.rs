@@ -73,7 +73,7 @@ impl Stream {
         }
     }
     pub fn get_extradata(&self) -> Option<&[u8]> {
-        self.params.extradata.as_ref().map(|e| e.as_slice())
+        self.params.extradata.as_deref()
     }
 }
 

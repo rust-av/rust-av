@@ -3,13 +3,13 @@
 
 #[inline]
 pub fn get_u8(buf: &[u8]) -> u8 {
-    assert!(buf.len() > 0);
+    assert!(!buf.is_empty());
     buf[0] as u8
 }
 
 #[inline]
 pub fn get_i8(buf: &[u8]) -> i8 {
-    assert!(buf.len() > 0);
+    assert!(!buf.is_empty());
     buf[0] as i8
 }
 

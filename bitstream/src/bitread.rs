@@ -4,7 +4,7 @@ pub trait BitReadEndian {
     fn peek_val(&mut self, n: usize) -> u64;
     fn merge_val(msp: u64, lsp: u64, msb: usize, lsb: usize) -> u64;
     fn build_cache(cache: u64, refill: u64, cache_size: usize) -> u64;
-    fn skip_rem(&mut self, n: usize) -> ();
+    fn skip_rem(&mut self, n: usize);
 }
 
 pub trait BitReadFill {
@@ -15,8 +15,8 @@ pub trait BitReadFill {
 
 pub trait BitReadInternal: BitReadEndian + BitReadFill {
     fn left(&self) -> usize;
-    fn refill32(&mut self) -> ();
-    fn refill64(&mut self) -> ();
+    fn refill32(&mut self);
+    fn refill64(&mut self);
 
     fn get_val(&mut self, n: usize) -> u64 {
         let ret = self.peek_val(n);
@@ -32,7 +32,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
     fn consumed(&self) -> usize;
     fn available(&self) -> usize;
 
-    fn skip_bits(&mut self, size: usize) -> ();
+    fn skip_bits(&mut self, size: usize);
 
     #[inline]
     fn get_bit(&mut self) -> bool {
@@ -146,7 +146,7 @@ macro_rules! endian_reader {
         impl <'a> BitRead<'a> for $name<'a> {
             fn new(buffer: &'a[u8]) -> $name<'a> {
                 let mut reader = $name {
-                    buffer: buffer,
+                    buffer,
                     index: 0,
                     cache: 0,
                     left: 0
