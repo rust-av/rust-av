@@ -803,6 +803,26 @@ pub mod formats {
         alpha: false,
         palette: false,
     };
+
+    pub const RGBA: &Formaton = &Formaton {
+        model: Trichromatic(RGB),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 4,
+        comp_info: [
+            Some(Chromaton::packrgb(8, 0, 3, 4)),
+            Some(Chromaton::packrgb(8, 0, 2, 4)),
+            Some(Chromaton::packrgb(8, 0, 1, 4)),
+            Some(Chromaton::packrgb(8, 0, 0, 4)),
+            None,
+        ],
+        elem_size: 4,
+        be: false,
+        alpha: true,
+        palette: false,
+    };
 }
 
 #[cfg(test)]
@@ -814,6 +834,7 @@ mod test {
             println!("formaton yuv- {}", formats::YUV420);
             println!("formaton pal- {}", formats::PAL8);
             println!("formaton rgb565- {}", formats::RGB565);
+            println!("formaton rgba- {}", formats::RGBA);
         }
 
         #[test]
