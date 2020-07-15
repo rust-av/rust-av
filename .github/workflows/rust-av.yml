@@ -67,7 +67,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+
+    - name: Install grcov
+      env:
+        LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: 0.5.15
+      run: |
+        curl -L "$LINK/v$GRCOV_VERSION/grcov-linux-x86_64.tar.bz2" |
+        tar xj -C $HOME/.cargo/bin
 
     - name: Install stable
       uses: actions-rs/toolchain@v1
