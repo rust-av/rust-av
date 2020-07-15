@@ -40,21 +40,23 @@ fn main() {
     let path = matches.value_of("path").map(|s| Path::new(s)).unwrap();
 
     // Open the matroska file
-    let r = File::open(path).unwrap();
+    let reader = File::open(path).unwrap();
 
     // Create a buffer of size 4096MB to contain matroska data
-    let ar = AccReader::with_capacity(4 * 1024, r);
+    let ar = AccReader::with_capacity(4 * 1024, reader);
 
     // Set the type of demuxer, in this case, a matroska demuxer
-    let mut c = Context::new(Box::new(MkvDemuxer::new()), Box::new(ar));
+    let mut demuxer = Context::new(Box::new(MkvDemuxer::new()), Box::new(ar));
 
     // Read matroska headers
-    c.read_headers().expect("Cannot parse the format headers");
+    demuxer
+        .read_headers()
+        .expect("Cannot parse the format headers");
 
     // Iterate over the streams contained in a matroska file
-    for st in &c.info.streams {
+    for stream in &demuxer.info.streams {
         // Print simple information on video and audio streams
-        match st.params.kind {
+        match stream.params.kind {
             Some(MediaKind::Video(ref info)) => {
                 println!("Video streams information\n");
                 println!("width: {}", info.width);

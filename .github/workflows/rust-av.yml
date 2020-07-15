@@ -42,13 +42,24 @@ jobs:
       run: |
         sudo apt-get install nasm
 
-    - name: Install libvpx and opus
+    - name: Install libvpx
       run: |
-        sudo apt-get install libvpx-dev libopus-dev
+        sudo apt-get install libvpx-dev
+
+    - name: Install libopus
+      run: |
+        git clone https://github.com/xiph/opus.git
+        cd opus
+        ./autogen.sh
+        ./configure --prefix=$HOME/opus_dir
+        make -j12
+        make install
 
     - name: Build examples
       run: |
-        cargo build --examples
+        export PKG_CONFIG_PATH=$HOME/opus_dir/lib/pkgconfig:$PKG_CONFIG_PATH
+        export LD_LIBRARY_PATH=$HOME/opus_dir/lib:$LD_LIBRARY_PATH
+        cargo build --all --examples
 
 
   grcov-coveralls:
@@ -80,7 +91,7 @@ jobs:
           -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
           -Cpanic=abort -Zpanic_abort_tests
       run: |
-        cargo test --all --all-features --verbose
+        cargo test --workspace --exclude av-examples --all-features --verbose
 
     - name: Run grcov
       id: coverage
@@ -113,16 +124,16 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --all --all-features --verbose
+        args: --workspace --exclude av-examples --all-features --verbose
 
     - name: Run bench
       uses: actions-rs/cargo@v1
       with:
         command: bench
-        args: --all --all-features --verbose
+        args: --workspace --exclude av-examples --all-features --verbose
 
     - name: Run doc
       uses: actions-rs/cargo@v1
       with:
         command: doc
-        args: --all --all-features --verbose
+        args: --workspace --exclude av-examples --all-features --verbose
