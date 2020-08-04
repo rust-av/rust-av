@@ -221,8 +221,15 @@ impl DefaultFrameBuffer {
                     buf,
                     planes: Vec::new(),
                 };
-                for _ in 0..audio.map.len() {
-                    let size = audio.format.get_audio_size(audio.samples, ALIGNMENT);
+                if audio.format.planar {
+                    for _ in 0..audio.map.len() {
+                        let size = audio.format.get_audio_size(audio.samples, ALIGNMENT);
+                        buffer.planes.push(Plane {
+                            buf: buffer.buf.split_to(size),
+                            linesize: size,
+                        });
+                    }
+                } else {
                     buffer.planes.push(Plane {
                         buf: buffer.buf.split_to(size),
                         linesize: size,
