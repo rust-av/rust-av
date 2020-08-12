@@ -8,9 +8,9 @@ repository = "https://github.com/rust-av/rust-av"
 edition = "2018"
 
 [dev_dependencies]
-av-codec = { path = "../codec" }
-av-data = { path = "../data" }
-av-format = { path = "../format" }
+av-codec = "0.2.0"
+av-data = "0.2.1"
+av-format = "0.2.1"
 clap = "2.33.1"
 matroska = { version = "0.1.0", git = "https://github.com/rust-av/matroska" }
 av-vorbis = { git = "https://github.com/rust-av/av-vorbis" }
