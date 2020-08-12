@@ -9,9 +9,9 @@ use crate::error::*;
 
 pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
-    fn write_header(&mut self, buf: &mut Vec<u8>) -> Result<()>;
-    fn write_packet(&mut self, buf: &mut Vec<u8>, pkt: Arc<Packet>) -> Result<()>;
-    fn write_trailer(&mut self, buf: &mut Vec<u8>) -> Result<()>;
+    fn write_header(&mut self, out: &mut dyn Write) -> Result<()>;
+    fn write_packet(&mut self, out: &mut dyn Write, pkt: Arc<Packet>) -> Result<()>;
+    fn write_trailer(&mut self, out: &mut dyn Write) -> Result<()>;
 
     fn set_global_info(&mut self, info: GlobalInfo) -> Result<()>;
     fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
