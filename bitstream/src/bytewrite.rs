@@ -12,91 +12,120 @@ macro_rules! write_bytes_be {
     };
 }
 
+/// Writes an unsigned byte at the start of a buffer.
 #[inline]
 pub fn put_u8(buf: &mut [u8], n: u8) {
     buf[0] = n;
 }
 
+/// Converts a `i8` into an unsigned byte and
+/// writes it at the start of a buffer.
 #[inline]
 pub fn put_i8(buf: &mut [u8], n: i8) {
     buf[0] = n as u8;
 }
 
+/// Writes 2 unsigned bytes in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_u16l(buf: &mut [u8], n: u16) {
     write_bytes_le!(buf, n);
 }
 
+/// Writes 2 unsigned bytes in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_u16b(buf: &mut [u8], n: u16) {
     write_bytes_be!(buf, n);
 }
 
+/// Writes 4 unsigned bytes in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_u32l(buf: &mut [u8], n: u32) {
     write_bytes_le!(buf, n);
 }
 
+/// Writes 4 unsigned bytes in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_u32b(buf: &mut [u8], n: u32) {
     write_bytes_be!(buf, n);
 }
 
+/// Writes 8 unsigned bytes in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_u64l(buf: &mut [u8], n: u64) {
     write_bytes_le!(buf, n);
 }
 
+/// Writes 8 unsigned bytes in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_u64b(buf: &mut [u8], n: u64) {
     write_bytes_be!(buf, n);
 }
 
+/// Converts an `i16` into 2 unsigned bytes and
+/// writes them in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_i16l(buf: &mut [u8], n: i16) {
     put_u16l(buf, n as u16);
 }
 
+/// Converts an `i16` into 2 unsigned bytes and
+/// writes them in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_i16b(buf: &mut [u8], n: i16) {
     put_u16b(buf, n as u16);
 }
 
+/// Converts an `i32` into 4 unsigned bytes and
+/// writes them in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_i32l(buf: &mut [u8], n: i32) {
     put_u32l(buf, n as u32);
 }
 
+/// Converts an `i32` into 4 unsigned bytes and
+/// writes them in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_i32b(buf: &mut [u8], n: i32) {
     put_u32b(buf, n as u32);
 }
 
+/// Converts an `i64` into 8 unsigned bytes and
+/// writes them in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_i64l(buf: &mut [u8], n: i64) {
     put_u64l(buf, n as u64);
 }
 
+/// Converts an `i64` into 8 unsigned bytes and
+/// writes them in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_i64b(buf: &mut [u8], n: i64) {
     put_u64b(buf, n as u64);
 }
 
+/// Converts a `f32` into 4 unsigned bytes and
+/// writes them in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_f32l(buf: &mut [u8], n: f32) {
     write_bytes_le!(buf, n);
 }
 
+/// Converts a `f32` into 4 unsigned bytes and
+/// writes them in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_f32b(buf: &mut [u8], n: f32) {
     write_bytes_be!(buf, n);
 }
 
+/// Converts a `f64` into 8 unsigned bytes and
+/// writes them in a little-endian order at the start of a buffer.
 #[inline]
 pub fn put_f64l(buf: &mut [u8], n: f64) {
     write_bytes_le!(buf, n);
 }
 
+/// Converts a `f64` into 8 unsigned bytes and
+/// writes them in a big-endian order at the start of a buffer.
 #[inline]
 pub fn put_f64b(buf: &mut [u8], n: f64) {
     write_bytes_be!(buf, n);

@@ -7,42 +7,64 @@ use thiserror::Error;
 
 use crate::bitread::*;
 
+/// Codebook operations errors.
 #[derive(Debug, Error)]
 pub enum CodebookError {
+    /// The codebook is invalid.
     #[error("Invalid Codebook")]
     InvalidCodebook,
+    /// The analyzed bitstream is not present in the codebook.
     #[error("Invalid Code")]
     InvalidCode,
 }
 
 use self::CodebookError::*;
 
+/// Codebook operation modes.
 #[derive(Debug, Copy, Clone)]
 pub enum CodebookMode {
+    /// Codes in the codebook should be read most significant bit first.
     MSB,
+    /// Codes in the codebook should be read least significant bit first.
     LSB,
 }
 
+/// Codebook description for `(code bits, code length, code value)` triplet.
 pub struct FullCodebookDesc<S> {
-    code: u32,
-    bits: u8,
-    sym: S,
+    /// Codeword bits.
+    pub code: u32,
+    /// Codeword length.
+    pub bits: u8,
+    /// Codeword value (symbol).
+    pub sym: S,
 }
 
+/// Codebook description for `(code bits, code length)` pair with array index
+/// being used as codeword value.
 pub struct ShortCodebookDesc {
-    code: u32,
-    bits: u8,
+    /// Codeword bits.
+    pub code: u32,
+    /// Codeword length.
+    pub bits: u8,
 }
 
+/// This trait defines a series of methods to get some information
+/// from a codebook.
 pub trait CodebookDescReader<S> {
+    /// Returns the codeword length for the provided index.
     fn bits(&self, idx: usize) -> u8;
+    /// Returns the codeword bits for the provided index.
     fn code(&self, idx: usize) -> u32;
+    /// Returns the codeword value (codeword symbol) for the provided index.
     fn sym(&self, idx: usize) -> S;
 
+    /// Returns the total number of defined codewords.
     fn len(&self) -> usize;
+    /// Tells if the codebook is empty or not.
     fn is_empty(&self) -> bool;
 }
 
+/// The codebook structure for code reading.
 #[allow(dead_code)]
 pub struct Codebook<S> {
     table: Vec<u32>,
@@ -50,10 +72,13 @@ pub struct Codebook<S> {
     lut_bits: u8,
 }
 
+/// Adopted by a bitreader to use codebook for decoding bit sequences.
 pub trait CodebookReader<S> {
+    /// Reads the codeword from a bitstream and returns its value.
     fn read_cb(&mut self, cb: &Codebook<S>) -> Result<S, CodebookError>;
 }
 
+/// Returns the reversed sequence of bits passed as input.
 pub fn reverse_bits(inval: u32) -> u32 {
     const REV_TAB: [u8; 16] = [
         0b0000, 0b1000, 0b0100, 0b1100, 0b0010, 0b1010, 0b0110, 0b1110, 0b0001, 0b1001, 0b0101,
@@ -250,6 +275,8 @@ fn build_esc_lut(
 }
 
 impl<S: Copy> Codebook<S> {
+    /// Constructs a new `Codebook` instance using provided
+    /// codebook description and mode.
     pub fn new(
         cb: &mut dyn CodebookDescReader<S>,
         mode: CodebookMode,
@@ -403,6 +430,8 @@ impl CodebookDescReader<u32> for Vec<ShortCodebookDesc> {
     }
 }
 
+/// Flexible codebook description that uses two separate arrays for
+/// codeword bits and lengths.
 pub struct TableCodebookDescReader<CodeType: 'static, SymType> {
     bits: &'static [u8],
     codes: &'static [CodeType],

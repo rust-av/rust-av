@@ -1,23 +1,43 @@
 use crate::byteread::*;
 
+/// Used to interact with a sequence of 64 bits, taking into account the
+/// relative endianness.
+///
+/// This trait also offers some methods to read and remove bits from an internal
+/// 64-bit cache.
 pub trait BitReadEndian {
+    /// Peeks n bits from the cache.
     fn peek_val(&mut self, n: usize) -> u64;
+    /// Merges two sequences of bits together.
     fn merge_val(msp: u64, lsp: u64, msb: usize, lsb: usize) -> u64;
+    /// Builds a new cache.
     fn build_cache(cache: u64, refill: u64, cache_size: usize) -> u64;
+    /// Removes n bits from the cache.
     fn skip_rem(&mut self, n: usize);
 }
 
+/// Used to extract a sequence of bits from an internal buffer.
 pub trait BitReadFill {
+    /// Tells if it is still possible to read bits from an internal buffer.
     fn can_refill(&self) -> bool;
+    /// Gets a 32-bits sequence from an internal buffer.
     fn fill32(&self) -> u64;
+    /// Gets a 64-bits sequence from an internal buffer.
     fn fill64(&self) -> u64;
 }
 
+/// Used to interact with an internal buffer.
 pub trait BitReadInternal: BitReadEndian + BitReadFill {
+    /// Gets the number of bits left in an internal buffer.
     fn left(&self) -> usize;
+    /// Extracts a 32-bit sequence from an internal buffer and saves it
+    /// within an internal cache.
     fn refill32(&mut self);
+    /// Extracts a 64-bit sequence from an internal buffer and saves it
+    /// within an internal cache.
     fn refill64(&mut self);
 
+    /// Returns n bits from an internal buffer.
     fn get_val(&mut self, n: usize) -> u64 {
         let ret = self.peek_val(n);
 
@@ -27,13 +47,19 @@ pub trait BitReadInternal: BitReadEndian + BitReadFill {
     }
 }
 
+/// Used to define a bitreader.
 pub trait BitRead<'a>: BitReadInternal + Copy {
+    /// Creates a new bitreader with an internal buffer associated to it.
     fn new(_: &'a [u8]) -> Self;
+    /// Tells the number of bits read from the internal buffer.
     fn consumed(&self) -> usize;
+    /// Tells the number of bits still available in the internal buffer.
     fn available(&self) -> usize;
 
+    /// Discard a certain number of bits from the internal buffer.
     fn skip_bits(&mut self, size: usize);
 
+    /// Returns a single bit from the internal buffer.
     #[inline]
     fn get_bit(&mut self) -> bool {
         if self.left() == 0 {
@@ -43,6 +69,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         self.get_val(1) != 0
     }
 
+    /// Returns n bits from the internal buffer as a 64-bit sequence.
     #[inline]
     fn get_bits_64(&mut self, mut n: usize) -> u64 {
         let mut left = 0;
@@ -62,6 +89,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         Self::merge_val(self.get_val(n), ret, left, n)
     }
 
+    /// Returns n bits from the internal buffer as a 32-bit sequence.
     #[inline]
     fn get_bits_32(&mut self, n: usize) -> u32 {
         if n == 0 {
@@ -75,6 +103,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         self.get_val(n) as u32
     }
 
+    /// Peeks the next bit present in the internal buffer.
     #[inline]
     fn peek_bit(&mut self) -> bool {
         let mut tmp = *self;
@@ -82,6 +111,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         tmp.get_bit()
     }
 
+    /// Peeks the next 32-bit sequence present in the internal buffer.
     #[inline]
     fn peek_bits_32(&mut self, n: usize) -> u32 {
         let mut tmp = *self;
@@ -89,6 +119,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         tmp.get_bits_32(n)
     }
 
+    /// Peeks the next 64-bit sequence present in the internal buffer.
     #[inline]
     fn peek_bits_64(&self, n: usize) -> u64 {
         let mut tmp = *self;
@@ -96,6 +127,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         tmp.get_bits_64(n)
     }
 
+    /// Alignes the bits present in the internal buffer.
     #[inline]
     fn align_bits(&mut self) {
         let left = self.left() & 7;
@@ -104,9 +136,17 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
     }
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! endian_reader {
-    {$name: ident} => {
+    {$name: ident, $docname: expr} => {
+        #[doc = "A "]
+        #[doc = $docname]
+        #[doc = " reader."]
+        #[doc = ""]
+        #[doc = "It contains the data structures necessary to create a "]
+        #[doc = $docname]
+        #[doc = " reader."]
         #[derive(Debug, Clone, Copy)]
         pub struct $name<'a> {
             buffer : &'a[u8], /// read buffer, 8-bytes padded
@@ -186,10 +226,11 @@ macro_rules! endian_reader {
     }
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! little_endian_reader {
     {$name: ident} => {
-        endian_reader!{ $name }
+        endian_reader!{ $name, "little-endian" }
 
         impl <'a> BitReadEndian for $name<'a> {
             #[inline]
@@ -232,10 +273,11 @@ impl<'a> BitReadFill for BitReadLE<'a> {
     }
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! big_endian_reader {
     {$name: ident} => {
-        endian_reader!{ $name }
+        endian_reader!{ $name, "big-endian" }
 
         impl <'a> BitReadEndian for $name<'a> {
             #[inline]
