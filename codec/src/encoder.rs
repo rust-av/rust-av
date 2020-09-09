@@ -8,20 +8,31 @@ use crate::data::value::Value;
 
 use crate::error::*;
 
+/// Used to interact with an encoder.
 pub trait Encoder: Send {
+    /// Returns the extra data added by an encoder to a codec.
     fn get_extradata(&self) -> Option<Vec<u8>>;
+    /// Sends to the encoder a frame to be encoded.
     fn send_frame(&mut self, pkt: &ArcFrame) -> Result<()>;
+    /// Returns an encoded packet.
     fn receive_packet(&mut self) -> Result<Packet>;
+    /// Tells encoder to clear its internal state.
     fn flush(&mut self) -> Result<()>;
 
+    /// Configures the encoder.
     fn configure(&mut self) -> Result<()>;
+    /// Sets an encoder option.
     fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
     // fn get_option(&mut self, key: &str) -> Option<Value>;
     //
+    /// Sets the parameters associated to a determined codec.
     fn set_params(&mut self, params: &CodecParams) -> Result<()>;
+    /// Gets the parameters associated to a determined codec.
     fn get_params(&self) -> Result<CodecParams>;
 }
 
+/// Auxiliary structure to encapsulate an encoder object and
+/// its additional data.
 pub struct Context {
     enc: Box<dyn Encoder>,
     // TODO: Queue up packets/frames
@@ -32,6 +43,8 @@ pub struct Context {
 
 impl Context {
     // TODO: More constructors
+    /// Retrieves a codec descriptor from a codec list through its name,
+    /// creates the relative encoder, and encapsulates it into a new `Context`.
     pub fn by_name(codecs: &Codecs, name: &str) -> Option<Context> {
         if let Some(builder) = codecs.by_name(name) {
             let enc = builder.create();
@@ -41,18 +54,22 @@ impl Context {
         }
     }
 
+    /// Configures the encoder.
     pub fn configure(&mut self) -> Result<()> {
         self.enc.configure()
     }
 
+    /// Sets the parameters associated to a determined codec.
     pub fn set_params(&mut self, params: &CodecParams) -> Result<()> {
         self.enc.set_params(params)
     }
 
+    /// Gets the parameters associated to a determined codec.
     pub fn get_params(&self) -> Result<CodecParams> {
         self.enc.get_params()
     }
 
+    /// Sets an encoder option.
     pub fn set_option<'a, V>(&mut self, key: &str, val: V) -> Result<()>
     where
         V: Into<Value<'a>>,
@@ -61,36 +78,51 @@ impl Context {
         self.enc.set_option(key, val.into())
     }
 
+    /// Returns the extra data added by an encoder to a codec.
     pub fn get_extradata(&mut self) -> Option<Vec<u8>> {
         self.enc.get_extradata()
     }
+    /// Sends to the encoder a frame to be encoded.
     pub fn send_frame(&mut self, frame: &ArcFrame) -> Result<()> {
         self.enc.send_frame(frame)
     }
+    /// Returns an encoded packet.
     // TODO: Return an Event?
     pub fn receive_packet(&mut self) -> Result<Packet> {
         self.enc.receive_packet()
     }
 
+    /// Tells encoder to clear its internal state.
     pub fn flush(&mut self) -> Result<()> {
         self.enc.flush()
     }
 }
 
+/// Codec descriptor.
+///
+/// Contains information on a codec and its own encoder.
 #[derive(Debug)]
 pub struct Descr {
+    /// The codec name.
     pub codec: &'static str,
+    /// The extended codec name.
     pub name: &'static str,
+    /// The codec description.
     pub desc: &'static str,
+    /// The codec MIME.
     pub mime: &'static str,
     // TODO more fields regarding capabilities
 }
 
+/// Used to get the descriptor of a codec and create its own encoder.
 pub trait Descriptor {
+    /// Creates a new encoder for the requested codec.
     fn create(&self) -> Box<dyn Encoder>;
+    /// Returns the codec descriptor.
     fn describe(&self) -> &Descr;
 }
 
+/// A list of codec descriptors.
 pub struct Codecs {
     list: HashMap<&'static str, Vec<&'static dyn Descriptor>>,
 }
