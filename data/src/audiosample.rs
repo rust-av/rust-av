@@ -1,38 +1,39 @@
 use std::fmt;
 use std::string::*;
 
-/// Parameters describing the representation of an audio sample
+/// Audio format definition.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Soniton {
-    /// Number of bits in each sample.
+    /// Bits per sample.
     pub bits: u8,
-    /// True if the sample data is in big endian layout, false if little endian.
+    /// Tells if audio format is big-endian.
     pub be: bool,
-    /// For data which isn't a multiple of 8 bits this is true if there is no padding between samples,
-    /// false if the data is padded.
+    /// Audio samples are packed (e.g. 20-bit audio samples) and not padded.
     pub packed: bool,
-    /// If true data is stored in a planar layout with channels occurring in sequence i.e. C1 C1
-    /// C1... C2 C2 C2 . If false data is interleaved i.e. C1 C2 C1 C2.
+    /// Audio data is stored in planar format
+    /// (channels in sequence i.e. C1 C1 C1... C2 C2 C2) instead of interleaving
+    /// samples (i.e. C1 C2 C1 C2) for different channels.
     pub planar: bool,
-    /// True if the sample data is a floating point data type, false otherwise.
+    /// Audio data is in floating point format.
     pub float: bool,
-    /// True if the sample data is signed, false otherwise.
+    /// Audio data is signed (usually only 8-bit audio is unsigned).
     pub signed: bool,
 }
 
 // TODO: make it a trait for usize?
-/// Given a length in bytes `v` return the size when aligned to `a` bytes
+/// Alignes a value to a specific number of bytes.
 fn align(v: usize, a: usize) -> usize {
     (v + a - 1) & !(a - 1)
 }
 
-/// Round the size in bits to the number of bytes required
+/// Returns the number of bytes necessary to represent the number of bits
+/// passed as input.
 fn round_to_byte(v: usize) -> usize {
     (v + 7) >> 3
 }
 
 impl Soniton {
-    /// Creates a new representation of a sample with the provided parameters
+    /// Constructs a new audio format definition.
     pub fn new(bits: u8, be: bool, packed: bool, planar: bool, float: bool, signed: bool) -> Self {
         Soniton {
             bits,
@@ -44,8 +45,8 @@ impl Soniton {
         }
     }
 
-    /// For a stream of the given length and alignment return the size of the buffer containing the
-    /// data
+    /// Returns the amount of bytes needed to store
+    /// the audio of requested length (in samples).
     pub fn get_audio_size(self, length: usize, alignment: usize) -> usize {
         let s = if self.packed {
             round_to_byte(length * (self.bits as usize))
@@ -75,7 +76,7 @@ impl fmt::Display for Soniton {
     }
 }
 
-/// Enum representing the different types of audio channels
+/// Known audio channel types.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ChannelType {
     C,
@@ -109,7 +110,7 @@ pub enum ChannelType {
 }
 
 impl ChannelType {
-    /// Returns true if the channel is centered
+    /// Tells whether the channel is some center channel.
     pub fn is_center(self) -> bool {
         match self {
             ChannelType::C => true,
@@ -124,7 +125,7 @@ impl ChannelType {
         }
     }
 
-    /// Returns true if the channel is a left audio channel, false otherwise
+    /// Tells whether the channel is some left channel.
     pub fn is_left(self) -> bool {
         match self {
             ChannelType::L => true,
@@ -141,7 +142,7 @@ impl ChannelType {
         }
     }
 
-    /// Returns true if the channel is a right audio channel, false otherwise
+    /// Tells whether the channel is some right channel.
     pub fn is_right(self) -> bool {
         match self {
             ChannelType::R => true,
@@ -195,46 +196,46 @@ impl fmt::Display for ChannelType {
     }
 }
 
-/// Stores the audio channels in the file in order of occurence
+/// An ordered sequence of channels.
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct ChannelMap {
     ids: Vec<ChannelType>,
 }
 
 impl ChannelMap {
-    /// Creates a new channel map
+    /// Creates a new sequence of channels.
     pub fn new() -> Self {
         ChannelMap { ids: Vec::new() }
     }
 
-    /// Adds a single channel to the map
+    /// Adds a single channel to the map.
     pub fn add_channel(&mut self, ch: ChannelType) {
         self.ids.push(ch);
     }
 
-    /// Adds number of channels to the map in order of occurrence
+    /// Adds several channels to the map in order of occurrence.
     pub fn add_channels(&mut self, chs: &[ChannelType]) {
         for ch in chs {
             self.ids.push(*ch);
         }
     }
 
-    /// Returns the number of channels in the stream
+    /// Returns the total number of channels of the map.
     pub fn len(&self) -> usize {
         self.ids.len()
     }
 
-    /// Checks if the channel map is empty
+    /// Tells if the channel map is empty.
     pub fn is_empty(&self) -> bool {
         self.ids.is_empty()
     }
 
-    /// Gets the channel type for the channel at the given index
+    /// Gets the channel type for a requested index.
     pub fn get_channel(&self, idx: usize) -> ChannelType {
         self.ids[idx]
     }
 
-    /// Finds the first channel index containing a channel of the given type
+    /// Tries to find the position of a determined type of channel in the map.
     pub fn find_channel_id(&self, t: ChannelType) -> Option<u8> {
         for i in 0..self.ids.len() {
             if self.ids[i] as i32 == t as i32 {
@@ -244,9 +245,17 @@ impl ChannelMap {
         None
     }
 
-    /// Creates a default channel map. For 1 channel this is a single centred channel for 2
-    /// channels a Right channel and a Left channel. No implementation currently exists for other
-    /// counts.
+    /// Creates a default channel map.
+    ///
+    /// Depending on the `count` value, the channel map is defined differently.
+    ///
+    /// When `count` is 1 --> the channel map is composed by a single centered
+    /// channel.
+    ///
+    /// When `count` is 2 --> the channel map is composed by a right and a left
+    /// channel respectively.
+    ///
+    /// For other `count` values, no other implementations are given for now.
     pub fn default_map(count: usize) -> Self {
         use self::ChannelType::*;
         let ids = match count {
@@ -259,10 +268,11 @@ impl ChannelMap {
     }
 }
 
-/// A set of default constant channels for general use
+/// A set of default constant channels for general use.
 pub mod formats {
     use super::*;
 
+    /// Predefined format for interleaved 8-bit unsigned audio.
     pub const U8: Soniton = Soniton {
         bits: 8,
         be: false,
@@ -271,6 +281,8 @@ pub mod formats {
         float: false,
         signed: false,
     };
+
+    /// Predefined format for interleaved 16-bit signed audio.
     pub const S16: Soniton = Soniton {
         bits: 16,
         be: false,
@@ -279,6 +291,8 @@ pub mod formats {
         float: false,
         signed: true,
     };
+
+    /// Predefined format for interleaved 32-bit signed audio.
     pub const S32: Soniton = Soniton {
         bits: 32,
         be: false,
@@ -287,6 +301,8 @@ pub mod formats {
         float: false,
         signed: true,
     };
+
+    /// Predefined format for interleaved floating points 32-bit signed audio.
     pub const F32: Soniton = Soniton {
         bits: 32,
         be: false,
@@ -295,6 +311,8 @@ pub mod formats {
         float: true,
         signed: true,
     };
+
+    /// Predefined format for interleaved floating points 64-bit signed audio.
     pub const F64: Soniton = Soniton {
         bits: 64,
         be: false,

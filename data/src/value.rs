@@ -4,14 +4,22 @@ use crate::pixel::Formaton;
 use std::convert::From;
 use std::sync::Arc;
 
+/// Accepted option values.
 #[derive(Debug)]
 pub enum Value<'a> {
+    /// Signed integer value.
     I64(i64),
+    /// Unsigned integer value.
     U64(u64),
+    /// Unicode string slice value.
     Str(&'a str),
+    /// Boolean value.
     Bool(bool),
+    /// Pair of signed integer values.
     Pair(i64, i64),
+    /// Image colorspace representation value.
     Formaton(Arc<Formaton>),
+    /// Audio format definition value.
     Soniton(Arc<Soniton>),
 }
 
