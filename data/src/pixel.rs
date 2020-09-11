@@ -1,8 +1,8 @@
 //!
-//! Expose all necessary  data structures to represent pixels.
+//! Expose all necessary data structures to represent pixels.
 //!
-//! Re-exports num_traits::FromPrimitive and  num_traits::cast::ToPrimitive in order to make easy to cast a parsed value into correct
-//! enum structures
+//! Re-exports num_traits::FromPrimitive and num_traits::cast::ToPrimitive
+//! in order to make easy to cast a parsed value into correct enum structures.
 //!
 //!
 
@@ -13,9 +13,12 @@ use std::fmt;
 use std::ops::Index;
 use std::slice;
 
+/// YUV color range.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum YUVRange {
+    /// Pixels in the range [16, 235].
     Limited,
+    /// Pixels in the range [0, 255].
     Full,
 }
 
@@ -28,7 +31,7 @@ impl fmt::Display for YUVRange {
     }
 }
 
-/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
+/// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum MatrixCoefficients {
     Identity = 0,
@@ -78,7 +81,7 @@ impl fmt::Display for MatrixCoefficients {
     }
 }
 
-/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
+/// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ColorPrimaries {
     Reserved0 = 0,
@@ -118,7 +121,7 @@ impl fmt::Display for ColorPrimaries {
     }
 }
 
-/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
+/// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum TransferCharacteristic {
     Reserved0 = 0,
@@ -168,7 +171,7 @@ impl fmt::Display for TransferCharacteristic {
     }
 }
 
-/// The enum values are adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1
+/// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ChromaLocation {
     Unspecified = 0,
@@ -195,6 +198,7 @@ impl fmt::Display for ChromaLocation {
     }
 }
 
+/// All YUV color reprentations.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum YUVSystem {
     YCbCr(YUVRange),
@@ -213,6 +217,7 @@ impl fmt::Display for YUVSystem {
     }
 }
 
+/// Trichromatic color encoding system.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TrichromaticEncodingSystem {
     RGB,
@@ -231,6 +236,7 @@ impl fmt::Display for TrichromaticEncodingSystem {
     }
 }
 
+/// All supported color models.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ColorModel {
     Trichromatic(TrichromaticEncodingSystem),
@@ -251,6 +257,7 @@ impl fmt::Display for ColorModel {
 }
 
 impl ColorModel {
+    /// Returns the number of components of a color model.
     pub fn get_default_components(self) -> usize {
         match self {
             ColorModel::CMYK => 4,
@@ -259,16 +266,28 @@ impl ColorModel {
     }
 }
 
-/// There are available multiple constructor for yuv/rgb
+/// Single colorspace component definition.
+///
+/// Defines how the components of a colorspace are subsampled and
+/// where and how they are stored.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Chromaton {
-    h_ss: u8,
-    v_ss: u8,
-    packed: bool,
-    depth: u8,
-    shift: u8,
-    comp_offs: u8,
-    next_elem: u8,
+    /// Horizontal subsampling in power of two
+    /// (e.g. `0` = no subsampling, `1` = only every second value is stored).
+    pub h_ss: u8,
+    /// Vertial subsampling in power of two
+    /// (e.g. `0` = no subsampling, `1` = only every second value is stored).
+    pub v_ss: u8,
+    /// Tells if a component is packed.
+    pub packed: bool,
+    /// Bit depth of a component.
+    pub depth: u8,
+    /// Shift for packed components.
+    pub shift: u8,
+    /// Component offset for byte-packed components.
+    pub comp_offs: u8,
+    /// The distance to the next packed element in bytes.
+    pub next_elem: u8,
 }
 
 fn align(v: usize, a: usize) -> usize {
@@ -276,6 +295,7 @@ fn align(v: usize, a: usize) -> usize {
 }
 
 impl Chromaton {
+    /// Constructs a new `Chromaton` instance.
     pub const fn new(
         h_ss: u8,
         v_ss: u8,
@@ -296,51 +316,74 @@ impl Chromaton {
         }
     }
 
+    /// Constructs a specific `Chromaton` instance for `yuv8`.
     pub const fn yuv8(h_ss: u8, v_ss: u8, comp_offs: u8) -> Chromaton {
         Chromaton::new(h_ss, v_ss, false, 8, 0, comp_offs, 1)
     }
 
+    /// Constructs a specific `Chromaton` instance for `yuvhb`.
     pub const fn yuvhb(h_ss: u8, v_ss: u8, depth: u8, comp_offs: u8) -> Chromaton {
         Chromaton::new(h_ss, v_ss, false, depth, 0, comp_offs, 1)
     }
 
+    /// Constructs a specific `Chromaton` instance for `packrgb`.
     pub const fn packrgb(depth: u8, shift: u8, comp_offs: u8, next_elem: u8) -> Chromaton {
         Chromaton::new(0, 0, true, depth, shift, comp_offs, next_elem)
     }
 
+    /// Constructs a specific `Chromaton` instance for `pal8`.
     pub const fn pal8(comp_offs: u8) -> Chromaton {
         Chromaton::new(0, 0, true, 8, 0, comp_offs, 3)
     }
 
+    /// Returns the subsampling of a component.
     pub fn get_subsampling(self) -> (u8, u8) {
         (self.h_ss, self.v_ss)
     }
+
+    /// Tells whether a component is packed.
     pub fn is_packed(self) -> bool {
         self.packed
     }
+
+    /// Returns the bit depth of a component.
     pub fn get_depth(self) -> u8 {
         self.depth
     }
+
+    /// Returns the bit shift of a packed component.
     pub fn get_shift(self) -> u8 {
         self.shift
     }
+
+    /// Returns the byte offset of a packed component.
     pub fn get_offset(self) -> u8 {
         self.comp_offs
     }
+
+    /// Returns the byte offset to the next element of a packed component.
     pub fn get_step(self) -> u8 {
         self.next_elem
     }
 
+    /// Calculates the width for a component from general image width.
     pub fn get_width(self, width: usize) -> usize {
         (width + ((1 << self.v_ss) - 1)) >> self.v_ss
     }
+
+    /// Calculates the height for a component from general image height.
     pub fn get_height(self, height: usize) -> usize {
         (height + ((1 << self.h_ss) - 1)) >> self.h_ss
     }
+
+    /// Calculates the minimal stride for a component from general image width.
     pub fn get_linesize(self, width: usize, alignment: usize) -> usize {
         let d = self.depth as usize;
         align((self.get_width(width) * d + d - 1) >> 3, alignment)
     }
+
+    /// Calculates the required image size in pixels for a component
+    /// from general image width.
     pub fn get_data_size(self, width: usize, height: usize, align: usize) -> usize {
         let nh = (height + ((1 << self.v_ss) - 1)) >> self.v_ss;
         self.get_linesize(width, align) * nh
@@ -362,28 +405,41 @@ impl fmt::Display for Chromaton {
     }
 }
 
-/// Complete Video format representation
+/// Image colorspace representation.
 ///
-/// In order to rappresents Raw Video use set methods for primaries, xfers and matrix.
+/// Includes both definitions for each component and some common definitions.
 ///
-/// Can contain up to five color (Chromaton) compotents. Four colors and 0ne alpha.
+/// For example, the format can be paletted, so the components describe
+/// the palette storage format, while the actual data is 8-bit palette indices.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Formaton {
-    model: ColorModel,
-    primaries: ColorPrimaries,
-    xfer: TransferCharacteristic,
-    matrix: MatrixCoefficients,
-    chroma_location: ChromaLocation,
+    /// Image color model.
+    pub model: ColorModel,
+    /// Image color primaries.
+    pub primaries: ColorPrimaries,
+    /// Image transfer characteristic.
+    pub xfer: TransferCharacteristic,
+    /// Image matrix coefficients.
+    pub matrix: MatrixCoefficients,
+    /// Image chroma location.
+    pub chroma_location: ChromaLocation,
 
-    components: u8,
-    comp_info: [Option<Chromaton>; 5],
-    elem_size: u8,
-    be: bool,
-    alpha: bool,
-    palette: bool,
+    /// Actual number of components present.
+    pub components: u8,
+    /// Format definition for each component.
+    pub comp_info: [Option<Chromaton>; 5],
+    /// Single pixel size for packed formats.
+    pub elem_size: u8,
+    /// Tells if data is stored as big-endian.
+    pub be: bool,
+    /// Tells if image has alpha component.
+    pub alpha: bool,
+    /// Tells if data is paletted.
+    pub palette: bool,
 }
 
 impl Formaton {
+    /// Constructs a new instance of `Formaton`.
     pub fn new(
         model: ColorModel,
         components: &[Chromaton],
@@ -419,18 +475,22 @@ impl Formaton {
         }
     }
 
+    /// Returns current color model.
     pub fn get_model(&self) -> ColorModel {
         self.model
     }
 
+    /// Returns current image primaries.
     pub fn get_primaries(&self) -> ColorPrimaries {
         self.primaries
     }
 
+    /// Sets current image primaries.
     pub fn set_primaries(mut self, pc: ColorPrimaries) {
         self.primaries = pc;
     }
 
+    /// Sets current image primaries from `u32`.
     pub fn set_primaries_from_u32(mut self, pc: u32) -> Option<ColorPrimaries> {
         let parsed_pc = ColorPrimaries::from_u32(pc);
         if let Some(pc) = parsed_pc {
@@ -439,14 +499,17 @@ impl Formaton {
         parsed_pc
     }
 
+    /// Returns current image transfer characteristic.
     pub fn get_xfer(&self) -> TransferCharacteristic {
         self.xfer
     }
 
+    /// Sets current image transfer characteristic.
     pub fn set_xfer(mut self, pc: TransferCharacteristic) {
         self.xfer = pc;
     }
 
+    /// Sets current image transfer characteristic from `u32`.
     pub fn set_xfer_from_u32(mut self, tc: u32) -> Option<TransferCharacteristic> {
         let parsed_tc = TransferCharacteristic::from_u32(tc);
         if let Some(tc) = parsed_tc {
@@ -455,14 +518,17 @@ impl Formaton {
         parsed_tc
     }
 
+    /// Returns current image matrix coefficients.
     pub fn get_matrix(&self) -> MatrixCoefficients {
         self.matrix
     }
 
+    /// Sets current image matrix coefficients.
     pub fn set_matrix(mut self, mc: MatrixCoefficients) {
         self.matrix = mc;
     }
 
+    /// Sets current image matrix coefficients from `u32`.
     pub fn set_matrix_from_u32(mut self, mc: u32) -> Option<MatrixCoefficients> {
         let parsed_mc = MatrixCoefficients::from_u32(mc);
         if let Some(mc) = parsed_mc {
@@ -471,28 +537,39 @@ impl Formaton {
         parsed_mc
     }
 
+    /// Returns the number of components.
     pub fn get_num_comp(&self) -> usize {
         self.components as usize
     }
+    /// Returns selected component information.
     pub fn get_chromaton(&self, idx: usize) -> Option<Chromaton> {
         if idx < self.comp_info.len() {
             return self.comp_info[idx];
         }
         None
     }
+
+    /// Reports whether the packing format is big-endian.
     pub fn is_be(&self) -> bool {
         self.be
     }
+
+    /// Reports whether a colorspace has an alpha component.
     pub fn has_alpha(&self) -> bool {
         self.alpha
     }
+
+    /// Reports whether this is a paletted format.
     pub fn is_paletted(&self) -> bool {
         self.palette
     }
+
+    /// Returns single packed pixel size.
     pub fn get_elem_size(&self) -> u8 {
         self.elem_size
     }
 
+    /// Returns an iterator over the format definition of each component.
     pub fn iter(&self) -> slice::Iter<Option<Chromaton>> {
         self.comp_info.iter()
     }
@@ -544,6 +621,7 @@ pub mod formats {
     use self::YUVSystem::*;
     use crate::pixel::*;
 
+    /// Predefined format for planar 8-bit YUV with 4:4:4 subsampling.
     pub const YUV444: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -564,6 +642,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 8-bit YUV with 4:2:2 subsampling.
     pub const YUV422: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -584,6 +663,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 8-bit YUV with 4:2:0 subsampling.
     pub const YUV420: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -604,6 +684,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 8-bit YUV with 4:1:1 subsampling.
     pub const YUV411: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -624,6 +705,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 8-bit YUV with 4:1:0 subsampling.
     pub const YUV410: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -644,6 +726,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 10-bit YUV with 4:4:4 subsampling.
     pub const YUV444_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -664,6 +747,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 10-bit YUV with 4:2:2 subsampling.
     pub const YUV422_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -684,6 +768,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 10-bit YUV with 4:2:0 subsampling.
     pub const YUV420_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -704,6 +789,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 10-bit YUV with 4:1:1 subsampling.
     pub const YUV411_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -724,6 +810,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for planar 10-bit YUV with 4:1:0 subsampling.
     pub const YUV410_10: &Formaton = &Formaton {
         model: Trichromatic(YUV(YCbCr(Limited))),
         primaries: ColorPrimaries::Unspecified,
@@ -744,6 +831,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format with RGB24 palette.
     pub const PAL8: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         primaries: ColorPrimaries::Unspecified,
@@ -764,6 +852,7 @@ pub mod formats {
         palette: true,
     };
 
+    /// Predefined format for RGB565 packed video.
     pub const RGB565: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         primaries: ColorPrimaries::Unspecified,
@@ -784,6 +873,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for RGB24.
     pub const RGB24: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         primaries: ColorPrimaries::Unspecified,
@@ -804,6 +894,7 @@ pub mod formats {
         palette: false,
     };
 
+    /// Predefined format for RGBA.
     pub const RGBA: &Formaton = &Formaton {
         model: Trichromatic(RGB),
         primaries: ColorPrimaries::Unspecified,
