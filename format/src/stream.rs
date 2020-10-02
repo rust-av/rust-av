@@ -3,64 +3,38 @@ use crate::rational::Rational64;
 use std::any::Any;
 use std::sync::Arc;
 
-/*
-#[derive(Debug)]
-pub struct UserPrivate(Option<Box<Any + Send>>);
-
-impl UserPrivate {
-    pub fn new<T: Clone + Any + Send>(x: T) -> Self {
-        UserPrivate(Some(Box::new(x)))
-    }
-    pub fn is<T: 'static>(&self) -> bool {
-        self.0.as_ref().map_or(false, |a| a.is::<T>())
-    }
-    pub fn downcast_ref<T: 'static>(&self) -> Option<&T> {
-        self.0.as_ref().map_or(None, |a| a.downcast_ref::<T>())
-    }
-    pub fn downcast_mut<T: 'static>(&mut self) -> Option<&mut T> {
-        self.0.as_mut().map_or(None, |a| a.downcast_mut::<T>())
-    }
-    pub fn is_some(&self) -> bool {
-        self.0.is_some()
-    }
-    pub fn is_none(&self) -> bool {
-        self.0.is_none()
-    }
-}
-
-impl Clone for UserPrivate {
-    fn clone(&self) -> Self {
-        UserPrivate(None)
-    }
-}
-
-impl PartialEq for UserPrivate {
-    fn eq(&self, other: &UserPrivate) -> bool {
-        self.0.is_none() && other.0.is_none()
-    }
-}
-*/
-
+/// Stream data.
 #[derive(Debug, Clone)]
 pub struct Stream {
     /// Format-specific track identifier.
     ///
-    /// Negative if not supported by the underlying format or if the
-    /// default progression should be used.
+    /// If negative, either the stream is not supported by the
+    /// underlying format or the default progression should be used.
     ///
-    /// Must be unique
+    /// Must be unique for each stream.
     pub id: isize,
+    /// Stream position within the source file.
     pub index: usize,
+    /// Codec parameters of the stream.
     pub params: CodecParams,
+    /// Start position of the stream.
+    ///
+    /// If `None`, start position of the stream is not considered.
     pub start: Option<u64>,
+    /// Stream duration.
+    ///
+    /// If `None`, stream duration is not considered.
     pub duration: Option<u64>,
+    /// Timebase numerator/denominator.
     pub timebase: Rational64,
-    /// User Private field, will not be cloned
+    /// User private data.
+    ///
+    /// This data cannot be cloned.
     pub user_private: Option<Arc<dyn Any + Send + Sync>>,
-    //  seek_index : SeekIndex
 }
 
 impl Stream {
+    /// Creates a new `Stream` instance from codec parameters.
     pub fn from_params(params: &CodecParams, timebase: Rational64) -> Self {
         Stream {
             id: -1,
@@ -72,14 +46,22 @@ impl Stream {
             user_private: None,
         }
     }
+    /// Returns extradata associated to the codec parameters of a stream.
     pub fn get_extradata(&self) -> Option<&[u8]> {
         self.params.extradata.as_deref()
     }
 }
 
+/// Group of streams.
 pub struct StreamGroup<'a> {
+    /// Stream group ID.
+    ///
+    /// Must be unique for each group of stream.
     pub id: usize,
+    /// Start position of the stream group.
     pub start: u64,
+    /// End position of the stream group.
     pub end: u64,
+    /// Streams of the group.
     pub streams: &'a [Stream],
 }

@@ -12,45 +12,52 @@ use crate::common::*;
 use crate::data::packet::Packet;
 use crate::stream::Stream;
 
+/// Events processed by a demuxer analyzing a source.
 #[non_exhaustive]
 #[derive(Clone, Debug)]
 pub enum Event {
+    /// A new packet is found by a demuxer.
     NewPacket(Packet),
+    /// A new stream is found by a demuxer.
     NewStream(Stream),
+    /// More data are needed by a demuxer to complete its operations.
     MoreDataNeeded(usize),
+    /// Event not processable by a demuxer.
+    ///
+    /// Demux the next event.
     Continue,
+    /// End of File.
+    ///
+    /// Stop demuxing data.
     Eof,
 }
 
+/// Used to implement demuxing operations.
 pub trait Demuxer: Send {
+    /// Reads stream headers and global information from a data structure
+    /// implementing the `Buffered` trait.
+    ///
+    /// Global information are saved into a `GlobalInfo` structure.
     fn read_headers(&mut self, buf: &Box<dyn Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
+    /// Reads an event from a data structure implementing the `Buffered` trait.
     fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)>;
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct Descr {
-    pub name: &'static str,
-    pub demuxer: &'static str,
-    pub description: &'static str,
-    pub extensions: &'static [&'static str],
-    pub mime: &'static [&'static str],
-}
-
-pub trait Descriptor {
-    fn create(&self) -> Box<dyn Demuxer>;
-    fn describe(&self) -> &Descr;
-
-    fn probe(&self, data: &[u8]) -> u8;
-}
-
+/// Auxiliary structure to encapsulate a demuxer object and
+/// its additional data.
 pub struct Context {
     demuxer: Box<dyn Demuxer>,
     reader: Box<dyn Buffered>,
+    /// Global media file information.
     pub info: GlobalInfo,
+    /// User private data.
+    ///
+    /// This data cannot be cloned.
     pub user_private: Option<Arc<dyn Any + Send + Sync>>,
 }
 
 impl Context {
+    /// Creates a new `Context` instance.
     pub fn new<R: Buffered + 'static>(demuxer: Box<dyn Demuxer>, reader: Box<R>) -> Self {
         Context {
             demuxer,
@@ -79,6 +86,7 @@ impl Context {
         }
     }
 
+    /// Reads stream headers and global information from a data source.
     pub fn read_headers(&mut self) -> Result<()> {
         loop {
             // TODO: wrap fill_buf() with a check for Eof
@@ -127,6 +135,7 @@ impl Context {
         }
     }
 
+    /// Reads an event from a data source.
     pub fn read_event(&mut self) -> Result<Event> {
         // TODO: guard against infiniloops and maybe factor the loop.
         loop {
@@ -153,13 +162,45 @@ impl Context {
     }
 }
 
+/// Format descriptor.
+///
+/// Contains information on a format and its own demuxer.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Descr {
+    /// Format name.
+    pub name: &'static str,
+    /// Demuxer name.
+    pub demuxer: &'static str,
+    /// Format description.
+    pub description: &'static str,
+    /// Format media file extensions.
+    pub extensions: &'static [&'static str],
+    /// Format MIME.
+    pub mime: &'static [&'static str],
+}
+
+/// Used to get a format descriptor and create a new demuxer.
+pub trait Descriptor {
+    /// Creates a new demuxer for the requested format.
+    fn create(&self) -> Box<dyn Demuxer>;
+    /// Returns the descriptor of a format.
+    fn describe(&self) -> &Descr;
+
+    /// Returns a score which represents how much the input data are associated
+    /// to a format.
+    fn probe(&self, data: &[u8]) -> u8;
+}
+
+/// Maximum data size to probe a format.
 pub const PROBE_DATA: usize = 4 * 1024;
+
+/// Data whose probe score is equal or greater than the value of this constant
+/// surely is associated to the format currently being analyzed.
 pub const PROBE_SCORE_EXTENSION: u8 = 50;
 
-// TODO:
-// IntoIterator<Item = &'static Descriptor> is confusing
-
+/// Used to define different ways to probe a format.
 pub trait Probe {
+    /// Probes whether the input data is associated to a determined format.
     fn probe(&self, data: &[u8]) -> Option<&'static dyn Descriptor>;
 }
 

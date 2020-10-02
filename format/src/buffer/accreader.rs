@@ -1,7 +1,8 @@
-//! AccReader is like a BufReader, but supports partial consumption
-//! import new data with `fill_buf`, get the current buffer with
-//! `current_slice`, and indicate with `consume` how many bytes
-//! were used
+//! `AccReader` is like a `BufReader`, but supports partial consumption.
+//!
+//! Import new data with `fill_buf`, get the current buffer with
+//! `current_slice`, and indicate through the `consume` method how many bytes
+//! were used.
 
 use crate::buffer::Buffered;
 use std::cmp;
@@ -10,20 +11,24 @@ use std::io::{BufRead, Read, Result, Seek, SeekFrom};
 use std::iter;
 use std::iter::Iterator;
 
+/// Partial consumption buffer for any reader.
 pub struct AccReader<R> {
     inner: R,
     buf: Vec<u8>,
     pos: usize,
     end: usize,
-    // position in the stream of the buffer's beginning
+    // Position in the stream of the buffer's beginning
     index: usize,
 }
 
 impl<R: Read + Seek> AccReader<R> {
+    /// Creates a new `AccReader` instance.
     pub fn new(inner: R) -> AccReader<R> {
         AccReader::with_capacity(4096, inner)
     }
 
+    /// Creates a new `AccReader` instance of a determined capacity
+    /// for a reader.
     pub fn with_capacity(cap: usize, inner: R) -> AccReader<R> {
         AccReader {
             inner,
@@ -44,13 +49,16 @@ impl<R: Read + Seek> AccReader<R> {
         &mut self.inner
     }
 
-    /// Unwraps this `AccReader`, returning the underlying reader.
+    /// Unwraps the `AccReader`, returning the underlying reader.
     ///
     /// Note that any leftover data in the internal buffer is lost.
     pub fn into_inner(self) -> R {
         self.inner
     }
 
+    /// Resets the buffer to the current position.
+    ///
+    /// All data before the current position is lost.
     pub fn reset_buffer_position(&mut self) {
         trace!(
             "resetting buffer at pos: {} capacity: {}",
@@ -67,11 +75,13 @@ impl<R: Read + Seek> AccReader<R> {
         self.pos = 0;
     }
 
+    /// Returns buffer data.
     pub fn current_slice(&self) -> &[u8] {
         trace!("current slice pos: {}, cap: {}", self.pos, self.end);
         &self.buf[self.pos..self.end]
     }
 
+    /// Returns buffer capacity.
     pub fn capacity(&self) -> usize {
         self.end - self.pos
     }
