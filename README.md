@@ -18,29 +18,12 @@ cargo build --workspace
 ## Running tests
 
 ```bash
-cargo test --workspace --exclude av-examples
+cargo test --workspace
 ```
 
-## Build examples
+## Examples
 
-To build the examples, first you need to install `libvpx` and `libopus` on your
-operating system.
-
-```bash
-cargo build --workspace --examples
-```
-
-## Running examples
-
-```bash
-cargo run --package av-examples --example EXAMPLE_NAME -- [EXAMPLE_ARGUMENTS]
-```
-
-For example, if you want to run the `streams_info` example:
-
-```bash
-cargo run --package av-examples --example streams_info -- -i /path/to/your/matroska/file
-```
+Examples can be found in the [examples](https://github.com/rust-av/examples) repository.
 
 ## Notes
 

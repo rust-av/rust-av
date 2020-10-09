@@ -15,7 +15,6 @@ members = [
     "bitstream",
     "codec",
     "data",
-    "examples",
     "format",
 ]
 
@@ -34,8 +33,3 @@ path = "bitstream"
 [dependencies.av-codec]
 version = "0.2.0"
 path = "codec"
-
-[patch.crates-io]
-av-codec = { path = "codec" }
-av-data = { path = "data" }
-av-format = { path = "format" }
