@@ -33,7 +33,7 @@ Until we reach version `1.0` assume that the API could change a lot.
 
 ## License
 
-MIT as per `LICENSE`.
+Released under the [MIT License](LICENSE).
 
 ## Developing
 
