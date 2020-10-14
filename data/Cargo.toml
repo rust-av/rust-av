@@ -10,7 +10,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
-byte-slice-cast = "0.3.1"
+byte-slice-cast = "1.0.0"
 bytes = "0.5.2"
 thiserror = "1.0"
 num-rational = "0.3.0"
