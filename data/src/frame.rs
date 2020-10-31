@@ -1,6 +1,10 @@
 #![allow(dead_code, unused_variables)]
 
 use std::alloc::{alloc, Layout};
+use std::convert::From;
+use std::fmt;
+use std::ptr::copy_nonoverlapping;
+use std::slice;
 use std::sync::Arc;
 
 use byte_slice_cast::*;
@@ -8,6 +12,7 @@ use bytes::BytesMut;
 use thiserror::Error;
 
 use crate::audiosample::*;
+use crate::buffer::VideoBuffer;
 use crate::pixel::*;
 use crate::timeinfo::*;
 
@@ -19,9 +24,6 @@ pub enum FrameError {
     InvalidConversion,
 }
 
-use self::FrameError::*;
-
-// TODO: Document
 // TODO: Change it to provide Droppable/Seekable information or use a separate enum?
 #[derive(Clone, Debug, PartialEq)]
 pub enum PictureType {
@@ -41,6 +43,7 @@ pub struct VideoInfo {
     pub pic_type: PictureType,
     pub width: usize,
     pub height: usize,
+    pub flipped: bool,
     pub format: Arc<Formaton>,
 }
 
@@ -58,6 +61,7 @@ impl VideoInfo {
             pic_type,
             width: w,
             height: h,
+            flipped: flip,
             format: fmt,
         }
     }
@@ -68,6 +72,10 @@ impl VideoInfo {
     /// Returns picture height.
     pub fn get_height(&self) -> usize {
         self.height as usize
+    }
+    /// Returns picture orientation.
+    pub fn is_flipped(&self) -> bool {
+        self.flipped
     }
     /// Returns picture pixel format.
     pub fn get_format(&self) -> Formaton {
@@ -92,7 +100,7 @@ impl VideoInfo {
     }
 }
 
-pub fn get_plane_size(info: &VideoInfo, idx: usize) -> (usize, usize) {
+pub(crate) fn get_plane_size(info: &VideoInfo, idx: usize) -> (usize, usize) {
     let chromaton = info.get_format().get_chromaton(idx);
     if chromaton.is_none() {
         return (0, 0);
@@ -141,8 +149,6 @@ pub enum MediaKind {
     Audio(AudioInfo),
 }
 
-use std::convert::From;
-
 impl From<VideoInfo> for MediaKind {
     fn from(v: VideoInfo) -> Self {
         MediaKind::Video(v)
@@ -154,8 +160,6 @@ impl From<AudioInfo> for MediaKind {
         MediaKind::Audio(a)
     }
 }
-
-use self::MediaKind::*;
 
 pub trait FrameBuffer: Send + Sync {
     fn linesize(&self, idx: usize) -> Result<usize, FrameError>;
@@ -177,12 +181,12 @@ pub trait FrameBufferConv<T: private::Supported>: FrameBuffer {
     fn as_slice(&self, idx: usize) -> Result<&[T], FrameError> {
         self.as_slice_inner(idx)?
             .as_slice_of::<T>()
-            .map_err(|e| InvalidConversion)
+            .map_err(|e| FrameError::InvalidConversion)
     }
     fn as_mut_slice(&mut self, idx: usize) -> Result<&mut [T], FrameError> {
         self.as_mut_slice_inner(idx)?
             .as_mut_slice_of::<T>()
-            .map_err(|e| InvalidConversion)
+            .map_err(|e| FrameError::InvalidConversion)
     }
 }
 
@@ -190,19 +194,10 @@ impl FrameBufferConv<u8> for dyn FrameBuffer {}
 impl FrameBufferConv<i16> for dyn FrameBuffer {}
 impl FrameBufferConv<f32> for dyn FrameBuffer {}
 
-use std::fmt;
-
 impl fmt::Debug for dyn FrameBuffer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "FrameBuffer")
     }
-}
-
-#[derive(Debug)]
-pub struct Frame {
-    pub kind: MediaKind,
-    pub buf: Box<dyn FrameBuffer>,
-    pub t: TimeInfo,
 }
 
 const ALIGNMENT: usize = 32;
@@ -220,7 +215,7 @@ struct DefaultFrameBuffer {
 impl FrameBuffer for DefaultFrameBuffer {
     fn linesize(&self, idx: usize) -> Result<usize, FrameError> {
         match self.planes.get(idx) {
-            None => Err(InvalidIndex),
+            None => Err(FrameError::InvalidIndex),
             Some(plane) => Ok(plane.linesize),
         }
     }
@@ -230,13 +225,13 @@ impl FrameBuffer for DefaultFrameBuffer {
 
     fn as_slice_inner(&self, idx: usize) -> Result<&[u8], FrameError> {
         match self.planes.get(idx) {
-            None => Err(InvalidIndex),
+            None => Err(FrameError::InvalidIndex),
             Some(plane) => Ok(&plane.buf),
         }
     }
     fn as_mut_slice_inner(&mut self, idx: usize) -> Result<&mut [u8], FrameError> {
         match self.planes.get_mut(idx) {
-            None => Err(InvalidIndex),
+            None => Err(FrameError::InvalidIndex),
             Some(plane) => Ok(&mut plane.buf),
         }
     }
@@ -245,7 +240,7 @@ impl FrameBuffer for DefaultFrameBuffer {
 impl DefaultFrameBuffer {
     pub fn new(kind: &MediaKind) -> DefaultFrameBuffer {
         match *kind {
-            Video(ref video) => {
+            MediaKind::Video(ref video) => {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
@@ -266,7 +261,7 @@ impl DefaultFrameBuffer {
                 }
                 buffer
             }
-            Audio(ref audio) => {
+            MediaKind::Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
@@ -294,7 +289,57 @@ impl DefaultFrameBuffer {
     }
 }
 
-pub type ArcFrame = Arc<Frame>;
+const SIMPLE_VFRAME_COMPONENTS: usize = 4;
+
+/// Simplified decoded frame data.
+pub struct SimpleVideoFrame<'a, T: Copy> {
+    /// Widths of each picture component.
+    pub width: [usize; SIMPLE_VFRAME_COMPONENTS],
+    /// Heights of each picture component.
+    pub height: [usize; SIMPLE_VFRAME_COMPONENTS],
+    /// Orientation (upside-down or downside-up) flag.
+    pub flip: bool,
+    /// Strides for each component.
+    pub stride: [usize; SIMPLE_VFRAME_COMPONENTS],
+    /// Start of each component.
+    pub offset: [usize; SIMPLE_VFRAME_COMPONENTS],
+    /// Number of components.
+    pub components: usize,
+    /// Pointer to the picture pixel data.
+    pub data: &'a mut [T],
+}
+
+impl<'a, T: Copy> SimpleVideoFrame<'a, T> {
+    /// Constructs a new instance of `NASimpleVideoFrame` from `NAVideoBuffer`.
+    pub fn from_video_buf(vbuf: &'a mut VideoBuffer<T>) -> Option<Self> {
+        let vinfo = vbuf.get_info();
+        let components = vinfo.format.components as usize;
+        if components > SIMPLE_VFRAME_COMPONENTS {
+            return None;
+        }
+        let mut w: [usize; SIMPLE_VFRAME_COMPONENTS] = [0; SIMPLE_VFRAME_COMPONENTS];
+        let mut h: [usize; SIMPLE_VFRAME_COMPONENTS] = [0; SIMPLE_VFRAME_COMPONENTS];
+        let mut s: [usize; SIMPLE_VFRAME_COMPONENTS] = [0; SIMPLE_VFRAME_COMPONENTS];
+        let mut o: [usize; SIMPLE_VFRAME_COMPONENTS] = [0; SIMPLE_VFRAME_COMPONENTS];
+        for comp in 0..components {
+            let (width, height) = vbuf.get_dimensions(comp);
+            w[comp] = width;
+            h[comp] = height;
+            s[comp] = vbuf.get_stride(comp);
+            o[comp] = vbuf.get_offset(comp);
+        }
+        let flip = vinfo.flipped;
+        Some(SimpleVideoFrame {
+            width: w,
+            height: h,
+            flip,
+            stride: s,
+            offset: o,
+            components,
+            data: vbuf.data.as_mut_slice(),
+        })
+    }
+}
 
 pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> Frame
 where
@@ -309,8 +354,6 @@ where
         t: t.unwrap_or_default(),
     }
 }
-
-use std::ptr::copy_nonoverlapping;
 
 fn copy_plane(
     dst: &mut [u8],
@@ -394,7 +437,12 @@ fn copy_to_frame<'a, I, IU>(
     }
 }
 
-use std::slice;
+#[derive(Debug)]
+pub struct Frame {
+    pub kind: MediaKind,
+    pub buf: Box<dyn FrameBuffer>,
+    pub t: TimeInfo,
+}
 
 // TODO make it a separate trait
 impl Frame {
@@ -459,6 +507,8 @@ impl Frame {
     }
 }
 
+pub type ArcFrame = Arc<Frame>;
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -515,6 +565,7 @@ mod test {
             pic_type: PictureType::I,
             width: 42,
             height: 42,
+            flipped: false,
             format: fm,
         };
         let yuv420: Formaton = *YUV420;
@@ -523,6 +574,7 @@ mod test {
             pic_type: PictureType::P,
             width: 42,
             height: 42,
+            flipped: false,
             format: fm,
         };
 
@@ -534,6 +586,7 @@ mod test {
             pic_type: PictureType::I,
             width: 42,
             height: 42,
+            flipped: false,
             format: fm,
         };
         let rgb565: Formaton = *RGB565;
@@ -542,6 +595,7 @@ mod test {
             pic_type: PictureType::I,
             width: 42,
             height: 42,
+            flipped: false,
             format: fm,
         };
 

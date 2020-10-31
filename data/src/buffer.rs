@@ -12,7 +12,7 @@ use crate::frame::{get_plane_size, AudioInfo, VideoInfo};
 #[derive(Clone)]
 pub struct VideoBuffer<T> {
     info: VideoInfo,
-    data: BufferRef<Vec<T>>,
+    pub(crate) data: BufferRef<Vec<T>>,
     offs: Vec<usize>,
     strides: Vec<usize>,
 }
