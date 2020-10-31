@@ -202,6 +202,19 @@ pub struct ChannelMap {
     ids: Vec<ChannelType>,
 }
 
+impl fmt::Display for ChannelMap {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut map = String::new();
+        for el in self.ids.iter() {
+            if !map.is_empty() {
+                map.push(',');
+            }
+            map.push_str(&*el.to_string());
+        }
+        write!(f, "{}", map)
+    }
+}
+
 impl ChannelMap {
     /// Creates a new sequence of channels.
     pub fn new() -> Self {

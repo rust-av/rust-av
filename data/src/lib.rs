@@ -3,6 +3,8 @@ pub mod rational {
 }
 
 pub mod audiosample;
+pub mod buffer;
+pub mod buffer_ref;
 pub mod frame;
 pub mod packet;
 pub mod params;

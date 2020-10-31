@@ -569,6 +569,17 @@ impl Formaton {
         self.elem_size
     }
 
+    /// Returns the total amount of bits needed for components.
+    pub fn get_total_depth(&self) -> u8 {
+        let mut depth = 0;
+        for chr in self.comp_info.iter() {
+            if let Some(ref chromaton) = chr {
+                depth += chromaton.depth;
+            }
+        }
+        depth
+    }
+
     /// Returns an iterator over the format definition of each component.
     pub fn iter(&self) -> slice::Iter<Option<Chromaton>> {
         self.comp_info.iter()

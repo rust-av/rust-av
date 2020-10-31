@@ -44,7 +44,43 @@ pub struct VideoInfo {
     pub format: Arc<Formaton>,
 }
 
+impl fmt::Display for VideoInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}x{}", self.width, self.height)
+    }
+}
+
 impl VideoInfo {
+    /// Constructs a new `VideoInfo` instance.
+    pub fn new(w: usize, h: usize, flip: bool, pic_type: PictureType, fmt: Arc<Formaton>) -> Self {
+        let bits = fmt.get_total_depth();
+        VideoInfo {
+            pic_type,
+            width: w,
+            height: h,
+            format: fmt,
+        }
+    }
+    /// Returns picture width.
+    pub fn get_width(&self) -> usize {
+        self.width as usize
+    }
+    /// Returns picture height.
+    pub fn get_height(&self) -> usize {
+        self.height as usize
+    }
+    /// Returns picture pixel format.
+    pub fn get_format(&self) -> Formaton {
+        *self.format
+    }
+    /// Sets new picture width.
+    pub fn set_width(&mut self, w: usize) {
+        self.width = w;
+    }
+    /// Sets new picture height.
+    pub fn set_height(&mut self, h: usize) {
+        self.height = h;
+    }
     fn size(&self, align: usize) -> usize {
         let mut size = 0;
         for &component in self.format.into_iter() {
@@ -56,12 +92,29 @@ impl VideoInfo {
     }
 }
 
+pub fn get_plane_size(info: &VideoInfo, idx: usize) -> (usize, usize) {
+    let chromaton = info.get_format().get_chromaton(idx);
+    if chromaton.is_none() {
+        return (0, 0);
+    }
+    let (hs, vs) = chromaton.unwrap().get_subsampling();
+    let w = (info.get_width() + ((1 << hs) - 1)) >> hs;
+    let h = (info.get_height() + ((1 << vs) - 1)) >> vs;
+    (w, h)
+}
+
 #[derive(Clone, Debug)]
 pub struct AudioInfo {
     pub samples: usize,
     pub rate: usize,
     pub map: ChannelMap,
     pub format: Arc<Soniton>,
+}
+
+impl fmt::Display for AudioInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} Hz, {} ch", self.rate, self.map)
+    }
 }
 
 impl AudioInfo {
