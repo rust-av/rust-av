@@ -485,6 +485,17 @@ impl Formaton {
         self.primaries
     }
 
+    /// Returns the total amount of bits needed for components.
+    pub fn get_total_depth(&self) -> u8 {
+        let mut depth = 0;
+        for chr in self.comp_info.iter() {
+            if let Some(ref chromaton) = chr {
+                depth += chromaton.depth;
+            }
+        }
+        depth
+    }
+
     /// Sets current image primaries.
     pub fn set_primaries(mut self, pc: ColorPrimaries) {
         self.primaries = pc;
