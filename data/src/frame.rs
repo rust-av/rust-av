@@ -1,6 +1,10 @@
 #![allow(dead_code, unused_variables)]
 
 use std::alloc::{alloc, Layout};
+use std::convert::From;
+use std::fmt;
+use std::ptr::copy_nonoverlapping;
+use std::slice;
 use std::sync::Arc;
 
 use byte_slice_cast::*;
@@ -11,41 +15,119 @@ use crate::audiosample::*;
 use crate::pixel::*;
 use crate::timeinfo::*;
 
+use self::FrameError::*;
+
+/// Frame errors.
 #[derive(Debug, Error)]
 pub enum FrameError {
+    /// Invalid frame index.
     #[error("Invalid Index")]
     InvalidIndex,
+    /// Invalid frame conversion.
     #[error("Invalid Conversion")]
     InvalidConversion,
 }
 
-use self::FrameError::*;
-
-// TODO: Document
 // TODO: Change it to provide Droppable/Seekable information or use a separate enum?
+/// A list of recognized frame types.
 #[derive(Clone, Debug, PartialEq)]
-pub enum PictureType {
-    UNKNOWN,
+pub enum FrameType {
+    /// Intra frame type.
     I,
+    /// Inter frame type.
     P,
+    /// Bidirectionally predicted frame.
     B,
-    S,
-    SI,
-    SP,
-    SB,
-    BI,
+    /// Skip frame.
+    ///
+    /// When such frame is encountered, then last frame should be used again
+    /// if it is needed.
+    SKIP,
+    /// Some other frame type.
+    OTHER,
 }
 
+impl fmt::Display for FrameType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            FrameType::I => write!(f, "I"),
+            FrameType::P => write!(f, "P"),
+            FrameType::B => write!(f, "B"),
+            FrameType::SKIP => write!(f, "Skip"),
+            FrameType::OTHER => write!(f, "x"),
+        }
+    }
+}
+
+/// Video stream information.
 #[derive(Clone, Debug)]
 pub struct VideoInfo {
-    pub pic_type: PictureType,
+    /// Frame width.
     pub width: usize,
+    /// Frame height.
     pub height: usize,
+    /// Frame is stored downside up.
+    pub flipped: bool,
+    /// Frame type.
+    pub frame_type: FrameType,
+    /// Frame pixel format.
     pub format: Arc<Formaton>,
+    /// Declared bits per sample.
+    pub bits: u8,
 }
 
 impl VideoInfo {
-    fn size(&self, align: usize) -> usize {
+    /// Constructs a new `VideoInfo` instance.
+    pub fn new(
+        width: usize,
+        height: usize,
+        flipped: bool,
+        frame_type: FrameType,
+        format: Arc<Formaton>,
+    ) -> Self {
+        let bits = format.get_total_depth();
+        VideoInfo {
+            width,
+            height,
+            flipped,
+            frame_type,
+            format,
+            bits,
+        }
+    }
+
+    /// Returns frame width.
+    pub fn get_width(&self) -> usize {
+        self.width
+    }
+    /// Returns frame height.
+    pub fn get_height(&self) -> usize {
+        self.height
+    }
+    /// Returns frame orientation.
+    pub fn is_flipped(&self) -> bool {
+        self.flipped
+    }
+    /// Returns frame type.
+    pub fn get_frame_type(&self) -> &FrameType {
+        &self.frame_type
+    }
+    /// Returns frame pixel format.
+    pub fn get_format(&self) -> Formaton {
+        *self.format
+    }
+
+    /// Sets new frame width.
+    pub fn set_width(&mut self, width: usize) {
+        self.width = width;
+    }
+    /// Sets new frame height.
+    pub fn set_height(&mut self, height: usize) {
+        self.height = height;
+    }
+
+    /// Returns video stream size with the specified alignment.
+    pub fn size(&self, align: usize) -> usize {
         let mut size = 0;
         for &component in self.format.into_iter() {
             if let Some(c) = component {
@@ -56,23 +138,9 @@ impl VideoInfo {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct AudioInfo {
-    pub samples: usize,
-    pub rate: usize,
-    pub map: ChannelMap,
-    pub format: Arc<Soniton>,
-}
-
-impl AudioInfo {
-    fn size(&self, align: usize) -> usize {
-        self.format.get_audio_size(self.samples, align) * self.map.len()
-    }
-}
-
-impl PartialEq for AudioInfo {
-    fn eq(&self, info2: &AudioInfo) -> bool {
-        self.rate == info2.rate && self.map == info2.map && self.format == info2.format
+impl fmt::Display for VideoInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}x{}", self.width, self.height)
     }
 }
 
@@ -82,13 +150,140 @@ impl PartialEq for VideoInfo {
     }
 }
 
+/// Audio stream information contained in a frame.
+#[derive(Clone, Debug)]
+pub struct AudioInfo {
+    /// Number of samples.
+    pub samples: usize,
+    /// Sample rate.
+    pub sample_rate: usize,
+    /// Sequence of stream channels.
+    pub map: ChannelMap,
+    /// Audio sample format.
+    pub format: Arc<Soniton>,
+    /// Length of one audio block in samples.
+    ///
+    /// None if not present.
+    pub block_len: Option<usize>,
+}
+
+impl AudioInfo {
+    /// Constructs a new `AudioInfo` instance.
+    pub fn new(
+        samples: usize,
+        sample_rate: usize,
+        map: ChannelMap,
+        format: Arc<Soniton>,
+        block_len: Option<usize>,
+    ) -> Self {
+        AudioInfo {
+            samples,
+            sample_rate,
+            map,
+            format,
+            block_len,
+        }
+    }
+    /// Returns audio sample rate.
+    pub fn get_sample_rate(&self) -> usize {
+        self.sample_rate
+    }
+    /// Returns the number of channels.
+    pub fn get_channels_number(&self) -> usize {
+        self.map.len()
+    }
+    /// Returns sample format.
+    pub fn get_format(&self) -> Soniton {
+        *self.format
+    }
+    /// Returns number of samples.
+    pub fn get_samples(&self) -> usize {
+        self.samples
+    }
+
+    /// Returns one audio block duration in samples.
+    pub fn get_block_len(&self) -> Option<usize> {
+        self.block_len
+    }
+
+    /// Returns audio stream size with the specified alignment.
+    pub fn size(&self, align: usize) -> usize {
+        self.format.get_audio_size(self.samples, align) * self.map.len()
+    }
+}
+
+impl fmt::Display for AudioInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{} Hz, {} ch",
+            self.sample_rate,
+            self.get_channels_number()
+        )
+    }
+}
+
+impl PartialEq for AudioInfo {
+    fn eq(&self, info2: &AudioInfo) -> bool {
+        self.sample_rate == info2.sample_rate
+            && self.map == info2.map
+            && self.format == info2.format
+    }
+}
+
+/// A list of possible stream information types.
 #[derive(Clone, Debug, PartialEq)]
 pub enum MediaKind {
+    /// Video codec information.
     Video(VideoInfo),
+    /// Audio codec information.
     Audio(AudioInfo),
 }
 
-use std::convert::From;
+impl MediaKind {
+    /// Returns video stream information.
+    pub fn get_video_info(&self) -> Option<VideoInfo> {
+        if let MediaKind::Video(vinfo) = self {
+            Some(vinfo.clone())
+        } else {
+            None
+        }
+    }
+    /// Returns audio stream information.
+    pub fn get_audio_info(&self) -> Option<AudioInfo> {
+        if let MediaKind::Audio(ainfo) = self {
+            Some(ainfo.clone())
+        } else {
+            None
+        }
+    }
+    /// Reports whether the current stream is video stream.
+    pub fn is_video(&self) -> bool {
+        if let MediaKind::Video(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+    /// Reports whether the current stream is audio stream.
+    pub fn is_audio(&self) -> bool {
+        if let MediaKind::Audio(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl fmt::Display for MediaKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let ret = match self {
+            MediaKind::Audio(fmt) => format!("{}", fmt),
+            MediaKind::Video(fmt) => format!("{}", fmt),
+        };
+        write!(f, "{}", ret)
+    }
+}
 
 impl From<VideoInfo> for MediaKind {
     fn from(v: VideoInfo) -> Self {
@@ -101,8 +296,6 @@ impl From<AudioInfo> for MediaKind {
         MediaKind::Audio(a)
     }
 }
-
-use self::MediaKind::*;
 
 pub trait FrameBuffer: Send + Sync {
     fn linesize(&self, idx: usize) -> Result<usize, FrameError>;
@@ -137,8 +330,6 @@ impl FrameBufferConv<u8> for dyn FrameBuffer {}
 impl FrameBufferConv<i16> for dyn FrameBuffer {}
 impl FrameBufferConv<f32> for dyn FrameBuffer {}
 
-use std::fmt;
-
 impl fmt::Debug for dyn FrameBuffer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "FrameBuffer")
@@ -167,7 +358,7 @@ struct DefaultFrameBuffer {
 impl FrameBuffer for DefaultFrameBuffer {
     fn linesize(&self, idx: usize) -> Result<usize, FrameError> {
         match self.planes.get(idx) {
-            None => Err(InvalidIndex),
+            None => Err(FrameError::InvalidIndex),
             Some(plane) => Ok(plane.linesize),
         }
     }
@@ -177,13 +368,13 @@ impl FrameBuffer for DefaultFrameBuffer {
 
     fn as_slice_inner(&self, idx: usize) -> Result<&[u8], FrameError> {
         match self.planes.get(idx) {
-            None => Err(InvalidIndex),
+            None => Err(FrameError::InvalidIndex),
             Some(plane) => Ok(&plane.buf),
         }
     }
     fn as_mut_slice_inner(&mut self, idx: usize) -> Result<&mut [u8], FrameError> {
         match self.planes.get_mut(idx) {
-            None => Err(InvalidIndex),
+            None => Err(FrameError::InvalidIndex),
             Some(plane) => Ok(&mut plane.buf),
         }
     }
@@ -192,7 +383,7 @@ impl FrameBuffer for DefaultFrameBuffer {
 impl DefaultFrameBuffer {
     pub fn new(kind: &MediaKind) -> DefaultFrameBuffer {
         match *kind {
-            Video(ref video) => {
+            MediaKind::Video(ref video) => {
                 let size = video.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
@@ -213,7 +404,7 @@ impl DefaultFrameBuffer {
                 }
                 buffer
             }
-            Audio(ref audio) => {
+            MediaKind::Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
                 let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
                 let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
@@ -256,8 +447,6 @@ where
         t: t.unwrap_or_default(),
     }
 }
-
-use std::ptr::copy_nonoverlapping;
 
 fn copy_plane(
     dst: &mut [u8],
@@ -341,8 +530,6 @@ fn copy_to_frame<'a, I, IU>(
     }
 }
 
-use std::slice;
-
 // TODO make it a separate trait
 impl Frame {
     pub fn copy_from_slice<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
@@ -415,39 +602,22 @@ mod test {
     fn test_format_cmp() {
         let mut map = ChannelMap::new();
         map.add_channel(ChannelType::C);
+
         let sn = Arc::new(formats::S16);
-        let info1 = AudioInfo {
-            samples: 42,
-            rate: 48000,
-            map: map.clone(),
-            format: sn,
-        };
+        let info1 = AudioInfo::new(42, 48000, map.clone(), sn, None);
+
         let sn = Arc::new(formats::S16);
-        let info2 = AudioInfo {
-            samples: 4242,
-            rate: 48000,
-            map: map.clone(),
-            format: sn,
-        };
+        let info2 = AudioInfo::new(4242, 48000, map.clone(), sn, None);
 
         assert_eq!(info1 == info2, true);
 
         let mut map = ChannelMap::new();
         map.add_channel(ChannelType::C);
         let sn = Arc::new(formats::S16);
-        let info1 = AudioInfo {
-            samples: 42,
-            rate: 48000,
-            map: map.clone(),
-            format: sn,
-        };
+        let info1 = AudioInfo::new(42, 48000, map.clone(), sn, None);
+
         let sn = Arc::new(formats::S32);
-        let info2 = AudioInfo {
-            samples: 42,
-            rate: 48000,
-            map: map.clone(),
-            format: sn,
-        };
+        let info2 = AudioInfo::new(42, 48000, map.clone(), sn, None);
 
         assert_eq!(info1 == info2, false);
     }
@@ -458,39 +628,21 @@ mod test {
     fn test_video_format_cmp() {
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
-        let info1 = VideoInfo {
-            pic_type: PictureType::I,
-            width: 42,
-            height: 42,
-            format: fm,
-        };
+        let info1 = VideoInfo::new(42, 42, false, FrameType::I, fm);
+
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
-        let info2 = VideoInfo {
-            pic_type: PictureType::P,
-            width: 42,
-            height: 42,
-            format: fm,
-        };
+        let info2 = VideoInfo::new(42, 42, false, FrameType::P, fm);
 
         assert_eq!(info1 == info2, true);
 
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
-        let info1 = VideoInfo {
-            pic_type: PictureType::I,
-            width: 42,
-            height: 42,
-            format: fm,
-        };
+        let info1 = VideoInfo::new(42, 42, false, FrameType::I, fm);
+
         let rgb565: Formaton = *RGB565;
         let fm = Arc::new(rgb565);
-        let info2 = VideoInfo {
-            pic_type: PictureType::I,
-            width: 42,
-            height: 42,
-            format: fm,
-        };
+        let info2 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
         assert_eq!(info1 == info2, false);
     }
