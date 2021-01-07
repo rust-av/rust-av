@@ -112,51 +112,51 @@ pub enum ChannelType {
 impl ChannelType {
     /// Tells whether the channel is some center channel.
     pub fn is_center(self) -> bool {
-        match self {
-            ChannelType::C => true,
-            ChannelType::Ch => true,
-            ChannelType::Cl => true,
-            ChannelType::Ov => true,
-            ChannelType::LFE => true,
-            ChannelType::LFE2 => true,
-            ChannelType::Cs => true,
-            ChannelType::Chs => true,
-            _ => false,
-        }
+        matches!(
+            self,
+            ChannelType::C
+                | ChannelType::Ch
+                | ChannelType::Cl
+                | ChannelType::Ov
+                | ChannelType::LFE
+                | ChannelType::LFE2
+                | ChannelType::Cs
+                | ChannelType::Chs
+        )
     }
 
     /// Tells whether the channel is some left channel.
     pub fn is_left(self) -> bool {
-        match self {
-            ChannelType::L => true,
-            ChannelType::Ls => true,
-            ChannelType::Lss => true,
-            ChannelType::Lc => true,
-            ChannelType::Lh => true,
-            ChannelType::Lw => true,
-            ChannelType::Lhs => true,
-            ChannelType::Ll => true,
-            ChannelType::Lt => true,
-            ChannelType::Lo => true,
-            _ => false,
-        }
+        matches!(
+            self,
+            ChannelType::L
+                | ChannelType::Ls
+                | ChannelType::Lss
+                | ChannelType::Lc
+                | ChannelType::Lh
+                | ChannelType::Lw
+                | ChannelType::Lhs
+                | ChannelType::Ll
+                | ChannelType::Lt
+                | ChannelType::Lo
+        )
     }
 
     /// Tells whether the channel is some right channel.
     pub fn is_right(self) -> bool {
-        match self {
-            ChannelType::R => true,
-            ChannelType::Rs => true,
-            ChannelType::Rss => true,
-            ChannelType::Rc => true,
-            ChannelType::Rh => true,
-            ChannelType::Rw => true,
-            ChannelType::Rhs => true,
-            ChannelType::Rl => true,
-            ChannelType::Rt => true,
-            ChannelType::Ro => true,
-            _ => false,
-        }
+        matches!(
+            self,
+            ChannelType::R
+                | ChannelType::Rs
+                | ChannelType::Rss
+                | ChannelType::Rc
+                | ChannelType::Rh
+                | ChannelType::Rw
+                | ChannelType::Rhs
+                | ChannelType::Rl
+                | ChannelType::Rt
+                | ChannelType::Ro
+        )
     }
 }
 
