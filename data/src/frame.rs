@@ -4,7 +4,6 @@ use std::alloc::{alloc, Layout};
 use std::convert::From;
 use std::fmt;
 use std::ptr::copy_nonoverlapping;
-use std::slice;
 use std::sync::Arc;
 
 use byte_slice_cast::*;
@@ -552,37 +551,6 @@ impl Frame {
             unimplemented!();
         }
     }
-
-    pub fn copy_from_raw_parts<I, IU>(&mut self, mut src: I, mut src_linesize: IU)
-    where
-        I: Iterator<Item = *const u8>,
-        IU: Iterator<Item = usize>,
-    {
-        if let MediaKind::Video(ref fmt) = self.kind {
-            let mut f_iter = fmt.format.iter();
-            let width = fmt.width;
-            let height = fmt.height;
-            for i in 0..self.buf.count() {
-                let d_linesize = self.buf.linesize(i).unwrap();
-                let s_linesize = src_linesize.next().unwrap();
-                let data = self.buf.as_mut_slice(i).unwrap();
-                let cc = f_iter.next().unwrap();
-                let rr = src.next().unwrap();
-                let hb = cc.unwrap().get_height(height);
-                let ss = unsafe { slice::from_raw_parts(rr, hb * s_linesize) };
-                copy_plane(
-                    data,
-                    d_linesize,
-                    ss,
-                    s_linesize,
-                    cc.unwrap().get_width(width),
-                    hb,
-                );
-            }
-        } else {
-            unimplemented!();
-        }
-    }
 }
 
 #[cfg(test)]
@@ -637,5 +605,22 @@ mod test {
         let info2 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
         assert_eq!(info1 == info2, false);
+    }
+
+    #[test]
+    #[should_panic]
+    // FIXME: On Windows this test does not work
+    #[cfg(target_os = "linux")]
+    fn test_frame_copy_from_slice() {
+        let yuv420: Formaton = *YUV420;
+        let fm = Arc::new(yuv420);
+        let video_info = VideoInfo::new(42, 42, false, FrameType::I, fm);
+
+        let mut frame = new_default_frame(MediaKind::Video(video_info), None);
+
+        frame.copy_from_slice(
+            vec![vec![0].as_slice(); 2].into_iter(),
+            vec![40; 2].into_iter(),
+        );
     }
 }
