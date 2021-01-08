@@ -259,19 +259,11 @@ impl MediaKind {
     }
     /// Reports whether the current stream is video stream.
     pub fn is_video(&self) -> bool {
-        if let MediaKind::Video(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, MediaKind::Video(_))
     }
     /// Reports whether the current stream is audio stream.
     pub fn is_audio(&self) -> bool {
-        if let MediaKind::Audio(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, MediaKind::Audio(_))
     }
 }
 
