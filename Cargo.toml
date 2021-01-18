@@ -19,7 +19,7 @@ members = [
 ]
 
 [dependencies.av-data]
-version = "0.2.1"
+version = "0.3.0"
 path = "data"
 
 [dependencies.av-format]
