@@ -381,7 +381,7 @@ impl DefaultFrameBuffer {
                 let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
                 let mut buffer = DefaultFrameBuffer {
                     buf,
-                    planes: Vec::new(),
+                    planes: Vec::with_capacity(video.format.get_num_comp()),
                 };
                 for &component in video.format.iter() {
                     if let Some(c) = component {
@@ -401,7 +401,11 @@ impl DefaultFrameBuffer {
                 let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
                 let mut buffer = DefaultFrameBuffer {
                     buf,
-                    planes: Vec::new(),
+                    planes: if audio.format.planar {
+                        Vec::with_capacity(audio.map.len())
+                    } else {
+                        Vec::with_capacity(1)
+                    },
                 };
                 if audio.format.planar {
                     for _ in 0..audio.map.len() {
