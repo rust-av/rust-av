@@ -321,6 +321,24 @@ impl FrameBufferConv<u8> for dyn FrameBuffer {}
 impl FrameBufferConv<i16> for dyn FrameBuffer {}
 impl FrameBufferConv<f32> for dyn FrameBuffer {}
 
+/// A series of methods to copy the content of a frame from or to a buffer.
+pub trait FrameBufferCopy {
+    /// Copies a determined plane to an output buffer.
+    fn copy_plane_to_buffer(&self, plane_index: usize, dst: &mut [u8], dst_linesize: usize);
+    /// Copies a frame to an output buffer.
+    fn copy_frame_to_buffer<'a, IM: Iterator<Item = &'a mut [u8]>, IU: Iterator<Item = usize>>(
+        &self,
+        dst: IM,
+        dst_linesizes: IU,
+    );
+    /// Copies from a slice into a frame.
+    fn copy_from_slice<'a, I: Iterator<Item = &'a [u8]>, IU: Iterator<Item = usize>>(
+        &mut self,
+        src: I,
+        src_linesize: IU,
+    );
+}
+
 impl fmt::Debug for dyn FrameBuffer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "FrameBuffer")
@@ -448,91 +466,49 @@ impl Frame {
     }
 }
 
-fn copy_plane(
-    dst: &mut [u8],
-    dst_linesize: usize,
-    src: &[u8],
-    src_linesize: usize,
-    w: usize,
-    h: usize,
-) {
-    let dst_chunks = dst.chunks_mut(dst_linesize);
-    let src_chunks = src.chunks(src_linesize);
+impl FrameBufferCopy for Frame {
+    fn copy_plane_to_buffer(&self, plane_index: usize, dst: &mut [u8], dst_linesize: usize) {
+        if let MediaKind::Video(ref fmt) = self.kind {
+            let width = fmt.width;
+            let height = fmt.height;
+            let src = self.buf.as_slice_inner(plane_index).unwrap();
+            let src_linesize = self.buf.linesize(plane_index).unwrap();
 
-    for (d, s) in dst_chunks.zip(src_chunks).take(h) {
-        unsafe {
-            copy_nonoverlapping(s.as_ptr(), d.as_mut_ptr(), w);
+            copy_plane(dst, dst_linesize, src, src_linesize, width, height);
+        } else {
+            unimplemented!();
         }
     }
-}
 
-fn copy_image<'a, IM, IU, I>(
-    dst: IM,
-    dst_linesizes: IU,
-    src: I,
-    src_linesizes: IU,
-    w: usize,
-    h: usize,
-    fmt: &Formaton,
-) where
-    IM: Iterator<Item = &'a mut [u8]>,
-    I: Iterator<Item = &'a [u8]>,
-    IU: Iterator<Item = usize>,
-{
-    let dst_iter = dst.zip(dst_linesizes);
-    let src_iter = src.zip(src_linesizes);
-    let iter = dst_iter.zip(src_iter).zip(fmt.iter());
+    fn copy_frame_to_buffer<'a, IM, IU>(&self, dst: IM, dst_linesizes: IU)
+    where
+        IM: Iterator<Item = &'a mut [u8]>,
+        IU: Iterator<Item = usize>,
+    {
+        if let MediaKind::Video(ref fmt) = self.kind {
+            let width = fmt.width;
+            let height = fmt.height;
+            let dst_iter = dst.zip(dst_linesizes);
+            let iter = dst_iter.zip(0..self.buf.count()).zip(fmt.format.iter());
 
-    for (((d, d_linesize), (s, s_linesize)), c) in iter {
-        copy_plane(
-            d,
-            d_linesize,
-            s,
-            s_linesize,
-            c.unwrap().get_width(w),
-            c.unwrap().get_height(h),
-        );
-    }
-}
-
-// TODO: Add proper tests
-fn copy_to_frame<'a, I, IU>(
-    dst: &mut Frame,
-    mut src: I,
-    mut src_linesize: IU,
-    width: usize,
-    height: usize,
-) where
-    I: Iterator<Item = &'a [u8]>,
-    IU: Iterator<Item = usize>,
-{
-    if let MediaKind::Video(ref fmt) = dst.kind {
-        let mut f_iter = fmt.format.iter();
-        let width = fmt.width;
-        let height = fmt.height;
-        for i in 0..dst.buf.count() {
-            let d_linesize = dst.buf.linesize(i).unwrap();
-            let s_linesize = src_linesize.next().unwrap();
-            let data = dst.buf.as_mut_slice(i).unwrap();
-            let ss = src.next().unwrap();
-            let cc = f_iter.next().unwrap();
-            copy_plane(
-                data,
-                d_linesize,
-                ss,
-                s_linesize,
-                cc.unwrap().get_width(width),
-                cc.unwrap().get_height(height),
-            );
+            for (((d, d_linesize), plane_index), c) in iter {
+                copy_plane(
+                    d,
+                    d_linesize,
+                    self.buf.as_slice_inner(plane_index).unwrap(),
+                    self.buf.linesize(plane_index).unwrap(),
+                    c.unwrap().get_width(width),
+                    c.unwrap().get_height(height),
+                );
+            }
+        } else {
+            unimplemented!()
         }
-    } else {
-        unimplemented!();
     }
-}
 
-// TODO make it a separate trait
-impl Frame {
-    pub fn copy_from_slice<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
+    // TODO: Add proper tests
+    /// Copies from a slice into a frame.
+    fn copy_from_slice<'a, I, IU>(&mut self, mut src: I, mut src_linesize: IU)
     where
         I: Iterator<Item = &'a [u8]>,
         IU: Iterator<Item = usize>,
