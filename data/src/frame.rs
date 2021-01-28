@@ -327,13 +327,6 @@ impl fmt::Debug for dyn FrameBuffer {
     }
 }
 
-#[derive(Debug)]
-pub struct Frame {
-    pub kind: MediaKind,
-    pub buf: Box<dyn FrameBuffer>,
-    pub t: TimeInfo,
-}
-
 const ALIGNMENT: usize = 32;
 
 struct Plane {
@@ -427,19 +420,31 @@ impl DefaultFrameBuffer {
     }
 }
 
-pub type ArcFrame = Arc<Frame>;
+/// Decoded frame information.
+#[derive(Debug)]
+pub struct Frame {
+    /// The kind of frame (audio or video).
+    pub kind: MediaKind,
+    /// Frame buffer containing the data associated to each plane.
+    pub buf: Box<dyn FrameBuffer>,
+    /// Timestamp information associated to a frame.
+    pub t: TimeInfo,
+}
 
-pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> Frame
-where
-    T: Into<MediaKind> + Clone,
-{
-    let k = kind.into();
-    let buf = DefaultFrameBuffer::new(&k);
+impl Frame {
+    /// Creates a new frame.
+    pub fn new_default_frame<T>(kind: T, t: Option<TimeInfo>) -> Self
+    where
+        T: Into<MediaKind> + Clone,
+    {
+        let k = kind.into();
+        let buf = DefaultFrameBuffer::new(&k);
 
-    Frame {
-        kind: k,
-        buf: Box::new(buf),
-        t: t.unwrap_or_default(),
+        Self {
+            kind: k,
+            buf: Box::new(buf),
+            t: t.unwrap_or_default(),
+        }
     }
 }
 
@@ -557,6 +562,27 @@ impl Frame {
     }
 }
 
+fn copy_plane(
+    dst: &mut [u8],
+    dst_linesize: usize,
+    src: &[u8],
+    src_linesize: usize,
+    width: usize,
+    height: usize,
+) {
+    let dst_chunks = dst.chunks_mut(dst_linesize);
+    let src_chunks = src.chunks(src_linesize);
+
+    for (d, s) in dst_chunks.zip(src_chunks).take(height) {
+        unsafe {
+            copy_nonoverlapping(s.as_ptr(), d.as_mut_ptr(), width);
+        }
+    }
+}
+
+/// A specialised type for reference-counted `Frame`
+pub type ArcFrame = Arc<Frame>;
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -620,7 +646,7 @@ mod test {
         let fm = Arc::new(yuv420);
         let video_info = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
-        let mut frame = new_default_frame(MediaKind::Video(video_info), None);
+        let mut frame = Frame::new_default_frame(MediaKind::Video(video_info), None);
 
         frame.copy_from_slice(
             vec![vec![0].as_slice(); 2].into_iter(),
