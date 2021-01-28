@@ -7,7 +7,7 @@
 [![IRC](https://img.shields.io/badge/irc-%23rust--av-blue.svg)](http://webchat.freenode.net?channels=%23rust-av&uio=d4)
 [![Gitter](https://badges.gitter.im/rust-av.svg)](https://gitter.im/rust-av/Main?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Pure-rust implementation of multimedia primitives and eventually demuxer, muxers and codecs.
+Pure-rust implementation of multimedia primitives and eventually some examples of demuxers, muxers and codecs.
 
 ## Compiling
 
