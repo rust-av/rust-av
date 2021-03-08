@@ -10,5 +10,5 @@ edition = "2018"
 [dependencies]
 av-data = "0.3.0"
 thiserror = "1.0"
-num-rational = "0.3.0"
+num-rational = "0.4.0"
 
