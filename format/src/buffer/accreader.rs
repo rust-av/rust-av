@@ -66,10 +66,8 @@ impl<R: Read + Seek> AccReader<R> {
             self.end
         );
         if self.end - self.pos > 0 {
-            for i in 0..(self.end - self.pos) {
-                trace!("buf[{}] = buf[{}]", i, self.pos + i);
-                self.buf[i] = self.buf[self.pos + i];
-            }
+            trace!("copying {} to beginning of buffer", self.end - self.pos);
+            self.buf.copy_within(self.pos..self.end, 0);
         }
         self.end -= self.pos;
         self.pos = 0;
@@ -120,8 +118,12 @@ impl<R: Read + Seek> Read for AccReader<R> {
             if buf.len() > self.buf.len() {
                 match (&self.buf[self.pos..self.end]).read(buf) {
                     Ok(len) => {
-                        self.consume(len);
-                        self.inner.read(&mut buf[self.end..])
+                        let total_len = self.inner.read(&mut buf[(self.end - self.pos)..])? + len;
+
+                        self.consume(total_len);
+                        self.reset_buffer_position();
+
+                        Ok(total_len)
                     }
                     Err(e) => Err(e),
                 }
@@ -163,7 +165,7 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
 }
 
 impl<R: Read + Seek> Seek for AccReader<R> {
-    fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
+    fn seek(&mut self, mut pos: SeekFrom) -> Result<u64> {
         match pos {
             SeekFrom::Start(sz) => {
                 let mv = sz as usize;
@@ -176,10 +178,16 @@ impl<R: Read + Seek> Seek for AccReader<R> {
             }
             SeekFrom::End(_) => {}
             SeekFrom::Current(sz) => {
-                if sz >= 0 && sz as usize <= self.end - self.pos {
-                    self.index = sz as usize;
-                    self.pos += sz as usize;
-                    return Ok(sz as u64);
+                let remaining = self.end - self.pos;
+
+                if sz >= 0 {
+                    if sz as usize <= remaining {
+                        self.index += sz as usize;
+                        self.pos += sz as usize;
+                        return Ok(self.index as u64);
+                    } else {
+                        pos = SeekFrom::Current(sz - remaining as i64);
+                    }
                 }
             }
         };
@@ -210,9 +218,89 @@ mod tests {
     use super::*;
     use crate::buffer::Buffered;
     use std::io::{BufRead, Cursor};
+    use std::ops::Range;
+
+    fn assert_read_acc(bytes: &[u8], capacity: usize, ranges: &[Range<usize>]) {
+        let c = Cursor::new(&bytes[..]);
+        let mut vec = vec![0u8; bytes.len()];
+        let mut acc = AccReader::with_capacity(capacity, c);
+
+        for r in ranges {
+            acc.read_exact(&mut vec[r.clone()]).unwrap();
+        }
+
+        assert_eq!(bytes, &vec);
+    }
 
     #[test]
-    fn acc_reader_test() {
+    fn same_capacity_full_read() {
+        let buf = (0u8..).take(20).collect::<Vec<u8>>();
+
+        assert_read_acc(&buf, 20, &[0..buf.len()]);
+    }
+
+    #[test]
+    fn split_read_1() {
+        let buf = (0u8..).take(31).collect::<Vec<u8>>();
+
+        assert_read_acc(&buf, 20, &[0..10, 10..buf.len()]);
+    }
+
+    #[test]
+    fn split_read_2() {
+        let buf = (0u8..).take(31).collect::<Vec<u8>>();
+
+        assert_read_acc(&buf, 20, &[0..3, 3..buf.len()]);
+    }
+
+    #[test]
+    fn seek_within_capacity() {
+        let buf = (0u8..).take(30).collect::<Vec<u8>>();
+        let c = Cursor::new(&buf[..]);
+
+        let mut acc = AccReader::with_capacity(15, c);
+
+        assert_eq!(5, acc.seek(SeekFrom::Current(5)).unwrap());
+        assert_eq!(10, acc.seek(SeekFrom::Current(5)).unwrap());
+        assert_eq!(15, acc.seek(SeekFrom::Current(5)).unwrap());
+    }
+
+    #[test]
+    fn seek_across_capacity() {
+        let buf = (0u8..).take(30).collect::<Vec<u8>>();
+        let c = Cursor::new(&buf[..]);
+
+        let mut acc = AccReader::with_capacity(15, c);
+
+        assert_eq!(5, acc.seek(SeekFrom::Current(5)).unwrap());
+        assert_eq!(20, acc.seek(SeekFrom::Current(15)).unwrap());
+        assert_eq!(5, acc.seek(SeekFrom::Start(5)).unwrap());
+    }
+
+    #[test]
+    fn seek_and_read() {
+        let len = 30;
+        let buf = (0u8..).take(len).collect::<Vec<u8>>();
+        let c = Cursor::new(&buf[..]);
+
+        let mut acc = AccReader::with_capacity(5, c);
+
+        assert_eq!(0, acc.seek(SeekFrom::Current(0)).unwrap());
+
+        for i in 0..30 {
+            assert_eq!(i as u64, read_byte(&mut acc).unwrap() as u64);
+            assert_eq!(i + 1, acc.seek(SeekFrom::Current(0)).unwrap());
+        }
+    }
+
+    fn read_byte<R: Read + Seek>(acc: &mut AccReader<R>) -> io::Result<u8> {
+        let mut byte = [0];
+        acc.read_exact(&mut byte)?;
+        Ok(byte[0])
+    }
+
+    #[test]
+    fn reader_test() {
         let buf = b"AAAA\nAAAB\nAAACAAADAAAEAAAF\ndabcdEEEE";
         let c = Cursor::new(&buf[..]);
 
