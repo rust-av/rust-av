@@ -38,9 +38,9 @@ pub trait Demuxer: Send {
     /// implementing the `Buffered` trait.
     ///
     /// Global information are saved into a `GlobalInfo` structure.
-    fn read_headers(&mut self, buf: &Box<dyn Buffered>, info: &mut GlobalInfo) -> Result<SeekFrom>;
+    fn read_headers(&mut self, buf: &mut dyn Buffered, info: &mut GlobalInfo) -> Result<SeekFrom>;
     /// Reads an event from a data structure implementing the `Buffered` trait.
-    fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)>;
+    fn read_event(&mut self, buf: &mut dyn Buffered) -> Result<(SeekFrom, Event)>;
 }
 
 /// Auxiliary structure to encapsulate a demuxer object and
@@ -74,7 +74,7 @@ impl Context {
     fn read_headers_internal(&mut self) -> Result<()> {
         let demux = &mut self.demuxer;
 
-        let res = demux.read_headers(&self.reader, &mut self.info);
+        let res = demux.read_headers(self.reader.as_mut(), &mut self.info);
         match res {
             Err(e) => Err(e),
             Ok(seek) => {
@@ -106,7 +106,7 @@ impl Context {
     fn read_event_internal(&mut self) -> Result<Event> {
         let demux = &mut self.demuxer;
 
-        let res = demux.read_event(&self.reader);
+        let res = demux.read_event(self.reader.as_mut());
         match res {
             Err(e) => Err(e),
             Ok((seek, mut event)) => {
@@ -240,7 +240,7 @@ mod test {
     impl Demuxer for DummyDemuxer {
         fn read_headers(
             &mut self,
-            buf: &Box<dyn Buffered>,
+            buf: &mut dyn Buffered,
             _info: &mut GlobalInfo,
         ) -> Result<SeekFrom> {
             let len = buf.data().len();
@@ -251,7 +251,7 @@ mod test {
                 Ok(SeekFrom::Current(9))
             }
         }
-        fn read_event(&mut self, buf: &Box<dyn Buffered>) -> Result<(SeekFrom, Event)> {
+        fn read_event(&mut self, buf: &mut dyn Buffered) -> Result<(SeekFrom, Event)> {
             let size = 2;
             let len = buf.data().len();
             if size > len {
