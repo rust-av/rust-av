@@ -2,10 +2,80 @@ use crate::common::*;
 use crate::data::packet::Packet;
 use crate::data::value::*;
 use std::any::Any;
-use std::io::Write;
+use std::io::{ErrorKind, Seek, SeekFrom, Write};
 use std::sync::Arc;
 
 use crate::error::*;
+
+pub trait WriteSeek: Write + Seek {}
+
+impl<T: Write + Seek> WriteSeek for T {}
+
+/// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object which supports querying
+/// for seek support.
+pub enum Writer {
+    NonSeekable(Box<dyn Write>, u64),
+    Seekable(Box<dyn WriteSeek>),
+}
+
+impl Writer {
+    /// Creates a [`Writer`] from a trait object that implements both [`Write`] and [`Seek`].
+    pub fn from_seekable(inner: Box<dyn WriteSeek>) -> Self {
+        Self::Seekable(inner)
+    }
+
+    /// Creates a [`Writer`] from a trait object that implements the [`Write`] trait.
+    pub fn from_nonseekable(inner: Box<dyn Write>) -> Self {
+        Self::NonSeekable(inner, 0)
+    }
+
+    /// Returns whether the [`Writer`] can seek within the source.
+    pub fn can_seek(&self) -> bool {
+        matches!(self, Self::Seekable(_))
+    }
+}
+
+impl Write for Writer {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        match self {
+            Self::NonSeekable(inner, ref mut index) => {
+                let result = inner.write(bytes);
+
+                if let Ok(written) = result {
+                    *index += written as u64;
+                }
+
+                result
+            }
+            Self::Seekable(inner) => inner.write(bytes),
+        }
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        match self {
+            Self::NonSeekable(inner, ..) => inner.flush(),
+            Self::Seekable(inner) => inner.flush(),
+        }
+    }
+}
+
+impl Seek for Writer {
+    fn seek(&mut self, seek: SeekFrom) -> std::io::Result<u64> {
+        match self {
+            Self::NonSeekable(_, index) => {
+                if let SeekFrom::Current(0) = seek {
+                    Ok(*index)
+                } else {
+                    Err(std::io::Error::new(
+                        ErrorKind::Other,
+                        "Seeking not supported",
+                    ))
+                }
+            }
+            Self::Seekable(inner) => inner.seek(seek),
+        }
+    }
+}
 
 /// Used to implement muxing operations.
 pub trait Muxer: Send {
@@ -13,13 +83,13 @@ pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
     /// Writes a stream header into a data structure implementing
     /// the `Write` trait.
-    fn write_header(&mut self, out: &mut dyn Write) -> Result<()>;
+    fn write_header(&mut self, out: &mut Writer) -> Result<()>;
     /// Writes a stream packet into a data structure implementing
     /// the `Write` trait.
-    fn write_packet(&mut self, out: &mut dyn Write, pkt: Arc<Packet>) -> Result<()>;
+    fn write_packet(&mut self, out: &mut Writer, pkt: Arc<Packet>) -> Result<()>;
     /// Writes a stream trailer into a data structure implementing
     /// the `Write` trait.
-    fn write_trailer(&mut self, out: &mut dyn Write) -> Result<()>;
+    fn write_trailer(&mut self, out: &mut Writer) -> Result<()>;
 
     /// Sets global media file information for a muxer.
     fn set_global_info(&mut self, info: GlobalInfo) -> Result<()>;
@@ -34,8 +104,7 @@ pub trait Muxer: Send {
 /// its additional data.
 pub struct Context {
     muxer: Box<dyn Muxer + Send>,
-    writer: Box<dyn Write + Send>,
-    buf: Vec<u8>,
+    writer: Writer,
     /// User private data.
     ///
     /// This data cannot be cloned.
@@ -44,11 +113,10 @@ pub struct Context {
 
 impl Context {
     /// Creates a new `Context` instance.
-    pub fn new<W: Write + 'static + Send>(muxer: Box<dyn Muxer + Send>, writer: Box<W>) -> Self {
+    pub fn new(muxer: Box<dyn Muxer + Send>, writer: Writer) -> Self {
         Context {
             muxer,
             writer,
-            buf: Vec::new(),
             user_private: None,
         }
     }
@@ -60,47 +128,23 @@ impl Context {
 
     /// Writes a stream header to an internal buffer and returns how many
     /// bytes were written or an error.
-    pub fn write_header(&mut self) -> Result<usize> {
-        self.muxer.write_header(&mut self.buf)?;
-        //FIXME: we should have proper management of the buffer's index
-        match self.writer.write_all(&self.buf) {
-            Ok(()) => {
-                let len = self.buf.len();
-                self.buf.clear();
-                Ok(len)
-            }
-            Err(e) => Err(Error::Io(e)),
-        }
+    pub fn write_header(&mut self) -> Result<()> {
+        self.muxer.write_header(&mut self.writer)
     }
 
     /// Writes a stream packet to an internal buffer and returns how many
     /// bytes were written or an error.
-    pub fn write_packet(&mut self, pkt: Arc<Packet>) -> Result<usize> {
-        self.muxer.write_packet(&mut self.buf, pkt)?;
-        //FIXME: we should have proper management of the buffer's index
-        match self.writer.write_all(&self.buf) {
-            Ok(()) => {
-                let len = self.buf.len();
-                self.buf.clear();
-                Ok(len)
-            }
-            Err(e) => Err(Error::Io(e)),
-        }
+    pub fn write_packet(&mut self, pkt: Arc<Packet>) -> Result<()> {
+        self.muxer.write_packet(&mut self.writer, pkt)
     }
 
     /// Writes a stream trailer to an internal buffer and returns how many
     /// bytes were written or an error.
-    pub fn write_trailer(&mut self) -> Result<usize> {
-        self.muxer.write_trailer(&mut self.buf)?;
-        //FIXME: we should have proper management of the buffer's index
-        match self.writer.write_all(&self.buf) {
-            Ok(()) => {
-                let len = self.buf.len();
-                self.buf.clear();
-                Ok(len)
-            }
-            Err(e) => Err(Error::Io(e)),
-        }
+    pub fn write_trailer(&mut self) -> Result<()> {
+        self.muxer.write_trailer(&mut self.writer)?;
+        self.writer.flush()?;
+
+        Ok(())
     }
 
     /// Sets global media file information for a muxer.
