@@ -278,7 +278,7 @@ impl<S: Copy> Codebook<S> {
     /// Constructs a new `Codebook` instance using provided
     /// codebook description and mode.
     pub fn new(
-        cb: &mut dyn CodebookDescReader<S>,
+        cb: &dyn CodebookDescReader<S>,
         mode: CodebookMode,
     ) -> Result<Self, CodebookError> {
         let mut maxbits = 0;
@@ -430,6 +430,42 @@ impl CodebookDescReader<u32> for Vec<ShortCodebookDesc> {
     }
 }
 
+impl<'a, S: Copy> CodebookDescReader<S> for &'a [FullCodebookDesc<S>] {
+    fn bits(&self, idx: usize) -> u8 {
+        self[idx].bits
+    }
+    fn code(&self, idx: usize) -> u32 {
+        self[idx].code
+    }
+    fn sym(&self, idx: usize) -> S {
+        self[idx].sym
+    }
+    fn len(&self) -> usize {
+        <[FullCodebookDesc<S>]>::len(self)
+    }
+    fn is_empty(&self) -> bool {
+        <[FullCodebookDesc<S>]>::is_empty(self)
+    }
+}
+
+impl<'a> CodebookDescReader<u32> for &'a [ShortCodebookDesc] {
+    fn bits(&self, idx: usize) -> u8 {
+        self[idx].bits
+    }
+    fn code(&self, idx: usize) -> u32 {
+        self[idx].code
+    }
+    fn sym(&self, idx: usize) -> u32 {
+        idx as u32
+    }
+    fn len(&self) -> usize {
+        <[ShortCodebookDesc]>::len(self)
+    }
+    fn is_empty(&self) -> bool {
+        <[ShortCodebookDesc]>::is_empty(self)
+    }
+}
+
 /// Flexible codebook description that uses two separate arrays for
 /// codeword bits and lengths.
 pub struct TableCodebookDescReader<CodeType: 'static, SymType> {
@@ -469,7 +505,7 @@ mod test {
 
     #[test]
     fn test_full_codebook_msb() {
-        let mut cb_desc: Vec<FullCodebookDesc<i8>> = vec![
+        let cb_desc: Vec<FullCodebookDesc<i8>> = vec![
             FullCodebookDesc {
                 code: 0b0,
                 bits: 1,
@@ -493,7 +529,7 @@ mod test {
         ];
         let buf = &BITS;
         let mut br = BitReadBE::new(buf);
-        let cb = Codebook::new(&mut cb_desc, CodebookMode::MSB).unwrap();
+        let cb = Codebook::new(&cb_desc, CodebookMode::MSB).unwrap();
 
         assert_eq!(br.read_cb(&cb).unwrap(), 16);
         assert_eq!(br.read_cb(&cb).unwrap(), -3);
@@ -509,7 +545,7 @@ mod test {
 
     #[test]
     fn test_short_codebook_msb() {
-        let mut scb_desc: Vec<ShortCodebookDesc> = vec![
+        let scb_desc: Vec<ShortCodebookDesc> = vec![
             ShortCodebookDesc { code: 0b0, bits: 1 },
             ShortCodebookDesc { code: 0, bits: 0 },
             ShortCodebookDesc {
@@ -550,7 +586,7 @@ mod test {
         ];
         let buf = &BITS;
         let mut br2 = BitReadBE::new(buf);
-        let cb = Codebook::new(&mut scb_desc, CodebookMode::MSB).unwrap();
+        let cb = Codebook::new(&scb_desc, CodebookMode::MSB).unwrap();
         assert_eq!(br2.read_cb(&cb).unwrap(), 0);
         assert_eq!(br2.read_cb(&cb).unwrap(), 2);
         assert_eq!(br2.read_cb(&cb).unwrap(), 5);
@@ -566,7 +602,7 @@ mod test {
     fn test_short_codebook_lsb() {
         const BITS_LE: [u8; 8] = [0b11101111, 0b01110010, 0b01, 0, 0, 0, 0, 0];
         let buf = &BITS_LE;
-        let mut scble_desc: Vec<ShortCodebookDesc> = vec![
+        let scble_desc: Vec<ShortCodebookDesc> = vec![
             ShortCodebookDesc {
                 code: 0b00,
                 bits: 2,
@@ -605,7 +641,7 @@ mod test {
             },
         ];
         let mut brl = BitReadLE::new(buf);
-        let cb = Codebook::new(&mut scble_desc, CodebookMode::LSB).unwrap();
+        let cb = Codebook::new(&scble_desc, CodebookMode::LSB).unwrap();
         assert_eq!(brl.read_cb(&cb).unwrap(), 11);
         assert_eq!(brl.read_cb(&cb).unwrap(), 0);
         assert_eq!(brl.read_cb(&cb).unwrap(), 7);
