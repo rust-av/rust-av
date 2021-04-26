@@ -379,7 +379,7 @@ impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
             let bits = cb.table[lut_idx] & 0x7F;
             esc = (cb.table[lut_idx] & 0x80) != 0;
             idx = (cb.table[lut_idx] >> 8) as usize;
-            if bits > self.left() as u32 {
+            if bits > self.available() as u32 {
                 return Err(InvalidCode);
             }
             let skip_bits = if esc {
@@ -466,6 +466,58 @@ mod test {
     use super::*;
 
     const BITS: [u8; 8] = [0b01011011, 0b10111100, 0b11111111, 0, 0, 0, 0, 0];
+
+    #[test]
+    fn test_refill_codebook_msb() {
+        // make sure reading codes across 8-byte boundary works
+        let bits = [
+            0b11111_000,
+            0b00_11111_0,
+            0b0000_1111,
+            0b1_00000_11,
+            0b111_00000,
+            0b11111_000,
+            0b00_11111_0,
+            0b0000_1111,
+            0b1_00000_00,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
+
+        let mut cb_desc: Vec<ShortCodebookDesc> = vec![
+            ShortCodebookDesc {
+                code: 0b11111,
+                bits: 5,
+            },
+            ShortCodebookDesc {
+                code: 0b00000,
+                bits: 5,
+            },
+        ];
+        let buf = &bits;
+        let mut br = BitReadBE::new(buf);
+        let cb = Codebook::new(&mut cb_desc, CodebookMode::MSB).unwrap();
+
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+        assert_eq!(br.read_cb(&cb).unwrap(), 0);
+        assert_eq!(br.read_cb(&cb).unwrap(), 1);
+    }
 
     #[test]
     fn test_full_codebook_msb() {
