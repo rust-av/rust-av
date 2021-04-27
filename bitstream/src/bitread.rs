@@ -148,6 +148,7 @@ macro_rules! endian_reader {
         #[doc = $docname]
         #[doc = " reader."]
         #[derive(Debug, Clone, Copy)]
+        #[allow(clippy::upper_case_acronyms)]
         pub struct $name<'a> {
             buffer : &'a[u8], /// read buffer, 8-bytes padded
             index : usize,

@@ -15,6 +15,7 @@ use std::slice;
 
 /// YUV color range.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum YUVRange {
     /// Pixels in the range [16, 235].
     Limited,
@@ -32,6 +33,7 @@ impl fmt::Display for YUVRange {
 }
 
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum MatrixCoefficients {
     Identity = 0,
@@ -83,6 +85,7 @@ impl fmt::Display for MatrixCoefficients {
 
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum ColorPrimaries {
     Reserved0 = 0,
     BT709 = 1,
@@ -123,6 +126,7 @@ impl fmt::Display for ColorPrimaries {
 
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum TransferCharacteristic {
     Reserved0 = 0,
     BT1886 = 1,
@@ -200,6 +204,7 @@ impl fmt::Display for ChromaLocation {
 
 /// All YUV color reprentations.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum YUVSystem {
     YCbCr(YUVRange),
     YCoCg,
@@ -219,6 +224,7 @@ impl fmt::Display for YUVSystem {
 
 /// Trichromatic color encoding system.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum TrichromaticEncodingSystem {
     RGB,
     YUV(YUVSystem),
@@ -238,6 +244,7 @@ impl fmt::Display for TrichromaticEncodingSystem {
 
 /// All supported color models.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum ColorModel {
     Trichromatic(TrichromaticEncodingSystem),
     CMYK,

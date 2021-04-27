@@ -78,6 +78,7 @@ impl fmt::Display for Soniton {
 
 /// Known audio channel types.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum ChannelType {
     C,
     L,

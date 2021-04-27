@@ -22,6 +22,7 @@ use self::CodebookError::*;
 
 /// Codebook operation modes.
 #[derive(Debug, Copy, Clone)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum CodebookMode {
     /// Codes in the codebook should be read most significant bit first.
     MSB,
@@ -277,10 +278,7 @@ fn build_esc_lut(
 impl<S: Copy> Codebook<S> {
     /// Constructs a new `Codebook` instance using provided
     /// codebook description and mode.
-    pub fn new(
-        cb: &dyn CodebookDescReader<S>,
-        mode: CodebookMode,
-    ) -> Result<Self, CodebookError> {
+    pub fn new(cb: &dyn CodebookDescReader<S>, mode: CodebookMode) -> Result<Self, CodebookError> {
         let mut maxbits = 0;
         let mut nnz = 0;
         let mut escape_list: EscapeCodes = HashMap::new();
