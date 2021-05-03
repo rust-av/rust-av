@@ -236,13 +236,13 @@ macro_rules! little_endian_reader {
         impl <'a> BitReadEndian for $name<'a> {
             #[inline]
             fn peek_val(&mut self, n:usize) -> u64 {
-                let v = self.cache & ((1u64 << n) - 1);
+                let v = self.cache & ((1u64.checked_shl(n as u32).unwrap_or(0)).overflowing_sub(1).0);
 
                 return v;
             }
             #[inline]
             fn skip_rem(&mut self, n:usize) -> () {
-                self.cache >>= n;
+                self.cache = self.cache.checked_shr(n as u32).unwrap_or(0);
                 self.left = self.left.saturating_sub(n);
             }
             #[inline]
@@ -283,16 +283,16 @@ macro_rules! big_endian_reader {
         impl <'a> BitReadEndian for $name<'a> {
             #[inline]
             fn peek_val(&mut self, n:usize) -> u64 {
-                self.cache >> (64 - n)
+                self.cache.checked_shr(64 - n as u32).unwrap_or(0)
             }
             #[inline]
             fn skip_rem(&mut self, n:usize) -> () {
-                self.cache <<= n;
+                self.cache = self.cache.checked_shl(n as u32).unwrap_or(0);
                 self.left = self.left.saturating_sub(n);
             }
             #[inline]
             fn merge_val(msp:u64, lsp:u64, _:usize, lsb:usize) -> u64 {
-                msp | lsp << lsb
+                msp | lsp.checked_shl(lsb as u32).unwrap_or(0)
             }
             #[inline]
             fn build_cache(cache:u64, refill:u64, cache_size:usize) -> u64 {
@@ -342,11 +342,29 @@ mod test {
             let b = &CHECKBOARD0101;
             let mut reader = BitReadLE::new(b);
 
-            assert!(reader.get_bits_64(1) == 1);
-            assert!(reader.get_bits_64(2) == 2);
-            assert!(reader.get_bits_64(4) == 10);
-            assert!(reader.get_bits_64(1) == 0);
-            assert!(reader.get_bits_64(8) == 85);
+            assert_eq!(reader.get_bits_64(1), 1);
+            assert_eq!(reader.get_bits_64(2), 2);
+            assert_eq!(reader.get_bits_64(4), 10);
+            assert_eq!(reader.get_bits_64(1), 0);
+            assert_eq!(reader.get_bits_64(8), 85);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
+            assert_eq!(reader.get_bits_64(64), 6148914691236517205);
+        }
+
+        #[test]
+        fn get_bits_64_double() {
+            let b = &CHECKBOARD0101;
+
+            let mut reader = BitReadLE::new(b);
+
+            assert_eq!(reader.get_bits_64(64), 6148914691236517205);
+            assert_eq!(reader.get_bits_64(64), 6148914691236517205);
+
+            let mut reader = BitReadLE::new(b);
+
+            assert_eq!(reader.get_bits_64(32), 1431655765);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
             assert_eq!(reader.get_bits_64(32), 1431655765);
         }
 
@@ -359,10 +377,12 @@ mod test {
                 left: 0,
             };
 
-            assert!(reader.peek_bits_64(1) == 1);
-            assert!(reader.peek_bits_64(1) == 1);
-            assert!(reader.peek_bits_64(2) == 1);
-            assert!(reader.peek_bits_64(2) == 1);
+            assert_eq!(reader.peek_bits_64(1), 1);
+            assert_eq!(reader.peek_bits_64(1), 1);
+            assert_eq!(reader.peek_bits_64(2), 1);
+            assert_eq!(reader.peek_bits_64(2), 1);
+            assert_eq!(reader.peek_bits_64(32), 1431655765);
+            assert_eq!(reader.peek_bits_64(64), 6148914691236517205);
         }
 
         #[test]
@@ -451,11 +471,29 @@ mod test {
             let b = &CHECKBOARD0101;
             let mut reader = BitReadBE::new(b);
 
-            assert!(reader.get_bits_64(1) == 0);
-            assert!(reader.get_bits_64(2) == 2);
-            assert!(reader.get_bits_64(4) == 10);
-            assert!(reader.get_bits_64(1) == 1);
-            assert!(reader.get_bits_64(8) == 85);
+            assert_eq!(reader.get_bits_64(1), 0);
+            assert_eq!(reader.get_bits_64(2), 2);
+            assert_eq!(reader.get_bits_64(4), 10);
+            assert_eq!(reader.get_bits_64(1), 1);
+            assert_eq!(reader.get_bits_64(8), 85);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
+            assert_eq!(reader.get_bits_64(64), 6148914691236517205);
+        }
+
+        #[test]
+        fn get_bits_64_double() {
+            let b = &CHECKBOARD0101;
+
+            let mut reader = BitReadBE::new(b);
+
+            assert_eq!(reader.get_bits_64(64), 6148914691236517205);
+            assert_eq!(reader.get_bits_64(64), 6148914691236517205);
+
+            let mut reader = BitReadBE::new(b);
+
+            assert_eq!(reader.get_bits_64(32), 1431655765);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
+            assert_eq!(reader.get_bits_64(32), 1431655765);
             assert_eq!(reader.get_bits_64(32), 1431655765);
         }
 
@@ -464,10 +502,12 @@ mod test {
             let b = &CHECKBOARD0101;
             let reader = BitReadBE::new(b);
 
-            assert!(reader.peek_bits_64(1) == 0);
-            assert!(reader.peek_bits_64(1) == 0);
-            assert!(reader.peek_bits_64(2) == 1);
-            assert!(reader.peek_bits_64(2) == 1);
+            assert_eq!(reader.peek_bits_64(1), 0);
+            assert_eq!(reader.peek_bits_64(1), 0);
+            assert_eq!(reader.peek_bits_64(2), 1);
+            assert_eq!(reader.peek_bits_64(2), 1);
+            assert_eq!(reader.peek_bits_64(32), 1431655765);
+            assert_eq!(reader.peek_bits_64(64), 6148914691236517205);
         }
 
         #[test]
