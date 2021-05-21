@@ -33,7 +33,7 @@ pub enum Event {
 }
 
 /// Used to implement demuxing operations.
-pub trait Demuxer: Send {
+pub trait Demuxer: Send + Sync {
     /// Reads stream headers and global information from a data structure
     /// implementing the `Buffered` trait.
     ///
