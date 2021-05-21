@@ -7,7 +7,7 @@ pub use crate::common::CodecList;
 use crate::error::*;
 
 /// Used to interact with a decoder.
-pub trait Decoder: Send {
+pub trait Decoder: Send + Sync {
     // TODO support codec configuration using set_option
     // fn open(&mut self) -> Result<()>;
     /// Saves the extra data contained in a codec.
