@@ -495,10 +495,8 @@ impl Formaton {
     /// Returns the total amount of bits needed for components.
     pub fn get_total_depth(&self) -> u8 {
         let mut depth = 0;
-        for chr in self.comp_info.iter() {
-            if let Some(ref chromaton) = chr {
-                depth += chromaton.depth;
-            }
+        for chromaton in self.comp_info.iter().flatten() {
+            depth += chromaton.depth;
         }
         depth
     }

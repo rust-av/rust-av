@@ -105,11 +105,7 @@ impl CodecList for Codecs {
 
     // TODO more lookup functions
     fn by_name(&self, name: &str) -> Option<&'static Self::D> {
-        if let Some(descs) = self.list.get(name) {
-            Some(descs[0])
-        } else {
-            None
-        }
+        self.list.get(name).map(|descs| descs[0])
     }
 
     fn append(&mut self, desc: &'static Self::D) {
