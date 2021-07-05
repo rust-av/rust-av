@@ -282,7 +282,7 @@ pub struct Chromaton {
     /// Horizontal subsampling in power of two
     /// (e.g. `0` = no subsampling, `1` = only every second value is stored).
     pub h_ss: u8,
-    /// Vertial subsampling in power of two
+    /// Vertical subsampling in power of two
     /// (e.g. `0` = no subsampling, `1` = only every second value is stored).
     pub v_ss: u8,
     /// Tells if a component is packed.
