@@ -202,7 +202,7 @@ impl fmt::Display for ChromaLocation {
     }
 }
 
-/// All YUV color reprentations.
+/// All YUV color representations.
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum YUVSystem {
