@@ -127,7 +127,7 @@ pub trait BitRead<'a>: BitReadInternal + Copy {
         tmp.get_bits_64(n)
     }
 
-    /// Alignes the bits present in the internal buffer.
+    /// Aligns the bits present in the internal buffer.
     #[inline]
     fn align_bits(&mut self) {
         let left = self.left() & 7;

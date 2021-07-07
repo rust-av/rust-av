@@ -16,7 +16,7 @@ pub enum Error {
     Io(#[from] io::Error),
 }
 
-/// A specialised `Result` type for muxing/demuxing operations.
+/// A specialized `Result` type for muxing/demuxing operations.
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 #[cfg(test)]

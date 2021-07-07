@@ -21,7 +21,7 @@ pub struct Soniton {
 }
 
 // TODO: make it a trait for usize?
-/// Alignes a value to a specific number of bytes.
+/// Aligns a value to a specific number of bytes.
 fn align(v: usize, a: usize) -> usize {
     (v + a - 1) & !(a - 1)
 }

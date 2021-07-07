@@ -557,7 +557,7 @@ fn copy_plane(
     }
 }
 
-/// A specialised type for reference-counted `Frame`
+/// A specialized type for reference-counted `Frame`
 pub type ArcFrame = Arc<Frame>;
 
 #[cfg(test)]
