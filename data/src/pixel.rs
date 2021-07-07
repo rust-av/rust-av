@@ -375,12 +375,12 @@ impl Chromaton {
 
     /// Calculates the width for a component from general image width.
     pub fn get_width(self, width: usize) -> usize {
-        (width + ((1 << self.v_ss) - 1)) >> self.v_ss
+        (width + ((1 << self.h_ss) - 1)) >> self.h_ss
     }
 
     /// Calculates the height for a component from general image height.
     pub fn get_height(self, height: usize) -> usize {
-        (height + ((1 << self.h_ss) - 1)) >> self.h_ss
+        (height + ((1 << self.v_ss) - 1)) >> self.v_ss
     }
 
     /// Calculates the minimal stride for a component from general image width.
