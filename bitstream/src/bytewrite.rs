@@ -1,14 +1,14 @@
 macro_rules! write_bytes_le {
     ($buf:ident, $n:ident) => {
         let bytes = $n.to_le_bytes();
-        &mut $buf[..bytes.len()].copy_from_slice(&bytes);
+        $buf[..bytes.len()].copy_from_slice(&bytes);
     };
 }
 
 macro_rules! write_bytes_be {
     ($buf:ident, $n:ident) => {
         let bytes = $n.to_be_bytes();
-        &mut $buf[..bytes.len()].copy_from_slice(&bytes);
+        $buf[..bytes.len()].copy_from_slice(&bytes);
     };
 }
 
