@@ -347,7 +347,7 @@ impl<S: Copy> Codebook<S> {
         }
 
         for bucket in escape_list.values() {
-            build_esc_lut(&mut table, mode, &bucket)?;
+            build_esc_lut(&mut table, mode, bucket)?;
         }
 
         for i in 0..cb.len() {

@@ -120,7 +120,7 @@ impl Context {
                 }
                 if let Event::NewPacket(ref mut pkt) = event {
                     if pkt.t.timebase.is_none() {
-                        if let Some(ref st) = self
+                        if let Some(st) = self
                             .info
                             .streams
                             .iter()
