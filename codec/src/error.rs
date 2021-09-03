@@ -22,5 +22,5 @@ pub enum Error {
     // Inner(failure::Context)
 }
 
-/// A specialised `Result` type for coding operations.
+/// A specialized `Result` type for coding operations.
 pub type Result<T> = ::std::result::Result<T, Error>;
