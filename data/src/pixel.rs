@@ -948,7 +948,7 @@ mod test {
         fn comparison() {
             use std::sync::Arc;
             let rcf = Arc::new(*formats::YUV420);
-            let ref cf = formats::YUV420.clone();
+            let cf = &formats::YUV420.clone();
 
             if cf != formats::YUV420 {
                 panic!("cf");

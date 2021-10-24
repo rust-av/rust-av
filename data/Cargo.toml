@@ -7,7 +7,7 @@ license = "MIT"
 homepage = "https://github.com/rust-av/rust-av"
 keywords = ["multimedia"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 byte-slice-cast = "1.0.0"

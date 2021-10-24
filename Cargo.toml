@@ -5,7 +5,7 @@ authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 homepage = "https://github.com/rust-av/rust-av"
 keywords = ["multimedia"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [features]
 nightly = []

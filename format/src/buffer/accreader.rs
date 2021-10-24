@@ -221,7 +221,7 @@ mod tests {
     use std::ops::Range;
 
     fn assert_read_acc(bytes: &[u8], capacity: usize, ranges: &[Range<usize>]) {
-        let c = Cursor::new(&bytes[..]);
+        let c = Cursor::new(bytes);
         let mut vec = vec![0u8; bytes.len()];
         let mut acc = AccReader::with_capacity(capacity, c);
 

@@ -576,7 +576,7 @@ mod test {
         let sn = Arc::new(formats::S16);
         let info2 = AudioInfo::new(4242, 48000, map.clone(), sn, None);
 
-        assert_eq!(info1 == info2, true);
+        assert!(info1 == info2);
 
         let mut map = ChannelMap::new();
         map.add_channel(ChannelType::C);
@@ -586,7 +586,7 @@ mod test {
         let sn = Arc::new(formats::S32);
         let info2 = AudioInfo::new(42, 48000, map.clone(), sn, None);
 
-        assert_eq!(info1 == info2, false);
+        assert!(!(info1 == info2));
     }
 
     use crate::pixel::formats::{RGB565, YUV420};
@@ -601,7 +601,7 @@ mod test {
         let fm = Arc::new(yuv420);
         let info2 = VideoInfo::new(42, 42, false, FrameType::P, fm);
 
-        assert_eq!(info1 == info2, true);
+        assert!(info1 == info2);
 
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
@@ -611,7 +611,7 @@ mod test {
         let fm = Arc::new(rgb565);
         let info2 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
-        assert_eq!(info1 == info2, false);
+        assert!( !(info1 == info2));
     }
 
     #[test]

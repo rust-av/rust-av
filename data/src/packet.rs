@@ -92,9 +92,15 @@ mod test {
 
         match buf.get_packet(64) {
             Ok(pkt) => assert_eq!(pkt.data, &data[..64]),
-            _ => assert!(false),
+            _ => unreachable!(),
         }
     }
+
+    /*#[test]
+    fn test_new(){
+        let pkt = Packet::new();
+        assert_eq!(0, pkt.data.len());
+    }*/
 
     #[test]
     fn write_packet() {
@@ -111,9 +117,9 @@ mod test {
 
         let vec = buf.into_inner();
 
-        for i in 0..size {
-            println!("{}", vec[i]);
-            assert!(vec[i] == i as u8);
+        for (i,elem) in vec.iter().enumerate().take(size) {
+            println!("{}", elem);
+            assert!(*elem == i as u8);
         }
     }
 }
