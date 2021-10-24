@@ -117,7 +117,7 @@ mod test {
 
         let vec = buf.into_inner();
 
-        for (i,elem) in vec.iter().enumerate().take(size) {
+        for (i, elem) in vec.iter().enumerate().take(size) {
             println!("{}", elem);
             assert!(*elem == i as u8);
         }

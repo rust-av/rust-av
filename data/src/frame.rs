@@ -611,7 +611,7 @@ mod test {
         let fm = Arc::new(rgb565);
         let info2 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
-        assert!( !(info1 == info2));
+        assert!(!(info1 == info2));
     }
 
     #[test]
