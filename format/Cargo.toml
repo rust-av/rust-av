@@ -4,7 +4,7 @@ description = "Multimedia format demuxing and muxing"
 version = "0.3.1"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]

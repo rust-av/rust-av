@@ -261,7 +261,7 @@ mod test {
                 match &buf.data()[..2] {
                     b"p1" => Ok((SeekFrom::Current(3), Event::NewPacket(Packet::new()))),
                     b"e1" => Ok((SeekFrom::Current(3), Event::MoreDataNeeded(0))),
-                    _ => Err(Error::InvalidData.into()),
+                    _ => Err(Error::InvalidData),
                 }
             }
         }
@@ -271,7 +271,7 @@ mod test {
         fn create(&self) -> Box<dyn Demuxer> {
             Box::new(DummyDemuxer {})
         }
-        fn describe<'a>(&'a self) -> &'a Descr {
+        fn describe<'a>(&'_ self) -> &'_ Descr {
             &self.d
         }
         fn probe(&self, data: &[u8]) -> u8 {

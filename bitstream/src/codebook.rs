@@ -523,7 +523,7 @@ mod test {
             0,
         ];
 
-        let mut cb_desc: Vec<ShortCodebookDesc> = vec![
+        let cb_desc: Vec<ShortCodebookDesc> = vec![
             ShortCodebookDesc {
                 code: 0b11111,
                 bits: 5,
@@ -535,7 +535,7 @@ mod test {
         ];
         let buf = &bits;
         let mut br = BitReadBE::new(buf);
-        let cb = Codebook::new(&mut cb_desc, CodebookMode::MSB).unwrap();
+        let cb = Codebook::new(&cb_desc, CodebookMode::MSB).unwrap();
 
         assert_eq!(br.read_cb(&cb).unwrap(), 0);
         assert_eq!(br.read_cb(&cb).unwrap(), 1);
