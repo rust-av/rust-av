@@ -143,7 +143,7 @@ mod test {
                     format: None,
                 })
             }
-            fn describe(& self) -> & Descr {
+            fn describe(&self) -> &Descr {
                 &self.descr
             }
         }
