@@ -23,7 +23,7 @@ version = "0.3.0"
 path = "data"
 
 [dependencies.av-format]
-version = "0.3.0"
+version = "0.4.0"
 path = "format"
 
 [dependencies.av-bitstream]
