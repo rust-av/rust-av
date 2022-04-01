@@ -71,6 +71,11 @@ impl<D: Demuxer, R: Buffered> Context<D, R> {
         }
     }
 
+    /// Returns the underlying demuxer.
+    pub fn demuxer(&self) -> &D {
+        &self.demuxer
+    }
+
     fn read_headers_internal(&mut self) -> Result<()> {
         let demux = &mut self.demuxer;
 
