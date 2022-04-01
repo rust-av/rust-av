@@ -45,9 +45,9 @@ pub trait Demuxer: Send + Sync {
 
 /// Auxiliary structure to encapsulate a demuxer object and
 /// its additional data.
-pub struct Context {
+pub struct Context<R: Buffered> {
     demuxer: Box<dyn Demuxer>,
-    reader: Box<dyn Buffered>,
+    reader: R,
     /// Global media file information.
     pub info: GlobalInfo,
     /// User private data.
@@ -56,9 +56,9 @@ pub struct Context {
     pub user_private: Option<Arc<dyn Any + Send + Sync>>,
 }
 
-impl Context {
+impl<R: Buffered> Context<R> {
     /// Creates a new `Context` instance.
-    pub fn new<R: Buffered + 'static>(demuxer: Box<dyn Demuxer>, reader: Box<R>) -> Self {
+    pub fn new(demuxer: Box<dyn Demuxer>, reader: R) -> Self {
         Context {
             demuxer,
             reader,
@@ -74,7 +74,7 @@ impl Context {
     fn read_headers_internal(&mut self) -> Result<()> {
         let demux = &mut self.demuxer;
 
-        let res = demux.read_headers(self.reader.as_mut(), &mut self.info);
+        let res = demux.read_headers(&mut self.reader, &mut self.info);
         match res {
             Err(e) => Err(e),
             Ok(seek) => {
@@ -106,7 +106,7 @@ impl Context {
     fn read_event_internal(&mut self) -> Result<Event> {
         let demux = &mut self.demuxer;
 
-        let res = demux.read_event(self.reader.as_mut());
+        let res = demux.read_event(&mut self.reader);
         match res {
             Err(e) => Err(e),
             Ok((seek, mut event)) => {
@@ -307,7 +307,7 @@ mod test {
         let buf = b"dummy header";
         let r = AccReader::with_capacity(4, Cursor::new(buf));
         let d = DUMMY_DES.create();
-        let mut c = Context::new(d, Box::new(r));
+        let mut c = Context::new(d, r);
 
         c.read_headers().unwrap();
     }
@@ -318,7 +318,7 @@ mod test {
 
         let r = AccReader::with_capacity(4, Cursor::new(buf));
         let d = DUMMY_DES.create();
-        let mut c = Context::new(d, Box::new(r));
+        let mut c = Context::new(d, r);
 
         c.read_headers().unwrap();
 
