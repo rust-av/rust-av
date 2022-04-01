@@ -45,8 +45,8 @@ pub trait Demuxer: Send + Sync {
 
 /// Auxiliary structure to encapsulate a demuxer object and
 /// its additional data.
-pub struct Context<R: Buffered> {
-    demuxer: Box<dyn Demuxer>,
+pub struct Context<D: Demuxer, R: Buffered> {
+    demuxer: D,
     reader: R,
     /// Global media file information.
     pub info: GlobalInfo,
@@ -56,9 +56,9 @@ pub struct Context<R: Buffered> {
     pub user_private: Option<Arc<dyn Any + Send + Sync>>,
 }
 
-impl<R: Buffered> Context<R> {
+impl<D: Demuxer, R: Buffered> Context<D, R> {
     /// Creates a new `Context` instance.
-    pub fn new(demuxer: Box<dyn Demuxer>, reader: R) -> Self {
+    pub fn new(demuxer: D, reader: R) -> Self {
         Context {
             demuxer,
             reader,
@@ -181,8 +181,10 @@ pub struct Descr {
 
 /// Used to get a format descriptor and create a new demuxer.
 pub trait Descriptor {
+    type OutputDemuxer: Demuxer;
+
     /// Creates a new demuxer for the requested format.
-    fn create(&self) -> Box<dyn Demuxer>;
+    fn create(&self) -> Self::OutputDemuxer;
     /// Returns the descriptor of a format.
     fn describe(&self) -> &Descr;
 
@@ -199,15 +201,15 @@ pub const PROBE_DATA: usize = 4 * 1024;
 pub const PROBE_SCORE_EXTENSION: u8 = 50;
 
 /// Used to define different ways to probe a format.
-pub trait Probe {
+pub trait Probe<T: Descriptor + ?Sized> {
     /// Probes whether the input data is associated to a determined format.
-    fn probe(&self, data: &[u8]) -> Option<&'static dyn Descriptor>;
+    fn probe(&self, data: &[u8]) -> Option<&'static T>;
 }
 
-impl<'a> Probe for [&'static dyn Descriptor] {
-    fn probe(&self, data: &[u8]) -> Option<&'static dyn Descriptor> {
+impl<'a, T: Descriptor + ?Sized> Probe<T> for [&'static T] {
+    fn probe(&self, data: &[u8]) -> Option<&'static T> {
         let mut max = u8::min_value();
-        let mut candidate: Option<&'static dyn Descriptor> = None;
+        let mut candidate: Option<&'static T> = None;
         for desc in self {
             let score = desc.probe(data);
 
@@ -268,8 +270,10 @@ mod test {
     }
 
     impl Descriptor for DummyDes {
-        fn create(&self) -> Box<dyn Demuxer> {
-            Box::new(DummyDemuxer {})
+        type OutputDemuxer = DummyDemuxer;
+
+        fn create(&self) -> Self::OutputDemuxer {
+            DummyDemuxer {}
         }
         fn describe<'a>(&'_ self) -> &'_ Descr {
             &self.d
@@ -282,7 +286,7 @@ mod test {
         }
     }
 
-    const DUMMY_DES: &dyn Descriptor = &DummyDes {
+    const DUMMY_DES: &dyn Descriptor<OutputDemuxer = DummyDemuxer> = &DummyDes {
         d: Descr {
             name: "dummy",
             demuxer: "dummy",
@@ -294,7 +298,7 @@ mod test {
 
     #[test]
     fn probe() {
-        let demuxers: &[&'static dyn Descriptor] = &[DUMMY_DES];
+        let demuxers: &[&'static dyn Descriptor<OutputDemuxer = DummyDemuxer>] = &[DUMMY_DES];
 
         demuxers.probe(b"dummy").unwrap();
     }
