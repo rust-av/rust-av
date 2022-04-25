@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install stable
       uses: actions-rs/toolchain@v1
@@ -35,12 +35,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install grcov
       env:
         LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: 0.7.1
+        GRCOV_VERSION: 0.8.7
       run: |
         curl -L "$LINK/v$GRCOV_VERSION/grcov-linux-x86_64.tar.bz2" |
         tar xj -C $HOME/.cargo/bin
@@ -49,7 +49,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: stable
+        toolchain: nightly
         override: true
 
     - name: Run cargo clean
@@ -59,7 +59,6 @@ jobs:
     - name: Run tests
       env:
         CARGO_INCREMENTAL: 0
-        RUSTC_BOOTSTRAP: 1
         RUSTFLAGS: >
           -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
           -Cpanic=abort -Zpanic_abort_tests
@@ -87,7 +86,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install stable
       uses: actions-rs/toolchain@v1
