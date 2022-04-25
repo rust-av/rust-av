@@ -37,20 +37,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install grcov
-      env:
-        LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: 0.8.7
-      run: |
-        curl -L "$LINK/v$GRCOV_VERSION/grcov-linux-x86_64.tar.bz2" |
-        tar xj -C $HOME/.cargo/bin
-
-    - name: Install stable
+    - name: Install Rust nightly
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
         toolchain: nightly
         override: true
+
+    - name: Install grcov
+      env:
+        LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: 0.8.7
+      run: |
+        curl -L "$LINK/v$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
+        tar xj -C $HOME/.cargo/bin
 
     - name: Run cargo clean
       run: |
