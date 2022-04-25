@@ -99,7 +99,7 @@ const TABLE_FILL_VALUE: u32 = 0x7F;
 const MAX_LUT_BITS: u8 = 10;
 
 fn fill_lut_msb(
-    table: &mut Vec<u32>,
+    table: &mut [u32],
     off: usize,
     code: u32,
     bits: u8,
@@ -123,7 +123,7 @@ fn fill_lut_msb(
 }
 
 fn fill_lut_lsb(
-    table: &mut Vec<u32>,
+    table: &mut [u32],
     off: usize,
     code: u32,
     bits: u8,
@@ -147,7 +147,7 @@ fn fill_lut_lsb(
 }
 
 fn fill_lut(
-    table: &mut Vec<u32>,
+    table: &mut [u32],
     mode: CodebookMode,
     off: usize,
     code: u32,
