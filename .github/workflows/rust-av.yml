@@ -41,7 +41,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly
+        toolchain: stable
         override: true
 
     - name: Install grcov
@@ -52,6 +52,10 @@ jobs:
         curl -L "$LINK/v$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
         tar xj -C $HOME/.cargo/bin
 
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
     - name: Run cargo clean
       run: |
         cargo clean
@@ -59,24 +63,26 @@ jobs:
     - name: Run tests
       env:
         CARGO_INCREMENTAL: 0
+        LLVM_PROFILE_FILE: "rust-av-%p-%m.profraw"
         RUSTFLAGS: >
-          -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
-          -Cpanic=abort -Zpanic_abort_tests
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
         RUSTDOCFLAGS: >
-          -Zprofile -Ccodegen-units=1 -Clink-dead-code -Coverflow-checks=off
-          -Cpanic=abort -Zpanic_abort_tests
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
       run: |
         cargo test --workspace --all-features --verbose
 
     - name: Run grcov
-      id: coverage
-      uses: actions-rs/grcov@v0.1
+      run: |
+        grcov . --binary-path ./target/debug/  -s . -t lcov --branch \
+              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
 
     - name: Coveralls upload
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ${{ steps.coverage.outputs.report }}
+        path-to-lcov: lcov.info
 
   test-x86_64:
     strategy:
