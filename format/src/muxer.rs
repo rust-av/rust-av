@@ -102,8 +102,8 @@ pub trait Muxer: Send {
 
 /// Auxiliary structure to encapsulate a muxer object and
 /// its additional data.
-pub struct Context {
-    muxer: Box<dyn Muxer + Send>,
+pub struct Context<M: Muxer + Send> {
+    muxer: M,
     writer: Writer,
     /// User private data.
     ///
@@ -111,9 +111,9 @@ pub struct Context {
     pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
-impl Context {
+impl<M: Muxer + Send> Context<M> {
     /// Creates a new `Context` instance.
-    pub fn new(muxer: Box<dyn Muxer + Send>, writer: Writer) -> Self {
+    pub fn new(muxer: M, writer: Writer) -> Self {
         Context {
             muxer,
             writer,
@@ -183,20 +183,22 @@ pub struct Descr {
 
 /// Used to get a format descriptor and create a new muxer.
 pub trait Descriptor {
+    type OutputMuxer: Muxer + Send;
+
     /// Creates a new muxer for the requested format.
-    fn create(&self) -> Box<dyn Muxer>;
+    fn create(&self) -> Self::OutputMuxer;
     /// Returns the descriptor of a format.
     fn describe(&self) -> &Descr;
 }
 
 /// Used to look for a specific format.
-pub trait Lookup {
+pub trait Lookup<T: Descriptor + ?Sized> {
     /// Retrieves a specific format by name.
-    fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor>;
+    fn by_name(&self, name: &str) -> Option<&'static T>;
 }
 
-impl Lookup for [&'static dyn Descriptor] {
-    fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor> {
+impl<T: Descriptor + ?Sized> Lookup<T> for [&'static T] {
+    fn by_name(&self, name: &str) -> Option<&'static T> {
         self.iter().find(|&&d| d.describe().name == name).copied()
     }
 }
