@@ -237,3 +237,102 @@ impl<T: Descriptor + ?Sized> Lookup<T> for [&'static T] {
         self.iter().find(|&&d| d.describe().name == name).copied()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::io::Cursor;
+
+    use super::*;
+
+    struct DummyDes {
+        d: Descr,
+    }
+
+    struct DummyMuxer {}
+
+    impl DummyMuxer {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+
+    impl Muxer for DummyMuxer {
+        fn configure(&mut self) -> Result<()> {
+            Ok(())
+        }
+
+        fn write_header<WO: WriteOwned, WS: WriteSeek>(
+            &mut self,
+            out: &mut Writer<WO, WS>,
+        ) -> Result<()> {
+            let buf = b"Dummy header";
+            out.write_all(buf.as_slice()).unwrap();
+            Ok(())
+        }
+
+        fn write_packet<WO: WriteOwned, WS: WriteSeek>(
+            &mut self,
+            out: &mut Writer<WO, WS>,
+            pkt: Arc<Packet>,
+        ) -> Result<()> {
+            out.write_all(&pkt.data).unwrap();
+            Ok(())
+        }
+
+        fn write_trailer<WO: WriteOwned, WS: WriteSeek>(
+            &mut self,
+            out: &mut Writer<WO, WS>,
+        ) -> Result<()> {
+            let buf = b"Dummy trailer";
+            out.write_all(buf.as_slice()).unwrap();
+            Ok(())
+        }
+
+        fn set_global_info(&mut self, _info: GlobalInfo) -> Result<()> {
+            Ok(())
+        }
+
+        fn set_option<'a>(&mut self, _key: &str, _val: Value<'a>) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    impl Descriptor for DummyDes {
+        type OutputMuxer = DummyMuxer;
+
+        fn create(&self) -> Self::OutputMuxer {
+            DummyMuxer {}
+        }
+        fn describe(&self) -> &Descr {
+            &self.d
+        }
+    }
+
+    const DUMMY_DES: &dyn Descriptor<OutputMuxer = DummyMuxer> = &DummyDes {
+        d: Descr {
+            name: "dummy",
+            demuxer: "dummy",
+            description: "Dummy mux",
+            extensions: &["mx", "mux"],
+            mime: &["application/dummy"],
+        },
+    };
+
+    #[test]
+    fn lookup() {
+        let muxers: &[&dyn Descriptor<OutputMuxer = DummyMuxer>] = &[DUMMY_DES];
+
+        muxers.by_name("dummy").unwrap();
+    }
+
+    #[test]
+    fn write_header() {
+        let mux = DummyMuxer::new();
+        let writer: Writer<Cursor<Vec<u8>>, Cursor<Vec<u8>>> =
+            Writer::from_seekable(Cursor::new(Vec::new()));
+
+        let mut muxer = Context::new(mux, writer);
+        muxer.configure().unwrap();
+        muxer.write_header().unwrap();
+    }
+}
