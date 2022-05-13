@@ -324,13 +324,43 @@ mod test {
         muxers.by_name("dummy").unwrap();
     }
 
-    #[test]
-    fn write_header() {
+    fn create_muxer() -> Context<DummyMuxer, Cursor<Vec<u8>>, Cursor<Vec<u8>>> {
         let mux = DummyMuxer::new();
         let writer = Writer::from_seekable(Cursor::new(Vec::new()));
 
-        let mut muxer = Context::new(mux, writer);
+        Context::new(mux, writer)
+    }
+
+    #[test]
+    fn write_header() {
+        let mut muxer = create_muxer();
         muxer.configure().unwrap();
         muxer.write_header().unwrap();
+    }
+
+    #[test]
+    fn write_packets() {
+        let mut muxer = create_muxer();
+        muxer.configure().unwrap();
+        muxer.write_header().unwrap();
+
+        for _ in 0..10 {
+            let packet = Packet::zeroed(10);
+            muxer.write_packet(Arc::new(packet)).unwrap();
+        }
+    }
+
+    #[test]
+    fn write_trailer() {
+        let mut muxer = create_muxer();
+        muxer.configure().unwrap();
+        muxer.write_header().unwrap();
+
+        for _ in 0..10 {
+            let packet = Packet::zeroed(10);
+            muxer.write_packet(Arc::new(packet)).unwrap();
+        }
+
+        muxer.write_trailer().unwrap();
     }
 }
