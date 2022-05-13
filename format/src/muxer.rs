@@ -166,6 +166,11 @@ impl<M: Muxer + Send, W: Write, WS: WriteSeek> Context<M, W, WS> {
     {
         self.muxer.set_option(key, val.into())
     }
+
+    /// Returns the underlying writer.
+    pub fn writer(&self) -> &Writer<W, WS> {
+        &self.writer
+    }
 }
 
 /// Format descriptor.
