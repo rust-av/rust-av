@@ -7,25 +7,27 @@ use std::sync::Arc;
 
 use crate::error::*;
 
-pub trait WriteSeek: Write + Seek {}
+pub trait WriteOwned: Write + ToOwned {}
+pub trait WriteSeek: Write + Seek + ToOwned {}
 
-impl<T: Write + Seek> WriteSeek for T {}
+impl<T: Write + ToOwned> WriteOwned for T {}
+impl<T: Write + Seek + ToOwned> WriteSeek for T {}
 
 /// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object which supports querying
 /// for seek support.
-pub enum Writer<W: Write, WS: WriteSeek> {
-    NonSeekable(W, u64),
+pub enum Writer<WO: WriteOwned, WS: WriteSeek> {
+    NonSeekable(WO, u64),
     Seekable(WS),
 }
 
-impl<W: Write, WS: WriteSeek> Writer<W, WS> {
+impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
     /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
     pub fn from_seekable(inner: WS) -> Self {
         Self::Seekable(inner)
     }
 
     /// Creates a [`Writer`] from an object that implements the [`Write`] trait.
-    pub fn from_nonseekable(inner: W) -> Self {
+    pub fn from_nonseekable(inner: WO) -> Self {
         Self::NonSeekable(inner, 0)
     }
 
@@ -33,9 +35,27 @@ impl<W: Write, WS: WriteSeek> Writer<W, WS> {
     pub fn can_seek(&self) -> bool {
         matches!(self, Self::Seekable(_))
     }
+
+    /// Returns the non-seekable object whether is present.
+    pub fn non_seekable_object(&self) -> Option<(<WO as ToOwned>::Owned, u64)> {
+        if let Self::NonSeekable(inner, index) = self {
+            Some((inner.to_owned(), *index))
+        } else {
+            None
+        }
+    }
+
+    /// Returns the seekable object whether is present.
+    pub fn seekable_object(&self) -> Option<<WS as ToOwned>::Owned> {
+        if let Self::Seekable(inner) = self {
+            Some(inner.to_owned())
+        } else {
+            None
+        }
+    }
 }
 
-impl<W: Write, WS: WriteSeek> Write for Writer<W, WS> {
+impl<WO: WriteOwned, WS: WriteSeek> Write for Writer<WO, WS> {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
         match self {
             Self::NonSeekable(inner, ref mut index) => {
@@ -59,7 +79,7 @@ impl<W: Write, WS: WriteSeek> Write for Writer<W, WS> {
     }
 }
 
-impl<W: Write, WS: WriteSeek> Seek for Writer<W, WS> {
+impl<WO: WriteOwned, WS: WriteSeek> Seek for Writer<WO, WS> {
     fn seek(&mut self, seek: SeekFrom) -> std::io::Result<u64> {
         match self {
             Self::NonSeekable(_, index) => {
@@ -83,17 +103,23 @@ pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
     /// Writes a stream header into a data structure implementing
     /// the `Write` trait.
-    fn write_header<W: Write, WS: WriteSeek>(&mut self, out: &mut Writer<W, WS>) -> Result<()>;
+    fn write_header<WO: WriteOwned, WS: WriteSeek>(
+        &mut self,
+        out: &mut Writer<WO, WS>,
+    ) -> Result<()>;
     /// Writes a stream packet into a data structure implementing
     /// the `Write` trait.
-    fn write_packet<W: Write, WS: WriteSeek>(
+    fn write_packet<WO: WriteOwned, WS: WriteSeek>(
         &mut self,
-        out: &mut Writer<W, WS>,
+        out: &mut Writer<WO, WS>,
         pkt: Arc<Packet>,
     ) -> Result<()>;
     /// Writes a stream trailer into a data structure implementing
     /// the `Write` trait.
-    fn write_trailer<W: Write, WS: WriteSeek>(&mut self, out: &mut Writer<W, WS>) -> Result<()>;
+    fn write_trailer<WO: WriteOwned, WS: WriteSeek>(
+        &mut self,
+        out: &mut Writer<WO, WS>,
+    ) -> Result<()>;
 
     /// Sets global media file information for a muxer.
     fn set_global_info(&mut self, info: GlobalInfo) -> Result<()>;
@@ -106,18 +132,18 @@ pub trait Muxer: Send {
 
 /// Auxiliary structure to encapsulate a muxer object and
 /// its additional data.
-pub struct Context<M: Muxer + Send, W: Write, WS: WriteSeek> {
+pub struct Context<M: Muxer + Send, WO: WriteOwned, WS: WriteSeek> {
     muxer: M,
-    writer: Writer<W, WS>,
+    writer: Writer<WO, WS>,
     /// User private data.
     ///
     /// This data cannot be cloned.
     pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
-impl<M: Muxer + Send, W: Write, WS: WriteSeek> Context<M, W, WS> {
+impl<M: Muxer + Send, WO: WriteOwned, WS: WriteSeek> Context<M, WO, WS> {
     /// Creates a new `Context` instance.
-    pub fn new(muxer: M, writer: Writer<W, WS>) -> Self {
+    pub fn new(muxer: M, writer: Writer<WO, WS>) -> Self {
         Context {
             muxer,
             writer,
@@ -168,7 +194,7 @@ impl<M: Muxer + Send, W: Write, WS: WriteSeek> Context<M, W, WS> {
     }
 
     /// Returns the underlying writer.
-    pub fn writer(&self) -> &Writer<W, WS> {
+    pub fn writer(&self) -> &Writer<WO, WS> {
         &self.writer
     }
 }
