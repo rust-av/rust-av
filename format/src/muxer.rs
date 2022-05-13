@@ -7,7 +7,9 @@ use std::sync::Arc;
 
 use crate::error::*;
 
+/// A trait for a non-seekable object.
 pub trait WriteOwned: Write + ToOwned {}
+/// A trait for a seekable object.
 pub trait WriteSeek: Write + Seek + ToOwned {}
 
 impl<T: Write + ToOwned> WriteOwned for T {}
