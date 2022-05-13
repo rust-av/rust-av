@@ -181,7 +181,7 @@ mod test {
                     format: None,
                 })
             }
-            fn describe<'a>(&'a self) -> &'a Descr {
+            fn describe(&self) -> &Descr {
                 &self.descr
             }
         }

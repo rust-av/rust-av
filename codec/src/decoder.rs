@@ -129,6 +129,7 @@ mod test {
 
         struct Dec {
             state: usize,
+            #[allow(dead_code)]
             format: Option<Arc<Formaton>>,
         }
 
