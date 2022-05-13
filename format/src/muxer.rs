@@ -2,7 +2,7 @@ use crate::common::*;
 use crate::data::packet::Packet;
 use crate::data::value::*;
 use std::any::Any;
-use std::io::{ErrorKind, Seek, SeekFrom, Write};
+use std::io::{Cursor, ErrorKind, Seek, SeekFrom, Write};
 use std::sync::Arc;
 
 use crate::error::*;
@@ -17,25 +17,15 @@ impl<T: Write + Seek + ToOwned> WriteSeek for T {}
 
 /// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object which supports querying
 /// for seek support.
-pub enum Writer<WO: WriteOwned, WS: WriteSeek> {
+pub enum Writer<WO = Cursor<Vec<u8>>, WS = Cursor<Vec<u8>>> {
     NonSeekable(WO, u64),
     Seekable(WS),
 }
 
-impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
-    /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
-    pub fn from_seekable(inner: WS) -> Self {
-        Self::Seekable(inner)
-    }
-
+impl<WO: WriteOwned> Writer<WO, Cursor<Vec<u8>>> {
     /// Creates a [`Writer`] from an object that implements the [`Write`] trait.
     pub fn from_nonseekable(inner: WO) -> Self {
         Self::NonSeekable(inner, 0)
-    }
-
-    /// Returns whether the [`Writer`] can seek within the source.
-    pub fn can_seek(&self) -> bool {
-        matches!(self, Self::Seekable(_))
     }
 
     /// Returns the non-seekable object whether is present.
@@ -45,6 +35,13 @@ impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
         } else {
             None
         }
+    }
+}
+
+impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
+    /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
+    pub fn from_seekable(inner: WS) -> Self {
+        Self::Seekable(inner)
     }
 
     /// Returns the seekable object whether is present.
@@ -330,8 +327,7 @@ mod test {
     #[test]
     fn write_header() {
         let mux = DummyMuxer::new();
-        let writer: Writer<Cursor<Vec<u8>>, Cursor<Vec<u8>>> =
-            Writer::from_seekable(Cursor::new(Vec::new()));
+        let writer = Writer::from_seekable(Cursor::new(Vec::new()));
 
         let mut muxer = Context::new(mux, writer);
         muxer.configure().unwrap();
