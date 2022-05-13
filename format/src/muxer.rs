@@ -13,19 +13,19 @@ impl<T: Write + Seek> WriteSeek for T {}
 
 /// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object which supports querying
 /// for seek support.
-pub enum Writer {
-    NonSeekable(Box<dyn Write>, u64),
-    Seekable(Box<dyn WriteSeek>),
+pub enum Writer<W: Write, WS: WriteSeek> {
+    NonSeekable(W, u64),
+    Seekable(WS),
 }
 
-impl Writer {
-    /// Creates a [`Writer`] from a trait object that implements both [`Write`] and [`Seek`].
-    pub fn from_seekable(inner: Box<dyn WriteSeek>) -> Self {
+impl<W: Write, WS: WriteSeek> Writer<W, WS> {
+    /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
+    pub fn from_seekable(inner: WS) -> Self {
         Self::Seekable(inner)
     }
 
-    /// Creates a [`Writer`] from a trait object that implements the [`Write`] trait.
-    pub fn from_nonseekable(inner: Box<dyn Write>) -> Self {
+    /// Creates a [`Writer`] from an object that implements the [`Write`] trait.
+    pub fn from_nonseekable(inner: W) -> Self {
         Self::NonSeekable(inner, 0)
     }
 
@@ -35,7 +35,7 @@ impl Writer {
     }
 }
 
-impl Write for Writer {
+impl<W: Write, WS: WriteSeek> Write for Writer<W, WS> {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
         match self {
             Self::NonSeekable(inner, ref mut index) => {
@@ -59,7 +59,7 @@ impl Write for Writer {
     }
 }
 
-impl Seek for Writer {
+impl<W: Write, WS: WriteSeek> Seek for Writer<W, WS> {
     fn seek(&mut self, seek: SeekFrom) -> std::io::Result<u64> {
         match self {
             Self::NonSeekable(_, index) => {
@@ -83,13 +83,17 @@ pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
     /// Writes a stream header into a data structure implementing
     /// the `Write` trait.
-    fn write_header(&mut self, out: &mut Writer) -> Result<()>;
+    fn write_header<W: Write, WS: WriteSeek>(&mut self, out: &mut Writer<W, WS>) -> Result<()>;
     /// Writes a stream packet into a data structure implementing
     /// the `Write` trait.
-    fn write_packet(&mut self, out: &mut Writer, pkt: Arc<Packet>) -> Result<()>;
+    fn write_packet<W: Write, WS: WriteSeek>(
+        &mut self,
+        out: &mut Writer<W, WS>,
+        pkt: Arc<Packet>,
+    ) -> Result<()>;
     /// Writes a stream trailer into a data structure implementing
     /// the `Write` trait.
-    fn write_trailer(&mut self, out: &mut Writer) -> Result<()>;
+    fn write_trailer<W: Write, WS: WriteSeek>(&mut self, out: &mut Writer<W, WS>) -> Result<()>;
 
     /// Sets global media file information for a muxer.
     fn set_global_info(&mut self, info: GlobalInfo) -> Result<()>;
@@ -102,18 +106,18 @@ pub trait Muxer: Send {
 
 /// Auxiliary structure to encapsulate a muxer object and
 /// its additional data.
-pub struct Context<M: Muxer + Send> {
+pub struct Context<M: Muxer + Send, W: Write, WS: WriteSeek> {
     muxer: M,
-    writer: Writer,
+    writer: Writer<W, WS>,
     /// User private data.
     ///
     /// This data cannot be cloned.
     pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
-impl<M: Muxer + Send> Context<M> {
+impl<M: Muxer + Send, W: Write, WS: WriteSeek> Context<M, W, WS> {
     /// Creates a new `Context` instance.
-    pub fn new(muxer: M, writer: Writer) -> Self {
+    pub fn new(muxer: M, writer: Writer<W, WS>) -> Self {
         Context {
             muxer,
             writer,
