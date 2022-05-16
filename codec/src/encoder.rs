@@ -139,7 +139,7 @@ impl<T: Descriptor + ?Sized> CodecList for Codecs<T> {
     type D = T;
 
     fn new() -> Self {
-        Codecs {
+        Self {
             list: HashMap::new(),
         }
     }
