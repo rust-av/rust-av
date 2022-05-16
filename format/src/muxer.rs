@@ -54,6 +54,13 @@ impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
     }
 }
 
+impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
+    /// Returns whether the [`Writer`] can seek within the source.
+    pub fn is_seekable(&self) -> bool {
+        matches!(self, Self::Seekable(_))
+    }
+}
+
 impl<WO: WriteOwned, WS: WriteSeek> Write for Writer<WO, WS> {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
         match self {
@@ -379,6 +386,7 @@ mod test {
     fn non_seekable_muxer() {
         let muxer = run_muxer(Writer::from_nonseekable(Vec::new()));
         let (buffer, index) = muxer.writer().non_seekable_object().unwrap();
+        debug_assert!(!muxer.writer().is_seekable());
         check_underlying_buffer(buffer);
         assert_eq!(
             index as usize,
@@ -392,6 +400,7 @@ mod test {
     fn seekable_muxer() {
         let muxer = run_muxer(Writer::from_seekable(Cursor::new(Vec::new())));
         let buffer = muxer.writer().seekable_object().unwrap().into_inner();
+        debug_assert!(muxer.writer().is_seekable());
         check_underlying_buffer(buffer);
     }
 }
