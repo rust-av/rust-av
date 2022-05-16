@@ -131,13 +131,9 @@ mod test {
 
     mod dummy {
         use super::super::*;
-        use crate::data::pixel::Formaton;
-        use std::sync::Arc;
 
         pub struct Dec {
             state: usize,
-            #[allow(dead_code)]
-            format: Option<Arc<Formaton>>,
         }
 
         pub struct Des {
@@ -148,10 +144,7 @@ mod test {
             type OutputDecoder = Dec;
 
             fn create(&self) -> Self::OutputDecoder {
-                Dec {
-                    state: 0,
-                    format: None,
-                }
+                Dec { state: 0 }
             }
 
             fn describe(&self) -> &Descr {
