@@ -53,12 +53,9 @@ impl<D: Decoder> Context<D> {
         codecs: &Codecs<T>,
         name: &str,
     ) -> Option<Self> {
-        if let Some(builder) = codecs.by_name(name) {
-            let dec = builder.create();
-            Some(Context { dec })
-        } else {
-            None
-        }
+        codecs.by_name(name).map(|builder| Context {
+            dec: builder.create(),
+        })
     }
     /// Saves the extra data contained in a codec.
     pub fn set_extradata(&mut self, extra: &[u8]) {
