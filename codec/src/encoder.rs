@@ -50,12 +50,9 @@ impl<E: Encoder> Context<E> {
         codecs: &Codecs<T>,
         name: &str,
     ) -> Option<Self> {
-        if let Some(builder) = codecs.by_name(name) {
-            let enc = builder.create();
-            Some(Context { enc })
-        } else {
-            None
-        }
+        codecs.by_name(name).map(|builder| Context {
+            enc: builder.create(),
+        })
     }
 
     /// Configures the encoder.
