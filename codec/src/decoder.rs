@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::data::frame::ArcFrame;
 use crate::data::packet::Packet;
 
-pub use crate::common::CodecList;
+use crate::common::CodecList;
 use crate::error::*;
 
 /// Used to interact with a decoder.
@@ -40,16 +40,19 @@ pub struct Descr {
 
 /// Auxiliary structure to encapsulate a decoder object and
 /// its additional data.
-pub struct Context {
-    dec: Box<dyn Decoder>,
+pub struct Context<D: Decoder> {
+    dec: D,
     // TODO: Queue up packets/frames
 }
 
-impl Context {
+impl<D: Decoder> Context<D> {
     // TODO: More constructors
     /// Retrieves a codec descriptor from a codec list through its name,
     /// creates the relative decoder, and encapsulates it into a new `Context`.
-    pub fn by_name(codecs: &Codecs, name: &str) -> Option<Context> {
+    pub fn by_name<T: Descriptor<OutputDecoder = D> + ?Sized>(
+        codecs: &Codecs<T>,
+        name: &str,
+    ) -> Option<Self> {
         if let Some(builder) = codecs.by_name(name) {
             let dec = builder.create();
             Some(Context { dec })
@@ -83,21 +86,23 @@ impl Context {
 
 /// Used to get the descriptor of a codec and create its own decoder.
 pub trait Descriptor {
+    type OutputDecoder: Decoder;
+
     /// Creates a new decoder for the requested codec.
-    fn create(&self) -> Box<dyn Decoder>;
+    fn create(&self) -> Self::OutputDecoder;
     /// Returns the codec descriptor.
     fn describe(&self) -> &Descr;
 }
 
 /// A list of codec descriptors.
-pub struct Codecs {
-    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>,
+pub struct Codecs<T: 'static + Descriptor + ?Sized> {
+    list: HashMap<&'static str, Vec<&'static T>>,
 }
 
-impl CodecList for Codecs {
-    type D = dyn Descriptor;
+impl<T: Descriptor + ?Sized> CodecList for Codecs<T> {
+    type D = T;
 
-    fn new() -> Codecs {
+    fn new() -> Self {
         Codecs {
             list: HashMap::new(),
         }
@@ -127,7 +132,7 @@ mod test {
         use crate::data::pixel::Formaton;
         use std::sync::Arc;
 
-        struct Dec {
+        pub struct Dec {
             state: usize,
             #[allow(dead_code)]
             format: Option<Arc<Formaton>>,
@@ -138,12 +143,15 @@ mod test {
         }
 
         impl Descriptor for Des {
-            fn create(&self) -> Box<dyn Decoder> {
-                Box::new(Dec {
+            type OutputDecoder = Dec;
+
+            fn create(&self) -> Self::OutputDecoder {
+                Dec {
                     state: 0,
                     format: None,
-                })
+                }
             }
+
             fn describe(&self) -> &Descr {
                 &self.descr
             }
