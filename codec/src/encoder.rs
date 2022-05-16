@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::convert::Into;
 
+use crate::common::CodecList;
 use crate::data::frame::ArcFrame;
 use crate::data::packet::Packet;
 use crate::data::params::CodecParams;
@@ -33,19 +34,22 @@ pub trait Encoder: Send {
 
 /// Auxiliary structure to encapsulate an encoder object and
 /// its additional data.
-pub struct Context {
-    enc: Box<dyn Encoder>,
+pub struct Context<E: Encoder> {
+    enc: E,
     // TODO: Queue up packets/frames
     // TODO: Store here more information
     // TODO: Have a resource pool
     // format: Format
 }
 
-impl Context {
+impl<E: Encoder> Context<E> {
     // TODO: More constructors
     /// Retrieves a codec descriptor from a codec list through its name,
     /// creates the relative encoder, and encapsulates it into a new `Context`.
-    pub fn by_name(codecs: &Codecs, name: &str) -> Option<Context> {
+    pub fn by_name<T: Descriptor<OutputEncoder = E> + ?Sized>(
+        codecs: &Codecs<T>,
+        name: &str,
+    ) -> Option<Self> {
         if let Some(builder) = codecs.by_name(name) {
             let enc = builder.create();
             Some(Context { enc })
@@ -116,32 +120,34 @@ pub struct Descr {
 
 /// Used to get the descriptor of a codec and create its own encoder.
 pub trait Descriptor {
+    type OutputEncoder: Encoder;
+
     /// Creates a new encoder for the requested codec.
-    fn create(&self) -> Box<dyn Encoder>;
+    fn create(&self) -> Self::OutputEncoder;
     /// Returns the codec descriptor.
     fn describe(&self) -> &Descr;
 }
 
 /// A list of codec descriptors.
-pub struct Codecs {
-    list: HashMap<&'static str, Vec<&'static dyn Descriptor>>,
+pub struct Codecs<T: 'static + Descriptor + ?Sized> {
+    list: HashMap<&'static str, Vec<&'static T>>,
 }
 
-pub use crate::common::CodecList;
+impl<T: Descriptor + ?Sized> CodecList for Codecs<T> {
+    type D = T;
 
-impl CodecList for Codecs {
-    type D = dyn Descriptor;
-    fn new() -> Codecs {
+    fn new() -> Self {
         Codecs {
             list: HashMap::new(),
         }
     }
+
     // TODO more lookup functions
-    fn by_name(&self, name: &str) -> Option<&'static dyn Descriptor> {
+    fn by_name(&self, name: &str) -> Option<&'static Self::D> {
         self.list.get(name).map(|descs| descs[0])
     }
 
-    fn append(&mut self, desc: &'static dyn Descriptor) {
+    fn append(&mut self, desc: &'static Self::D) {
         let codec_name = desc.describe().codec;
 
         self.list
@@ -156,12 +162,11 @@ mod test {
     use super::*;
 
     mod dummy {
-        use super::super::super::error::Error;
         use super::super::*;
         use crate::data::pixel::Formaton;
         use std::sync::Arc;
 
-        struct Enc {
+        pub struct Enc {
             state: usize,
             w: Option<usize>,
             h: Option<usize>,
@@ -173,14 +178,17 @@ mod test {
         }
 
         impl Descriptor for Des {
-            fn create(&self) -> Box<dyn Encoder> {
-                Box::new(Enc {
+            type OutputEncoder = Enc;
+
+            fn create(&self) -> Self::OutputEncoder {
+                Enc {
                     state: 0,
                     w: None,
                     h: None,
                     format: None,
-                })
+                }
             }
+
             fn describe(&self) -> &Descr {
                 &self.descr
             }
@@ -265,6 +273,7 @@ mod test {
             },
         };
     }
+
     use self::dummy::DUMMY_DESCR;
 
     #[test]
