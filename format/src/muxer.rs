@@ -243,6 +243,11 @@ mod test {
 
     use super::*;
 
+    const DUMMY_HEADER_LENGTH: usize = 12;
+    const DUMMY_PACKET_LENGTH: usize = 2;
+    const DUMMY_PACKETS_NUMBER: usize = 2;
+    const DUMMY_TRAILER_LENGTH: usize = 13;
+
     struct DummyDes {
         d: Descr,
     }
@@ -324,43 +329,69 @@ mod test {
         muxers.by_name("dummy").unwrap();
     }
 
-    fn create_muxer() -> Context<DummyMuxer, Cursor<Vec<u8>>, Cursor<Vec<u8>>> {
+    fn run_muxer<WO: WriteOwned, WS: WriteSeek>(
+        writer: Writer<WO, WS>,
+    ) -> Context<DummyMuxer, WO, WS> {
         let mux = DummyMuxer::new();
-        let writer = Writer::from_seekable(Cursor::new(Vec::new()));
 
-        Context::new(mux, writer)
-    }
+        let mut muxer = Context::new(mux, writer);
 
-    #[test]
-    fn write_header() {
-        let mut muxer = create_muxer();
-        muxer.configure().unwrap();
-        muxer.write_header().unwrap();
-    }
-
-    #[test]
-    fn write_packets() {
-        let mut muxer = create_muxer();
         muxer.configure().unwrap();
         muxer.write_header().unwrap();
 
-        for _ in 0..10 {
-            let packet = Packet::zeroed(10);
-            muxer.write_packet(Arc::new(packet)).unwrap();
-        }
-    }
-
-    #[test]
-    fn write_trailer() {
-        let mut muxer = create_muxer();
-        muxer.configure().unwrap();
-        muxer.write_header().unwrap();
-
-        for _ in 0..10 {
-            let packet = Packet::zeroed(10);
+        // Write zeroed packets of a certain size
+        for _ in 0..DUMMY_PACKETS_NUMBER {
+            let packet = Packet::zeroed(DUMMY_PACKET_LENGTH);
             muxer.write_packet(Arc::new(packet)).unwrap();
         }
 
         muxer.write_trailer().unwrap();
+        muxer
+    }
+
+    fn check_underlying_buffer(buffer: Vec<u8>) {
+        assert_eq!(
+            buffer.get(..DUMMY_HEADER_LENGTH).unwrap(),
+            b"Dummy header".as_slice()
+        );
+
+        assert_eq!(
+            buffer
+                // Get only packets, without header and trailer data
+                .get(
+                    DUMMY_HEADER_LENGTH
+                        ..DUMMY_HEADER_LENGTH + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)
+                )
+                .unwrap(),
+            &[0, 0, 0, 0]
+        );
+
+        assert_eq!(
+            buffer
+                // Skip header and packets
+                .get(DUMMY_HEADER_LENGTH + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)..)
+                .unwrap(),
+            b"Dummy trailer".as_slice()
+        );
+    }
+
+    #[test]
+    fn non_seekable_muxer() {
+        let muxer = run_muxer(Writer::from_nonseekable(Vec::new()));
+        let (buffer, index) = muxer.writer().non_seekable_object().unwrap();
+        check_underlying_buffer(buffer);
+        assert_eq!(
+            index as usize,
+            DUMMY_HEADER_LENGTH
+                + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)
+                + DUMMY_TRAILER_LENGTH
+        );
+    }
+
+    #[test]
+    fn seekable_muxer() {
+        let muxer = run_muxer(Writer::from_seekable(Cursor::new(Vec::new())));
+        let buffer = muxer.writer().seekable_object().unwrap().into_inner();
+        check_underlying_buffer(buffer);
     }
 }
