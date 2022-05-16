@@ -97,6 +97,11 @@ impl<E: Encoder> Context<E> {
     pub fn flush(&mut self) -> Result<()> {
         self.enc.flush()
     }
+
+    /// Returns the underlying encoder.
+    pub fn encoder(&self) -> &E {
+        &self.enc
+    }
 }
 
 /// Codec descriptor.
