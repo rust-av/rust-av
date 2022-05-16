@@ -79,6 +79,11 @@ impl<D: Decoder> Context<D> {
     pub fn flush(&mut self) -> Result<()> {
         self.dec.flush()
     }
+
+    /// Returns the underlying decoder.
+    pub fn decoder(&self) -> &D {
+        &self.dec
+    }
 }
 
 /// Used to get the descriptor of a codec and create its own decoder.
