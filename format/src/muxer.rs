@@ -27,6 +27,20 @@ impl<WO: WriteOwned> Writer<WO, Cursor<Vec<u8>>> {
     pub fn from_nonseekable(inner: WO) -> Self {
         Self::NonSeekable(inner, 0)
     }
+}
+
+impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
+    /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
+    pub fn from_seekable(inner: WS) -> Self {
+        Self::Seekable(inner)
+    }
+}
+
+impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
+    /// Returns whether the [`Writer`] can seek within the source.
+    pub fn is_seekable(&self) -> bool {
+        matches!(self, Self::Seekable(_))
+    }
 
     /// Returns the non-seekable object whether is present.
     pub fn non_seekable_object(&self) -> Option<(<WO as ToOwned>::Owned, u64)> {
@@ -36,13 +50,6 @@ impl<WO: WriteOwned> Writer<WO, Cursor<Vec<u8>>> {
             None
         }
     }
-}
-
-impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
-    /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
-    pub fn from_seekable(inner: WS) -> Self {
-        Self::Seekable(inner)
-    }
 
     /// Returns the seekable object whether is present.
     pub fn seekable_object(&self) -> Option<<WS as ToOwned>::Owned> {
@@ -51,13 +58,6 @@ impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
         } else {
             None
         }
-    }
-}
-
-impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
-    /// Returns whether the [`Writer`] can seek within the source.
-    pub fn is_seekable(&self) -> bool {
-        matches!(self, Self::Seekable(_))
     }
 }
 
