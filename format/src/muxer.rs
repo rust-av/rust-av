@@ -15,8 +15,8 @@ pub trait WriteSeek: Write + Seek + ToOwned {}
 impl<T: Write + ToOwned> WriteOwned for T {}
 impl<T: Write + Seek + ToOwned> WriteSeek for T {}
 
-/// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object which supports querying
-/// for seek support.
+/// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object
+/// which supports querying for seek support.
 pub enum Writer<WO = Cursor<Vec<u8>>, WS = Cursor<Vec<u8>>> {
     NonSeekable(WO, u64),
     Seekable(WS),
@@ -30,7 +30,8 @@ impl<WO: WriteOwned> Writer<WO, Cursor<Vec<u8>>> {
 }
 
 impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
-    /// Creates a [`Writer`] from an object that implements both [`Write`] and [`Seek`] traits.
+    /// Creates a [`Writer`] from an object that implements both
+    /// [`Write`] and [`Seek`] traits.
     pub fn from_seekable(inner: WS) -> Self {
         Self::Seekable(inner)
     }
@@ -42,7 +43,7 @@ impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
         matches!(self, Self::Seekable(_))
     }
 
-    /// Returns stream position
+    /// Returns stream position.
     pub fn position(&mut self) -> Result<u64> {
         match self {
             Self::NonSeekable(_, index) => Ok(*index),
