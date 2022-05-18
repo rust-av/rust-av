@@ -42,6 +42,14 @@ impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
         matches!(self, Self::Seekable(_))
     }
 
+    /// Returns stream position
+    pub fn position(&mut self) -> Result<u64> {
+        match self {
+            Self::NonSeekable(_, index) => Ok(*index),
+            Self::Seekable(ref mut inner) => inner.stream_position().map_err(|e| e.into()),
+        }
+    }
+
     /// Returns the non-seekable object whether is present.
     pub fn non_seekable_object(&self) -> Option<(<WO as ToOwned>::Owned, u64)> {
         if let Self::NonSeekable(inner, index) = self {
