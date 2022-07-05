@@ -1,7 +1,7 @@
 [package]
 name = "av-format"
 description = "Multimedia format demuxing and muxing"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 edition = "2021"
