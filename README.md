@@ -49,3 +49,9 @@ $ echo 'paths=["../rust-av"]' > .cargo/config
 # Check it is doing the right thing
 $ cargo build
 ```
+
+## Communication channel
+
+To communicate with us, join our IRC channel through the IRC badge above
+or open a new [discussion](https://github.com/rust-av/rust-av/discussions)
+explaining your issue as detailed as possible.
