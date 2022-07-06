@@ -8,12 +8,12 @@ use std::sync::Arc;
 use crate::error::*;
 
 /// A trait for a non-seekable object.
-pub trait WriteOwned: Write + ToOwned {}
+pub trait WriteOwned: Write {}
 /// A trait for a seekable object.
-pub trait WriteSeek: Write + Seek + ToOwned {}
+pub trait WriteSeek: Write + Seek {}
 
-impl<T: Write + ToOwned> WriteOwned for T {}
-impl<T: Write + Seek + ToOwned> WriteSeek for T {}
+impl<T: Write> WriteOwned for T {}
+impl<T: Write + Seek> WriteSeek for T {}
 
 /// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object
 /// which supports querying for seek support.
@@ -51,19 +51,19 @@ impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
         }
     }
 
-    /// Returns the non-seekable object whether is present.
-    pub fn non_seekable_object(&self) -> Option<(<WO as ToOwned>::Owned, u64)> {
+    /// Returns a reference to the non-seekable object whether is present.
+    pub fn non_seekable_object(&self) -> Option<(&WO, u64)> {
         if let Self::NonSeekable(inner, index) = self {
-            Some((inner.to_owned(), *index))
+            Some((inner, *index))
         } else {
             None
         }
     }
 
-    /// Returns the seekable object whether is present.
-    pub fn seekable_object(&self) -> Option<<WS as ToOwned>::Owned> {
+    /// Returns a reference to the seekable object whether is present.
+    pub fn seekable_object(&self) -> Option<&WS> {
         if let Self::Seekable(inner) = self {
-            Some(inner.to_owned())
+            Some(inner)
         } else {
             None
         }
@@ -365,7 +365,7 @@ mod test {
         muxer
     }
 
-    fn check_underlying_buffer(buffer: Vec<u8>) {
+    fn check_underlying_buffer(buffer: &[u8]) {
         assert_eq!(
             buffer.get(..DUMMY_HEADER_LENGTH).unwrap(),
             b"Dummy header".as_slice()
@@ -408,7 +408,7 @@ mod test {
     #[test]
     fn seekable_muxer() {
         let muxer = run_muxer(Writer::from_seekable(Cursor::new(Vec::new())));
-        let buffer = muxer.writer().seekable_object().unwrap().into_inner();
+        let buffer = muxer.writer().seekable_object().unwrap().get_ref();
         debug_assert!(muxer.writer().is_seekable());
         check_underlying_buffer(buffer);
     }
