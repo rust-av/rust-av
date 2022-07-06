@@ -156,7 +156,7 @@ pub struct Context<M: Muxer + Send, WO: WriteOwned, WS: WriteSeek> {
     pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
-impl<M: Muxer + Send, WO: WriteOwned, WS: WriteSeek> Context<M, WO, WS> {
+impl<M: Muxer, WO: WriteOwned, WS: WriteSeek> Context<M, WO, WS> {
     /// Creates a new `Context` instance.
     pub fn new(muxer: M, writer: Writer<WO, WS>) -> Self {
         Context {
