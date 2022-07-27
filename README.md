@@ -50,8 +50,10 @@ $ echo 'paths=["../rust-av"]' > .cargo/config
 $ cargo build
 ```
 
-## Communication channel
+## Getting in Touch
 
-To communicate with us, join our IRC channel through the IRC badge above
-or open a new [discussion](https://github.com/rust-av/rust-av/discussions)
-explaining your issue as detailed as possible.
+Come chat with us on our IRC channel clicking the badge above!
+You can also use a [web client](https://web.libera.chat/?channel=#rust-av) to join with a web browser.
+
+Otherwise, you can open a new [discussion](https://github.com/rust-av/rust-av/discussions)
+explaining your idea or problem as best as possible.
