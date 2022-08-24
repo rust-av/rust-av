@@ -1,6 +1,5 @@
 #![allow(dead_code, unused_variables)]
 
-use std::alloc::{alloc, Layout};
 use std::convert::From;
 use std::fmt;
 use std::ptr::copy_nonoverlapping;
@@ -388,9 +387,7 @@ impl DefaultFrameBuffer {
         match *kind {
             MediaKind::Video(ref video) => {
                 let size = video.size(ALIGNMENT);
-                let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
-                //let data = unsafe { Heap.alloc_zeroed(Layout::from_size_align(size, ALIGNMENT)) };
-                let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
+                let buf = BytesMut::with_capacity(size);
                 let mut buffer = DefaultFrameBuffer {
                     buf,
                     planes: Vec::with_capacity(video.format.get_num_comp()),
@@ -409,8 +406,7 @@ impl DefaultFrameBuffer {
             }
             MediaKind::Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
-                let data = unsafe { alloc(Layout::from_size_align(size, ALIGNMENT).unwrap()) };
-                let buf = BytesMut::from(unsafe { &Vec::from_raw_parts(data, size, size)[..] });
+                let buf = BytesMut::with_capacity(size);
                 let mut buffer = DefaultFrameBuffer {
                     buf,
                     planes: if audio.format.planar {
@@ -616,8 +612,6 @@ mod test {
 
     #[test]
     #[should_panic]
-    // FIXME: On Windows this test does not work
-    #[cfg(target_os = "linux")]
     fn test_frame_copy_from_slice() {
         let yuv420: Formaton = *YUV420;
         let fm = Arc::new(yuv420);
