@@ -168,7 +168,7 @@ impl<D: Demuxer, R: Buffered> Context<D, R> {
 /// Format descriptor.
 ///
 /// Contains information on a format and its own demuxer.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Descr {
     /// Format name.
     pub name: &'static str,

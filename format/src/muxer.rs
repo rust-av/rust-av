@@ -217,7 +217,7 @@ impl<M: Muxer, WO: WriteOwned, WS: WriteSeek> Context<M, WO, WS> {
 /// Format descriptor.
 ///
 /// Contains information on a format and its own muxer.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Descr {
     /// Format name.
     pub name: &'static str,

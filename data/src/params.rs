@@ -3,7 +3,7 @@ use crate::pixel::Formaton;
 use std::sync::Arc;
 
 /// Video stream information.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VideoInfo {
     /// Picture width.
     pub width: usize,
@@ -14,7 +14,7 @@ pub struct VideoInfo {
 }
 
 /// Audio stream information.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AudioInfo {
     /// Audio sample rate.
     pub rate: usize,
@@ -25,7 +25,7 @@ pub struct AudioInfo {
 }
 
 /// Possible stream information types.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum MediaKind {
     /// Video codec information.
     Video(VideoInfo),
@@ -34,7 +34,7 @@ pub enum MediaKind {
 }
 
 /// Possible codec parameters.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CodecParams {
     /// Stream information type.
     pub kind: Option<MediaKind>,
