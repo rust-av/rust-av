@@ -1,10 +1,10 @@
 # Rust-AV
 
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Actions Status](https://github.com/rust-av/rust-av/workflows/rust-av/badge.svg)](https://github.com/rust-av/rust-av/actions)
-[![Coverage Status](https://coveralls.io/repos/rust-av/rust-av/badge.svg?branch=master)](https://coveralls.io/r/rust-av/rust-av?branch=master)
-[![dependency status](https://deps.rs/repo/github/rust-av/rust-av/status.svg)](https://deps.rs/repo/github/rust-av/rust-av)
-[![IRC](https://img.shields.io/badge/irc-%23rust--av-blue.svg)](http://webchat.freenode.net?channels=%23rust-av&uio=d4)
+[![Actions Status][actions badge]][actions]
+[![CodeCov][codecov badge]][codecov]
+[![dependency status][dependency badge]][dependency]
+[![IRC][irc badge]][irc]
+[![LICENSE][license badge]][license]
 
 Pure-rust implementation of multimedia primitives and eventually some examples of demuxers, muxers and codecs.
 
@@ -57,3 +57,17 @@ You can also use a [web client](https://web.libera.chat/?channel=#rust-av) to jo
 
 Otherwise, you can open a new [discussion](https://github.com/rust-av/rust-av/discussions)
 explaining your idea or problem as best as possible.
+
+<!-- Links -->
+[actions]: https://github.com/rust-av/rust-av/actions
+[codecov]: https://codecov.io/gh/rust-av/rust-av
+[dependency]: https://deps.rs/repo/github/rust-av/rust-av
+[irc]: http://webchat.freenode.net?channels=%23rust-av&uio=d4
+[license]: LICENSE
+
+<!-- Badges -->
+[actions badge]: https://github.com/rust-av/rust-av/workflows/rust-av/badge.svg
+[codecov badge]: https://codecov.io/gh/rust-av/rust-av/branch/master/graph/badge.svg
+[dependency badge]: https://deps.rs/repo/github/rust-av/rust-av/status.svg
+[irc badge]: https://img.shields.io/badge/irc-%23rust--av-blue.svg
+[license badge]: https://img.shields.io/badge/license-MIT-blue.svg
