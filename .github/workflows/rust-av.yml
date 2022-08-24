@@ -28,14 +28,14 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --workspace --all-features --all-targets -- -D warnings --verbose
 
-  grcov-coveralls:
+  grcov-codecov:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust nightly
+    - name: Install Rust stable
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
