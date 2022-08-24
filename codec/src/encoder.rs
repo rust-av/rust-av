@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::convert::Into;
 
+use av_data::frame::ArcFrame;
+use av_data::packet::Packet;
+use av_data::params::CodecParams;
+use av_data::value::Value;
+
 use crate::common::CodecList;
-use crate::data::frame::ArcFrame;
-use crate::data::packet::Packet;
-use crate::data::params::CodecParams;
-use crate::data::value::Value;
 
 use crate::error::*;
 
@@ -165,7 +166,7 @@ mod test {
 
     mod dummy {
         use super::super::*;
-        use crate::data::pixel::Formaton;
+        use av_data::pixel::Formaton;
         use std::sync::Arc;
 
         pub struct Enc {
@@ -230,7 +231,7 @@ mod test {
             }
 
             fn set_params(&mut self, params: &CodecParams) -> Result<()> {
-                use crate::data::params::*;
+                use av_data::params::*;
 
                 if let Some(MediaKind::Video(ref info)) = params.kind {
                     self.w = Some(info.width);
@@ -241,7 +242,7 @@ mod test {
             }
 
             fn get_params(&self) -> Result<CodecParams> {
-                use crate::data::params::*;
+                use av_data::params::*;
 
                 if self.w.is_none() || self.w.is_none() || self.format.is_none() {
                     return Err(Error::ConfigurationIncomplete);
