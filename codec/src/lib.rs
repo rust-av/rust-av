@@ -1,3 +1,5 @@
+#![deny(clippy::undocumented_unsafe_blocks)]
+
 extern crate av_data as data;
 extern crate num_rational as rational;
 

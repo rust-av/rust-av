@@ -1,3 +1,5 @@
+#![deny(clippy::undocumented_unsafe_blocks)]
+
 pub mod rational {
     pub use num_rational::*;
 }

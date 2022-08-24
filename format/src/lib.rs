@@ -1,3 +1,5 @@
+#![deny(clippy::undocumented_unsafe_blocks)]
+
 // crates
 #[macro_use]
 extern crate log;

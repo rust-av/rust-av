@@ -1,3 +1,5 @@
+#![deny(clippy::undocumented_unsafe_blocks)]
+
 extern crate num_traits;
 
 #[cfg(test)]
