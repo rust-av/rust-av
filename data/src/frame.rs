@@ -547,6 +547,8 @@ fn copy_plane(
     let src_chunks = src.chunks(src_linesize);
 
     for (d, s) in dst_chunks.zip(src_chunks).take(height) {
+        // SAFETY:
+        // dst and src slices are initialized.
         unsafe {
             copy_nonoverlapping(s.as_ptr(), d.as_mut_ptr(), width);
         }
