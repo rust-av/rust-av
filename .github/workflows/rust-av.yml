@@ -44,10 +44,9 @@ jobs:
 
     - name: Install grcov
       env:
-        LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: 0.8.7
+        LINK: https://github.com/mozilla/grcov/releases/latest/download
       run: |
-        curl -L "$LINK/v$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
+        curl -L "$LINK/grcov-x86_64-unknown-linux-musl.tar.bz2" |
         tar xj -C $HOME/.cargo/bin
 
     - name: Install llvm-tools-preview
