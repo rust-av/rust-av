@@ -1,12 +1,5 @@
 #![deny(clippy::undocumented_unsafe_blocks)]
 
-// crates
-#[macro_use]
-extern crate log;
-
-// local crates
-extern crate av_data;
-
 mod data {
     pub use av_data::*;
 }

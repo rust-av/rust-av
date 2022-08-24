@@ -60,13 +60,13 @@ impl<R: Read + Seek> AccReader<R> {
     ///
     /// All data before the current position is lost.
     pub fn reset_buffer_position(&mut self) {
-        trace!(
+        log::trace!(
             "resetting buffer at pos: {} capacity: {}",
             self.pos,
             self.end
         );
         if self.end - self.pos > 0 {
-            trace!("copying {} to beginning of buffer", self.end - self.pos);
+            log::trace!("copying {} to beginning of buffer", self.end - self.pos);
             self.buf.copy_within(self.pos..self.end, 0);
         }
         self.end -= self.pos;
@@ -75,7 +75,7 @@ impl<R: Read + Seek> AccReader<R> {
 
     /// Returns buffer data.
     pub fn current_slice(&self) -> &[u8] {
-        trace!("current slice pos: {}, cap: {}", self.pos, self.end);
+        log::trace!("current slice pos: {}, cap: {}", self.pos, self.end);
         &self.buf[self.pos..self.end]
     }
 
@@ -97,7 +97,7 @@ impl<R: Read + Seek + Send + Sync> Buffered for AccReader<R> {
 
 impl<R: Read + Seek> Read for AccReader<R> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        trace!(
+        log::trace!(
             "read pos: {} cap: {} buflen: {}",
             self.pos,
             self.end,
@@ -144,10 +144,10 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
         // trace!("fillbuf current: {:?}", str::from_utf8(&self.buf[self.pos..self.end]).unwrap());
         if self.pos != 0 || self.end != self.buf.len() {
             self.reset_buffer_position();
-            trace!("buffer reset ended");
+            log::trace!("buffer reset ended");
             let read = self.inner.read(&mut self.buf[self.end..])?;
             self.end += read;
-            trace!(
+            log::trace!(
                 "new pos: {} and cap: {} -> current: {:?}",
                 self.pos,
                 self.end,
@@ -158,7 +158,7 @@ impl<R: Read + Seek> BufRead for AccReader<R> {
     }
 
     fn consume(&mut self, amt: usize) {
-        trace!("consumed {} bytes", amt);
+        log::trace!("consumed {} bytes", amt);
         self.pos = cmp::min(self.pos + amt, self.end);
         self.index += amt;
     }

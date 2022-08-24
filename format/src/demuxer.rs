@@ -83,7 +83,7 @@ impl<D: Demuxer, R: Buffered> Context<D, R> {
             Ok(seek) => {
                 //TODO: handle seeking here
                 let res = self.reader.seek(seek);
-                trace!("stream now at index: {:?}", res);
+                log::trace!("stream now at index: {:?}", res);
                 Ok(())
             }
         }
@@ -262,7 +262,7 @@ mod test {
             if size > len {
                 Err(Error::MoreDataNeeded(size - len))
             } else {
-                debug!("{:?}", buf.data());
+                log::debug!("{:?}", buf.data());
                 match &buf.data()[..2] {
                     b"p1" => Ok((SeekFrom::Current(3), Event::NewPacket(Packet::new()))),
                     b"e1" => Ok((SeekFrom::Current(3), Event::MoreDataNeeded(0))),
