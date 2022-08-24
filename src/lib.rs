@@ -1,6 +1,4 @@
 #![deny(clippy::undocumented_unsafe_blocks)]
-// workarounds
-#![allow(unused_doc_comments)]
 
 pub mod data {
     pub use av_data::*;
