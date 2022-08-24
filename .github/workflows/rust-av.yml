@@ -19,10 +19,8 @@ jobs:
         components: clippy, rustfmt
 
     - name: Run rustfmt
-      uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: --all -- --check
+      run: |
+        cargo fmt --all -- --check
 
     - name: Run clippy
       uses: actions-rs/clippy-check@v1
@@ -101,19 +99,13 @@ jobs:
         override: true
 
     - name: Run tests
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --workspace --all-features --verbose
+      run: |
+        cargo test --workspace --all-features --verbose
 
     - name: Run bench
-      uses: actions-rs/cargo@v1
-      with:
-        command: bench
-        args: --workspace --all-features --verbose
+      run: |
+        cargo bench --workspace --all-features --verbose
 
     - name: Run doc
-      uses: actions-rs/cargo@v1
-      with:
-        command: doc
-        args: --workspace --all-features --verbose
+      run: |
+        cargo doc --workspace --all-features --verbose
