@@ -587,7 +587,7 @@ mod test {
         assert_eq!(br.read_cb(&cb).unwrap(), -42);
         let ret = br.read_cb(&cb);
         if let Err(e) = ret {
-            assert_matches!(e, InvalidCode);
+            assert_matches::assert_matches!(e, InvalidCode);
         } else {
             assert_eq!(0, 1);
         }
