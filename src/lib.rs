@@ -2,13 +2,6 @@
 // workarounds
 #![allow(unused_doc_comments)]
 
-// crates
-
-// local crates
-extern crate av_bitstream;
-extern crate av_data;
-extern crate av_format;
-
 pub mod data {
     pub use av_data::*;
 }
