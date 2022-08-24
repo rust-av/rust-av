@@ -75,14 +75,13 @@ jobs:
 
     - name: Run grcov
       run: |
-        grcov . --binary-path ./target/debug/  -s . -t lcov --branch \
+        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
               --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
 
-    - name: Coveralls upload
-      uses: coverallsapp/github-action@master
+    - name: Codecov upload
+      uses: codecov/codecov-action@v3
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: lcov.info
+        files: lcov.info
 
   test-x86_64:
     strategy:
