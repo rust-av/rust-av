@@ -1,10 +1,7 @@
-//!
 //! Expose all necessary data structures to represent pixels.
 //!
 //! Re-exports num_traits::FromPrimitive and num_traits::cast::ToPrimitive
 //! in order to make easy to cast a parsed value into correct enum structures.
-//!
-//!
 
 use num_derive::{FromPrimitive, ToPrimitive};
 pub use num_traits::cast::ToPrimitive;

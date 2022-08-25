@@ -1,3 +1,5 @@
+//! Packets and decoded frames functionality.
+
 #![allow(dead_code, unused_variables)]
 
 use std::convert::From;
@@ -256,11 +258,11 @@ impl MediaKind {
             None
         }
     }
-    /// Reports whether the current stream is video stream.
+    /// Reports whether the current stream is a video stream.
     pub fn is_video(&self) -> bool {
         matches!(self, MediaKind::Video(_))
     }
-    /// Reports whether the current stream is audio stream.
+    /// Reports whether the current stream is an audio stream.
     pub fn is_audio(&self) -> bool {
         matches!(self, MediaKind::Audio(_))
     }
@@ -288,10 +290,17 @@ impl From<AudioInfo> for MediaKind {
     }
 }
 
+/// A series of methods to interact with the planes of frame.
 pub trait FrameBuffer: Send + Sync {
+    /// Returns the linesize (stride) of the idx-th frame plane.
     fn linesize(&self, idx: usize) -> Result<usize, FrameError>;
+    /// Counts the number of frame planes.
     fn count(&self) -> usize;
+    /// Returns an immutable buffer with the data associated to the idx-th
+    /// frame plane.
     fn as_slice_inner(&self, idx: usize) -> Result<&[u8], FrameError>;
+    /// Returns a mutable buffer with the data associated to the idx-th
+    /// frame plane.
     fn as_mut_slice_inner(&mut self, idx: usize) -> Result<&mut [u8], FrameError>;
 }
 
@@ -304,12 +313,18 @@ mod private {
     impl Supported for f32 {}
 }
 
+/// A series of methods to get mutable and immutable slices of datatype `T`
+/// from frame planes.
 pub trait FrameBufferConv<T: private::Supported>: FrameBuffer {
+    /// Returns an immutable slice of datatype `T` with the data associated to
+    /// the idx-th frame plane.
     fn as_slice(&self, idx: usize) -> Result<&[T], FrameError> {
         self.as_slice_inner(idx)?
             .as_slice_of::<T>()
             .map_err(|e| InvalidConversion)
     }
+    /// Returns a mutable slice of datatype `T` with the data associated to
+    /// the idx-th frame plane.
     fn as_mut_slice(&mut self, idx: usize) -> Result<&mut [T], FrameError> {
         self.as_mut_slice_inner(idx)?
             .as_mut_slice_of::<T>()

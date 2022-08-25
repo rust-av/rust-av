@@ -1,3 +1,5 @@
+//! Packets definitions.
+
 #![allow(dead_code)]
 
 use crate::timeinfo::TimeInfo;

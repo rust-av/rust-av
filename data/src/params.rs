@@ -1,3 +1,5 @@
+//! Video and audio definitions.
+
 use crate::audiosample::{ChannelMap, Soniton};
 use crate::pixel::Formaton;
 use std::sync::Arc;
