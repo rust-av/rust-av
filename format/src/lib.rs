@@ -1,4 +1,4 @@
-#![deny(clippy::undocumented_unsafe_blocks)]
+#![deny(missing_docs, clippy::undocumented_unsafe_blocks)]
 
 mod data {
     pub use av_data::*;
