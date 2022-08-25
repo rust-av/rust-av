@@ -7,14 +7,6 @@ use std::sync::Arc;
 
 use crate::error::*;
 
-/// A trait for a non-seekable object.
-pub trait WriteOwned: Write {}
-/// A trait for a seekable object.
-pub trait WriteSeek: Write + Seek {}
-
-impl<T: Write> WriteOwned for T {}
-impl<T: Write + Seek> WriteSeek for T {}
-
 /// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object
 /// which supports querying for seek support.
 pub enum Writer<WO = Cursor<Vec<u8>>, WS = Cursor<Vec<u8>>> {
@@ -22,14 +14,14 @@ pub enum Writer<WO = Cursor<Vec<u8>>, WS = Cursor<Vec<u8>>> {
     Seekable(WS),
 }
 
-impl<WO: WriteOwned> Writer<WO, Cursor<Vec<u8>>> {
+impl<WO: Write> Writer<WO, Cursor<Vec<u8>>> {
     /// Creates a [`Writer`] from an object that implements the [`Write`] trait.
     pub fn from_nonseekable(inner: WO) -> Self {
         Self::NonSeekable(inner, 0)
     }
 }
 
-impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
+impl<WS: Write + Seek> Writer<Cursor<Vec<u8>>, WS> {
     /// Creates a [`Writer`] from an object that implements both
     /// [`Write`] and [`Seek`] traits.
     pub fn from_seekable(inner: WS) -> Self {
@@ -37,7 +29,7 @@ impl<WS: WriteSeek> Writer<Cursor<Vec<u8>>, WS> {
     }
 }
 
-impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
+impl<WO: Write, WS: Write + Seek> Writer<WO, WS> {
     /// Returns whether the [`Writer`] can seek within the source.
     pub fn is_seekable(&self) -> bool {
         matches!(self, Self::Seekable(_))
@@ -70,7 +62,7 @@ impl<WO: WriteOwned, WS: WriteSeek> Writer<WO, WS> {
     }
 }
 
-impl<WO: WriteOwned, WS: WriteSeek> Write for Writer<WO, WS> {
+impl<WO: Write, WS: Write + Seek> Write for Writer<WO, WS> {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
         match self {
             Self::NonSeekable(inner, ref mut index) => {
@@ -94,7 +86,7 @@ impl<WO: WriteOwned, WS: WriteSeek> Write for Writer<WO, WS> {
     }
 }
 
-impl<WO: WriteOwned, WS: WriteSeek> Seek for Writer<WO, WS> {
+impl<WO: Write, WS: Write + Seek> Seek for Writer<WO, WS> {
     fn seek(&mut self, seek: SeekFrom) -> std::io::Result<u64> {
         match self {
             Self::NonSeekable(_, index) => {
@@ -118,20 +110,18 @@ pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
     /// Writes a stream header into a data structure implementing
     /// the `Write` trait.
-    fn write_header<WO: WriteOwned, WS: WriteSeek>(
-        &mut self,
-        out: &mut Writer<WO, WS>,
-    ) -> Result<()>;
+    fn write_header<WO: Write, WS: Write + Seek>(&mut self, out: &mut Writer<WO, WS>)
+        -> Result<()>;
     /// Writes a stream packet into a data structure implementing
     /// the `Write` trait.
-    fn write_packet<WO: WriteOwned, WS: WriteSeek>(
+    fn write_packet<WO: Write, WS: Write + Seek>(
         &mut self,
         out: &mut Writer<WO, WS>,
         pkt: Arc<Packet>,
     ) -> Result<()>;
     /// Writes a stream trailer into a data structure implementing
     /// the `Write` trait.
-    fn write_trailer<WO: WriteOwned, WS: WriteSeek>(
+    fn write_trailer<WO: Write, WS: Write + Seek>(
         &mut self,
         out: &mut Writer<WO, WS>,
     ) -> Result<()>;
@@ -147,7 +137,7 @@ pub trait Muxer: Send {
 
 /// Auxiliary structure to encapsulate a muxer object and
 /// its additional data.
-pub struct Context<M: Muxer + Send, WO: WriteOwned, WS: WriteSeek> {
+pub struct Context<M: Muxer + Send, WO: Write, WS: Write + Seek> {
     muxer: M,
     writer: Writer<WO, WS>,
     /// User private data.
@@ -156,7 +146,7 @@ pub struct Context<M: Muxer + Send, WO: WriteOwned, WS: WriteSeek> {
     pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
-impl<M: Muxer, WO: WriteOwned, WS: WriteSeek> Context<M, WO, WS> {
+impl<M: Muxer, WO: Write, WS: Write + Seek> Context<M, WO, WS> {
     /// Creates a new `Context` instance.
     pub fn new(muxer: M, writer: Writer<WO, WS>) -> Self {
         Context {
@@ -281,7 +271,7 @@ mod test {
             Ok(())
         }
 
-        fn write_header<WO: WriteOwned, WS: WriteSeek>(
+        fn write_header<WO: Write, WS: Write + Seek>(
             &mut self,
             out: &mut Writer<WO, WS>,
         ) -> Result<()> {
@@ -290,7 +280,7 @@ mod test {
             Ok(())
         }
 
-        fn write_packet<WO: WriteOwned, WS: WriteSeek>(
+        fn write_packet<WO: Write, WS: Write + Seek>(
             &mut self,
             out: &mut Writer<WO, WS>,
             pkt: Arc<Packet>,
@@ -299,7 +289,7 @@ mod test {
             Ok(())
         }
 
-        fn write_trailer<WO: WriteOwned, WS: WriteSeek>(
+        fn write_trailer<WO: Write, WS: Write + Seek>(
             &mut self,
             out: &mut Writer<WO, WS>,
         ) -> Result<()> {
@@ -345,7 +335,7 @@ mod test {
         muxers.by_name("dummy").unwrap();
     }
 
-    fn run_muxer<WO: WriteOwned, WS: WriteSeek>(
+    fn run_muxer<WO: Write, WS: Write + Seek>(
         writer: Writer<WO, WS>,
     ) -> Context<DummyMuxer, WO, WS> {
         let mux = DummyMuxer::new();
@@ -411,5 +401,37 @@ mod test {
         let buffer = muxer.writer().seekable_object().unwrap().get_ref();
         debug_assert!(muxer.writer().is_seekable());
         check_underlying_buffer(buffer);
+    }
+
+    #[test]
+    fn stdout_muxer() {
+        use std::io::stdout;
+
+        let muxer = run_muxer(Writer::from_nonseekable(stdout()));
+        let (_buffer, index) = muxer.writer().non_seekable_object().unwrap();
+        debug_assert!(!muxer.writer().is_seekable());
+        assert_eq!(
+            index as usize,
+            DUMMY_HEADER_LENGTH
+                + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)
+                + DUMMY_TRAILER_LENGTH
+        );
+    }
+
+    #[test]
+    fn file_muxer() {
+        let file = tempfile::tempfile().unwrap();
+        let muxer = run_muxer(Writer::from_seekable(file));
+        debug_assert!(muxer.writer().is_seekable());
+        assert!(
+            muxer
+                .writer()
+                .seekable_object()
+                .unwrap()
+                .metadata()
+                .unwrap()
+                .len()
+                != 0
+        );
     }
 }
