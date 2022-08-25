@@ -11,19 +11,14 @@ edition = "2021"
 nightly = []
 
 [workspace]
-members = [
-    "bitstream",
-    "codec",
-    "data",
-    "format",
-]
+members = ["bitstream", "codec", "data", "format"]
 
 [dependencies.av-data]
 version = "0.3.0"
 path = "data"
 
 [dependencies.av-format]
-version = "0.5.0"
+version = "0.6.0"
 path = "format"
 
 [dependencies.av-bitstream]
