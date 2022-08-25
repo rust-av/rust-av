@@ -1,3 +1,5 @@
+//! Bytestream writing functionality.
+
 macro_rules! write_bytes_le {
     ($buf:ident, $n:ident) => {
         let bytes = $n.to_le_bytes();

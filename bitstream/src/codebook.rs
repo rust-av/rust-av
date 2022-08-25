@@ -1,3 +1,7 @@
+//! Codebook support for bitstream reader.
+//!
+//! Codebook is a set of unique bit strings and values assigned to them.
+
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::marker::PhantomData;
