@@ -402,4 +402,36 @@ mod test {
         debug_assert!(muxer.writer().is_seekable());
         check_underlying_buffer(buffer);
     }
+
+    #[test]
+    fn stdout_muxer() {
+        use std::io::stdout;
+
+        let muxer = run_muxer(Writer::from_nonseekable(stdout()));
+        let (_buffer, index) = muxer.writer().non_seekable_object().unwrap();
+        debug_assert!(!muxer.writer().is_seekable());
+        assert_eq!(
+            index as usize,
+            DUMMY_HEADER_LENGTH
+                + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)
+                + DUMMY_TRAILER_LENGTH
+        );
+    }
+
+    #[test]
+    fn file_muxer() {
+        let file = tempfile::tempfile().unwrap();
+        let muxer = run_muxer(Writer::from_seekable(file));
+        debug_assert!(muxer.writer().is_seekable());
+        assert!(
+            muxer
+                .writer()
+                .seekable_object()
+                .unwrap()
+                .metadata()
+                .unwrap()
+                .len()
+                != 0
+        );
+    }
 }
