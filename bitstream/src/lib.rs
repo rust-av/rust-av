@@ -1,6 +1,6 @@
-#![deny(missing_docs, clippy::undocumented_unsafe_blocks)]
-
 //! Bytes and bitstream reading/writing functionality.
+
+#![deny(missing_docs, clippy::undocumented_unsafe_blocks)]
 
 pub mod bitread;
 pub mod byteread;

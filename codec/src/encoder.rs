@@ -123,6 +123,7 @@ pub struct Descr {
 
 /// Used to get the descriptor of a codec and create its own encoder.
 pub trait Descriptor {
+    /// The specific type of the encoder.
     type OutputEncoder: Encoder;
 
     /// Creates a new encoder for the requested codec.

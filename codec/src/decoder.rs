@@ -88,6 +88,7 @@ impl<D: Decoder> Context<D> {
 
 /// Used to get the descriptor of a codec and create its own decoder.
 pub trait Descriptor {
+    /// The specific type of the decoder.
     type OutputDecoder: Decoder;
 
     /// Creates a new decoder for the requested codec.

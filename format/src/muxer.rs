@@ -7,10 +7,12 @@ use std::sync::Arc;
 
 use crate::error::*;
 
-/// Runtime wrapper around either a [`Write`] or a [`WriteSeek`] trait object
+/// Runtime wrapper around either a [`Write`] or a [`Write + Seek`] trait object
 /// which supports querying for seek support.
 pub enum Writer<WO = Cursor<Vec<u8>>, WS = Cursor<Vec<u8>>> {
+    /// A writer which does not support seeking, e.g. stdout.
     NonSeekable(WO, u64),
+    /// A writer which does support seeking, e.g. a file or in-memory buffer.
     Seekable(WS),
 }
 
@@ -223,6 +225,7 @@ pub struct Descr {
 
 /// Used to get a format descriptor and create a new muxer.
 pub trait Descriptor {
+    /// The specific type of the muxer.
     type OutputMuxer: Muxer + Send;
 
     /// Creates a new muxer for the requested format.
