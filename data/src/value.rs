@@ -1,3 +1,5 @@
+//! Option values definitions.
+
 use crate::audiosample::Soniton;
 use crate::pixel::Formaton;
 

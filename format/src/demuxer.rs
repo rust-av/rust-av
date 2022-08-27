@@ -184,6 +184,7 @@ pub struct Descr {
 
 /// Used to get a format descriptor and create a new demuxer.
 pub trait Descriptor {
+    /// The specific type of the demuxer.
     type OutputDemuxer: Demuxer;
 
     /// Creates a new demuxer for the requested format.

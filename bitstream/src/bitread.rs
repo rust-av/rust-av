@@ -1,3 +1,5 @@
+//! Bitstream reader functionality.
+
 use crate::byteread::*;
 
 /// Used to interact with a sequence of 64 bits, taking into account the

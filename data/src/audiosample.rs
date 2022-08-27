@@ -1,3 +1,5 @@
+//! Audio sample format definitions.
+
 use std::fmt;
 use std::string::*;
 
@@ -80,33 +82,68 @@ impl fmt::Display for Soniton {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ChannelType {
+    /// Center front.
     C,
+    /// Left front.
     L,
+    /// Right front.
     R,
+    /// Center surround.
     Cs,
+    /// Left surround.
     Ls,
+    /// Right surround.
     Rs,
+    /// Left surround side.
     Lss,
+    /// Right surround side.
     Rss,
+    /// Low Frequency Effect.
     LFE,
+    /// Left center.
     Lc,
+    /// Right center.
     Rc,
+    /// Left height.
     Lh,
+    /// Right height.
     Rh,
+    /// Center height.
     Ch,
+    /// Second Low Frequency Effect.
     LFE2,
+    /// Left wide.
     Lw,
+    /// Right wide.
     Rw,
+    /// Overhead.
+    ///
+    /// Known also as:
+    /// - Over the listener head (Oh) in DTS specification (ETSI TS 102.114)
+    /// - Top Center Surround (Ts) in SMPTE 428-3-2006 specification
     Ov,
+    /// Left height side.
     Lhs,
+    /// Right height side.
     Rhs,
+    /// Center height side.
     Chs,
+    /// Left in the plane lower then listener's ears
+    /// (DTS specification ETSI TS 102.114).
     Ll,
+    /// Right in the plane lower then listener's ears
+    /// (DTS specification ETSI TS 102.114).
     Rl,
+    /// Center in the plane lower then listener's ears
+    /// (DTS specification ETSI TS 102.114).
     Cl,
+    /// Left total (SMPTE 428-3-2006 specification).
     Lt,
+    /// Right total (SMPTE 428-3-2006 specification).
     Rt,
+    /// Left-only downmix mode (Dolby ETSI TS 102.366 specification).
     Lo,
+    /// Right-only downmix mode (Dolby ETSI TS 102.366 specification).
     Ro,
 }
 

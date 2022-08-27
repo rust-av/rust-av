@@ -1,3 +1,5 @@
+//! Time info definitions for frames and packets.
+
 use crate::rational::Rational64;
 use std::any::Any;
 use std::sync::Arc;

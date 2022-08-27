@@ -1,3 +1,5 @@
+//! Bytestream reader functionality.
+
 // TODO: arch-specific version
 // TODO: aligned/non-aligned version
 

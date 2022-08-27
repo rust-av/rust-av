@@ -1,5 +1,8 @@
-#![deny(clippy::undocumented_unsafe_blocks)]
+//! Structs and traits to interact with multimedia data.
 
+#![deny(missing_docs, clippy::undocumented_unsafe_blocks)]
+
+/// A module to represent and interact with rational numbers.
 pub mod rational {
     pub use num_rational::*;
 }
