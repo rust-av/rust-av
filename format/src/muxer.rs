@@ -2,107 +2,64 @@ use crate::common::*;
 use crate::data::packet::Packet;
 use crate::data::value::*;
 use std::any::Any;
-use std::io::{Cursor, ErrorKind, Seek, SeekFrom, Write};
+use std::io::{Cursor, Seek, SeekFrom, Write};
 use std::sync::Arc;
 
 use crate::error::*;
 
-/// Runtime wrapper around either a [`Write`] or a [`Write + Seek`] trait object
-/// which supports querying for seek support.
-pub enum Writer<WO = Cursor<Vec<u8>>, WS = Cursor<Vec<u8>>> {
-    /// A writer which does not support seeking, e.g. stdout.
-    NonSeekable(WO, u64),
-    /// A writer which does support seeking, e.g. a file or in-memory buffer.
-    Seekable(WS),
+/// Runtime wrapper around a [`Write`] trait object
+/// which optionally supports [`Seek`] functionality.
+pub struct Writer<W = Cursor<Vec<u8>>> {
+    writer: W,
+    bytes_written: usize,
 }
 
-impl<WO: Write> Writer<WO, Cursor<Vec<u8>>> {
+impl<W: Write> Writer<W> {
     /// Creates a [`Writer`] from an object that implements the [`Write`] trait.
-    pub fn from_nonseekable(inner: WO) -> Self {
-        Self::NonSeekable(inner, 0)
+    pub fn new(inner: W) -> Self {
+        Self {
+            writer: inner,
+            bytes_written: 0,
+        }
     }
 }
 
-impl<WS: Write + Seek> Writer<Cursor<Vec<u8>>, WS> {
-    /// Creates a [`Writer`] from an object that implements both
-    /// [`Write`] and [`Seek`] traits.
-    pub fn from_seekable(inner: WS) -> Self {
-        Self::Seekable(inner)
-    }
-}
-
-impl<WO: Write, WS: Write + Seek> Writer<WO, WS> {
-    /// Returns whether the [`Writer`] can seek within the source.
-    pub fn is_seekable(&self) -> bool {
-        matches!(self, Self::Seekable(_))
-    }
-
+impl<W: Write> Writer<W> {
     /// Returns stream position.
-    pub fn position(&mut self) -> Result<u64> {
-        match self {
-            Self::NonSeekable(_, index) => Ok(*index),
-            Self::Seekable(ref mut inner) => inner.stream_position().map_err(|e| e.into()),
-        }
+    pub fn position(&mut self) -> usize {
+        self.bytes_written
     }
 
-    /// Returns a reference to the non-seekable object whether is present.
-    pub fn non_seekable_object(&self) -> Option<(&WO, u64)> {
-        if let Self::NonSeekable(inner, index) = self {
-            Some((inner, *index))
-        } else {
-            None
-        }
-    }
-
-    /// Returns a reference to the seekable object whether is present.
-    pub fn seekable_object(&self) -> Option<&WS> {
-        if let Self::Seekable(inner) = self {
-            Some(inner)
-        } else {
-            None
-        }
+    /// Returns a reference to the underlying writer and bytes written.
+    pub fn as_ref(&self) -> (&W, usize) {
+        (&self.writer, self.bytes_written)
     }
 }
 
-impl<WO: Write, WS: Write + Seek> Write for Writer<WO, WS> {
+impl<W: Write> Write for Writer<W> {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
-        match self {
-            Self::NonSeekable(inner, ref mut index) => {
-                let result = inner.write(bytes);
+        let result = self.writer.write(bytes);
 
-                if let Ok(written) = result {
-                    *index += written as u64;
-                }
-
-                result
-            }
-            Self::Seekable(inner) => inner.write(bytes),
+        if let Ok(written) = result {
+            self.bytes_written += written;
         }
+
+        result
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        match self {
-            Self::NonSeekable(inner, ..) => inner.flush(),
-            Self::Seekable(inner) => inner.flush(),
-        }
+        self.writer.flush()
     }
 }
 
-impl<WO: Write, WS: Write + Seek> Seek for Writer<WO, WS> {
+impl<W: Write> Seek for Writer<W>
+where
+    W: Seek,
+{
     fn seek(&mut self, seek: SeekFrom) -> std::io::Result<u64> {
-        match self {
-            Self::NonSeekable(_, index) => {
-                if let SeekFrom::Current(0) = seek {
-                    Ok(*index)
-                } else {
-                    Err(std::io::Error::new(
-                        ErrorKind::Other,
-                        "Seeking not supported",
-                    ))
-                }
-            }
-            Self::Seekable(inner) => inner.seek(seek),
-        }
+        let res = self.writer.seek(seek)?;
+        self.bytes_written = res as usize;
+        Ok(res)
     }
 }
 
@@ -112,21 +69,13 @@ pub trait Muxer: Send {
     fn configure(&mut self) -> Result<()>;
     /// Writes a stream header into a data structure implementing
     /// the `Write` trait.
-    fn write_header<WO: Write, WS: Write + Seek>(&mut self, out: &mut Writer<WO, WS>)
-        -> Result<()>;
+    fn write_header<W: Write>(&mut self, out: &mut Writer<W>) -> Result<()>;
     /// Writes a stream packet into a data structure implementing
     /// the `Write` trait.
-    fn write_packet<WO: Write, WS: Write + Seek>(
-        &mut self,
-        out: &mut Writer<WO, WS>,
-        pkt: Arc<Packet>,
-    ) -> Result<()>;
+    fn write_packet<W: Write>(&mut self, out: &mut Writer<W>, pkt: Arc<Packet>) -> Result<()>;
     /// Writes a stream trailer into a data structure implementing
     /// the `Write` trait.
-    fn write_trailer<WO: Write, WS: Write + Seek>(
-        &mut self,
-        out: &mut Writer<WO, WS>,
-    ) -> Result<()>;
+    fn write_trailer<W: Write>(&mut self, out: &mut Writer<W>) -> Result<()>;
 
     /// Sets global media file information for a muxer.
     fn set_global_info(&mut self, info: GlobalInfo) -> Result<()>;
@@ -139,18 +88,18 @@ pub trait Muxer: Send {
 
 /// Auxiliary structure to encapsulate a muxer object and
 /// its additional data.
-pub struct Context<M: Muxer + Send, WO: Write, WS: Write + Seek> {
+pub struct Context<M: Muxer + Send, W: Write> {
     muxer: M,
-    writer: Writer<WO, WS>,
+    writer: Writer<W>,
     /// User private data.
     ///
     /// This data cannot be cloned.
     pub user_private: Option<Box<dyn Any + Send + Sync>>,
 }
 
-impl<M: Muxer, WO: Write, WS: Write + Seek> Context<M, WO, WS> {
+impl<M: Muxer, W: Write> Context<M, W> {
     /// Creates a new `Context` instance.
-    pub fn new(muxer: M, writer: Writer<WO, WS>) -> Self {
+    pub fn new(muxer: M, writer: Writer<W>) -> Self {
         Context {
             muxer,
             writer,
@@ -201,8 +150,13 @@ impl<M: Muxer, WO: Write, WS: Write + Seek> Context<M, WO, WS> {
     }
 
     /// Returns the underlying writer.
-    pub fn writer(&self) -> &Writer<WO, WS> {
+    pub fn writer(&self) -> &Writer<W> {
         &self.writer
+    }
+
+    /// Consumes this muxer and returns the underlying writer.
+    pub fn into_writer(self) -> Writer<W> {
+        self.writer
     }
 }
 
@@ -248,8 +202,6 @@ impl<T: Descriptor + ?Sized> Lookup<T> for [&'static T] {
 
 #[cfg(test)]
 mod test {
-    use std::io::Cursor;
-
     use super::*;
 
     const DUMMY_HEADER_LENGTH: usize = 12;
@@ -274,28 +226,18 @@ mod test {
             Ok(())
         }
 
-        fn write_header<WO: Write, WS: Write + Seek>(
-            &mut self,
-            out: &mut Writer<WO, WS>,
-        ) -> Result<()> {
+        fn write_header<W: Write>(&mut self, out: &mut Writer<W>) -> Result<()> {
             let buf = b"Dummy header";
             out.write_all(buf.as_slice()).unwrap();
             Ok(())
         }
 
-        fn write_packet<WO: Write, WS: Write + Seek>(
-            &mut self,
-            out: &mut Writer<WO, WS>,
-            pkt: Arc<Packet>,
-        ) -> Result<()> {
+        fn write_packet<W: Write>(&mut self, out: &mut Writer<W>, pkt: Arc<Packet>) -> Result<()> {
             out.write_all(&pkt.data).unwrap();
             Ok(())
         }
 
-        fn write_trailer<WO: Write, WS: Write + Seek>(
-            &mut self,
-            out: &mut Writer<WO, WS>,
-        ) -> Result<()> {
+        fn write_trailer<W: Write>(&mut self, out: &mut Writer<W>) -> Result<()> {
             let buf = b"Dummy trailer";
             out.write_all(buf.as_slice()).unwrap();
             Ok(())
@@ -338,9 +280,7 @@ mod test {
         muxers.by_name("dummy").unwrap();
     }
 
-    fn run_muxer<WO: Write, WS: Write + Seek>(
-        writer: Writer<WO, WS>,
-    ) -> Context<DummyMuxer, WO, WS> {
+    fn run_muxer<W: Write>(writer: Writer<W>) -> Context<DummyMuxer, W> {
         let mux = DummyMuxer::new();
 
         let mut muxer = Context::new(mux, writer);
@@ -385,10 +325,9 @@ mod test {
     }
 
     #[test]
-    fn non_seekable_muxer() {
-        let muxer = run_muxer(Writer::from_nonseekable(Vec::new()));
-        let (buffer, index) = muxer.writer().non_seekable_object().unwrap();
-        debug_assert!(!muxer.writer().is_seekable());
+    fn vec_muxer() {
+        let muxer = run_muxer(Writer::new(Vec::new()));
+        let (buffer, index) = muxer.writer().as_ref();
         check_underlying_buffer(buffer);
         assert_eq!(
             index as usize,
@@ -399,20 +338,11 @@ mod test {
     }
 
     #[test]
-    fn seekable_muxer() {
-        let muxer = run_muxer(Writer::from_seekable(Cursor::new(Vec::new())));
-        let buffer = muxer.writer().seekable_object().unwrap().get_ref();
-        debug_assert!(muxer.writer().is_seekable());
-        check_underlying_buffer(buffer);
-    }
-
-    #[test]
     fn stdout_muxer() {
         use std::io::stdout;
 
-        let muxer = run_muxer(Writer::from_nonseekable(stdout()));
-        let (_buffer, index) = muxer.writer().non_seekable_object().unwrap();
-        debug_assert!(!muxer.writer().is_seekable());
+        let muxer = run_muxer(Writer::new(stdout()));
+        let (_buffer, index) = muxer.writer().as_ref();
         assert_eq!(
             index as usize,
             DUMMY_HEADER_LENGTH
@@ -424,17 +354,10 @@ mod test {
     #[test]
     fn file_muxer() {
         let file = tempfile::tempfile().unwrap();
-        let muxer = run_muxer(Writer::from_seekable(file));
-        debug_assert!(muxer.writer().is_seekable());
-        assert!(
-            muxer
-                .writer()
-                .seekable_object()
-                .unwrap()
-                .metadata()
-                .unwrap()
-                .len()
-                != 0
-        );
+        let muxer = run_muxer(Writer::new(file));
+        let mut writer = muxer.into_writer();
+        writer.seek(SeekFrom::Start(3)).unwrap();
+        assert!(writer.bytes_written == 3);
+        assert!(writer.as_ref().0.metadata().unwrap().len() != 0);
     }
 }
