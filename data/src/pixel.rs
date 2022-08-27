@@ -46,13 +46,13 @@ pub enum MatrixCoefficients {
     Identity = 0,
     /// - Rec. ITU-R BT.709-6
     /// - Rec. ITU-R BT.1361-0 conventional colour gamut system and extended colour
-    /// - gamut system (historical)
+    ///   gamut system (historical)
     /// - IEC 61966-2-4 xvYCC709
     /// - SMPTE RP 177 (1993) Annex B
     BT709 = 1,
-    /// Image characteristics are unknown or are determined by the application
+    /// Image characteristics are unknown or are determined by the application.
     Unspecified = 2,
-    /// For future use by ITU-T | ISO/IEC
+    /// For future use by ITU-T | ISO/IEC.
     Reserved = 3,
     /// United States Federal Communications Commission (2003) Title 47 Code of
     /// Federal Regulations 73.682 (a) (20)
@@ -87,9 +87,9 @@ pub enum MatrixCoefficients {
     BT2020ConstantLuminance = 10,
     /// SMPTE ST 2085 (2015)
     ST2085 = 11,
-    /// Chromaticity-derived non-constant luminance system
+    /// Chromaticity-derived non-constant luminance system.
     ChromaticityDerivedNonConstantLuminance = 12,
-    /// Chromaticity-derived constant luminance system
+    /// Chromaticity-derived constant luminance system.
     ChromaticityDerivedConstantLuminance = 13,
     /// Rec. ITU-R BT.2100-2 ICTCP
     ICtCp = 14,
@@ -125,14 +125,14 @@ impl fmt::Display for MatrixCoefficients {
     }
 }
 
-/// indicates the chromaticity coordinates of the source colour primaries as specified in Table 2 in terms
+/// Indicates the chromaticity coordinates of the source colour primaries as specified in Table 2 in terms
 /// of the CIE 1931 definition of x and y as specified by ISO 11664-1.
 ///
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ColorPrimaries {
-    /// For future use by ITU-T | ISO/IEC
+    /// For future use by ITU-T | ISO/IEC.
     Reserved0 = 0,
     /// - Rec. ITU-R BT.709-6
     /// - Rec. ITU-R BT.1361-0 conventional colour gamut
@@ -145,7 +145,7 @@ pub enum ColorPrimaries {
     /// Image characteristics are unknown or are determined by
     /// the application.
     Unspecified = 2,
-    /// For future use by ITU-T | ISO/IEC
+    /// For future use by ITU-T | ISO/IEC.
     Reserved = 3,
     /// - Rec. ITU-R BT.470-6 System M (historical)
     /// - United States National Television System Committee
@@ -182,7 +182,7 @@ pub enum ColorPrimaries {
     P3DCI = 11,
     /// SMPTE EG 432-1 (2010)
     P3Display = 12,
-    /// No corresponding industry specification identified
+    /// No corresponding industry specification identified.
     Tech3213 = 22,
 }
 
@@ -207,7 +207,7 @@ impl fmt::Display for ColorPrimaries {
     }
 }
 
-/// either indicates the reference opto-electronic transfer characteristic
+/// Either indicates the reference opto-electronic transfer characteristic
 /// function of the source picture as a function of a source input linear optical intensity
 /// input Lc with a nominal real-valued range of 0 to 1 or indicates the inverse of the
 /// reference electro-optical transfer characteristic function as a function of an
@@ -217,7 +217,7 @@ impl fmt::Display for ColorPrimaries {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum TransferCharacteristic {
-    /// For future use by ITU-T | ISO/IEC
+    /// For future use by ITU-T | ISO/IEC.
     Reserved0 = 0,
     /// - Rec. ITU-R BT.709-6
     /// - Rec. ITU-R BT.1361-0 conventional
@@ -228,9 +228,9 @@ pub enum TransferCharacteristic {
     /// Image characteristics are unknown or
     /// are determined by the application.
     Unspecified = 2,
-    /// For future use by ITU-T | ISO/IEC
+    /// For future use by ITU-T | ISO/IEC.
     Reserved = 3,
-    /// Assumed display gamma 2.2
+    /// Assumed display gamma 2.2.
     ///
     /// - Rec. ITU-R BT.470-6 System M
     ///   (historical)
@@ -244,7 +244,7 @@ pub enum TransferCharacteristic {
     /// - Rec. ITU-R BT.1700-0 625 PAL and
     ///   625 SECAM
     BT470M = 4,
-    /// Assumed display gamma 2.8
+    /// Assumed display gamma 2.8.
     ///
     /// Rec. ITU-R BT.470-6 System B, G (historical)
     BT470BG = 5,
@@ -323,7 +323,7 @@ impl fmt::Display for TransferCharacteristic {
     }
 }
 
-/// indicates the chroma sampling grid alignment for video fields or frames using the 4:2:0
+/// Indicates the chroma sampling grid alignment for video fields or frames using the 4:2:0
 /// colour format (in which the two chroma arrays have half the width
 /// and half the height of the associated luma array)
 ///
@@ -389,7 +389,7 @@ impl fmt::Display for YUVSystem {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum TrichromaticEncodingSystem {
-    /// Image represented by three color channels: Red, Green, and Blue
+    /// Image represented by three color channels: Red, Green, and Blue.
     RGB,
     /// Image represented by a luminance (luma) channel and two chroma channels.
     YUV(YUVSystem),

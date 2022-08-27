@@ -2,11 +2,11 @@
 
 #![deny(missing_docs, clippy::undocumented_unsafe_blocks)]
 
-/// Data structs shared between encoders and decoders
+/// Data structs shared between encoders and decoders.
 pub mod common;
-/// Utilities for decoding video and audio formats
+/// Utilities for decoding video and audio formats.
 pub mod decoder;
-/// Utilities for encoding video and audio formats
+/// Utilities for encoding video and audio formats.
 pub mod encoder;
-/// Error types
+/// Error types.
 pub mod error;
