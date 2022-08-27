@@ -10,7 +10,7 @@ repository = "https://github.com/rust-av/rust-av"
 [dependencies]
 log = "0.4.6"
 thiserror = "1.0"
-av-data = "0.3.0"
+av-data = "0.4.0"
 
 [dev-dependencies]
 tempfile = "3.3.0"
