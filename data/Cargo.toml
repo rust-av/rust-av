@@ -1,7 +1,7 @@
 [package]
 name = "av-data"
 description = "Multimedia data structures"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 homepage = "https://github.com/rust-av/rust-av"

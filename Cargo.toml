@@ -13,18 +13,18 @@ nightly = []
 [workspace]
 members = ["bitstream", "codec", "data", "format"]
 
-[dependencies.av-data]
+[dependencies.av-bitstream]
+version = "0.2.0"
+path = "bitstream"
+
+[dependencies.av-codec]
 version = "0.3.0"
+path = "codec"
+
+[dependencies.av-data]
+version = "0.4.0"
 path = "data"
 
 [dependencies.av-format]
 version = "0.6.0"
 path = "format"
-
-[dependencies.av-bitstream]
-version = "0.1.2"
-path = "bitstream"
-
-[dependencies.av-codec]
-version = "0.2.0"
-path = "codec"
