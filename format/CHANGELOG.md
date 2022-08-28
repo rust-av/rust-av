@@ -1,3 +1,7 @@
+## Version 0.7.0
+
+- Simplify the `Muxer` trait to have one `Write` generic instead of two.
+
 ## Version 0.6.0
 
 - Remove `Send` requirement from `Context`'s `Muxer`.
