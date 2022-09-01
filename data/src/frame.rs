@@ -402,7 +402,7 @@ impl DefaultFrameBuffer {
         match *kind {
             MediaKind::Video(ref video) => {
                 let size = video.size(ALIGNMENT);
-                let buf = BytesMut::with_capacity(size);
+                let buf = BytesMut::zeroed(size);
                 let mut buffer = DefaultFrameBuffer {
                     buf,
                     planes: Vec::with_capacity(video.format.get_num_comp()),
@@ -421,7 +421,7 @@ impl DefaultFrameBuffer {
             }
             MediaKind::Audio(ref audio) => {
                 let size = audio.size(ALIGNMENT);
-                let buf = BytesMut::with_capacity(size);
+                let buf = BytesMut::zeroed(size);
                 let mut buffer = DefaultFrameBuffer {
                     buf,
                     planes: if audio.format.planar {
