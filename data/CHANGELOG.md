@@ -1,3 +1,7 @@
+## Version 0.4.1
+
+- Use initialized data for a frame.
+
 ## Version 0.4.0
 
 - Upgrade to Rust edition 2021.
