@@ -1109,6 +1109,48 @@ pub mod formats {
         alpha: true,
         palette: false,
     };
+
+    /// Predefined format for RGB48.
+    pub const RGB48: &Formaton = &Formaton {
+        model: Trichromatic(RGB),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 3,
+        comp_info: [
+            Some(Chromaton::packrgb(16, 0, 2, 6)),
+            Some(Chromaton::packrgb(16, 0, 1, 6)),
+            Some(Chromaton::packrgb(16, 0, 0, 6)),
+            None,
+            None,
+        ],
+        elem_size: 6,
+        be: false,
+        alpha: false,
+        palette: false,
+    };
+
+    /// Predefined format for RGBA64.
+    pub const RGBA64: &Formaton = &Formaton {
+        model: Trichromatic(RGB),
+        primaries: ColorPrimaries::Unspecified,
+        xfer: TransferCharacteristic::Unspecified,
+        matrix: MatrixCoefficients::Unspecified,
+        chroma_location: ChromaLocation::Unspecified,
+        components: 4,
+        comp_info: [
+            Some(Chromaton::packrgb(16, 0, 3, 8)),
+            Some(Chromaton::packrgb(16, 0, 2, 8)),
+            Some(Chromaton::packrgb(16, 0, 1, 8)),
+            Some(Chromaton::packrgb(16, 0, 0, 8)),
+            None,
+        ],
+        elem_size: 8,
+        be: false,
+        alpha: true,
+        palette: false,
+    };
 }
 
 #[cfg(test)]
@@ -1121,6 +1163,8 @@ mod test {
             println!("formaton pal- {}", formats::PAL8);
             println!("formaton rgb565- {}", formats::RGB565);
             println!("formaton rgba- {}", formats::RGBA);
+            println!("formaton rgb48- {}", formats::RGB48);
+            println!("formaton rgba64- {}", formats::RGBA64);
         }
 
         #[test]
