@@ -7,7 +7,7 @@ use criterion::{Criterion, Throughput};
 const TEST_INPUT: [u8; 16] = [0b01010101; 16];
 
 fn bench_accreader(bytes: &[u8]) {
-    let cursor = Cursor::new(&bytes[..]);
+    let cursor = Cursor::new(&bytes);
     let mut reader = AccReader::with_capacity(5, cursor);
     let mut read_buffer = [0];
 
