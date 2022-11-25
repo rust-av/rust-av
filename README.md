@@ -62,7 +62,7 @@ explaining your idea or problem as best as possible.
 [actions]: https://github.com/rust-av/rust-av/actions
 [codecov]: https://codecov.io/gh/rust-av/rust-av
 [dependency]: https://deps.rs/repo/github/rust-av/rust-av
-[irc]: http://webchat.freenode.net?channels=%23rust-av&uio=d4
+[irc]: https://web.libera.chat/?channel=#rust-av
 [license]: LICENSE
 
 <!-- Badges -->
