@@ -83,7 +83,7 @@ pub trait Muxer: Send {
     ///
     /// This method should be called as many times as the number of options
     /// present in a muxer.
-    fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
+    fn set_option(&mut self, key: &str, val: Value) -> Result<()>;
 }
 
 /// Auxiliary structure to encapsulate a muxer object and
@@ -247,7 +247,7 @@ mod test {
             Ok(())
         }
 
-        fn set_option<'a>(&mut self, _key: &str, _val: Value<'a>) -> Result<()> {
+        fn set_option(&mut self, _key: &str, _val: Value) -> Result<()> {
             Ok(())
         }
     }
@@ -330,7 +330,7 @@ mod test {
         let (buffer, index) = muxer.writer().as_ref();
         check_underlying_buffer(buffer);
         assert_eq!(
-            index as usize,
+            index,
             DUMMY_HEADER_LENGTH
                 + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)
                 + DUMMY_TRAILER_LENGTH
@@ -344,7 +344,7 @@ mod test {
         let muxer = run_muxer(Writer::new(stdout()));
         let (_buffer, index) = muxer.writer().as_ref();
         assert_eq!(
-            index as usize,
+            index,
             DUMMY_HEADER_LENGTH
                 + (DUMMY_PACKETS_NUMBER * DUMMY_PACKET_LENGTH)
                 + DUMMY_TRAILER_LENGTH

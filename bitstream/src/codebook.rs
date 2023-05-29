@@ -256,7 +256,7 @@ fn build_esc_lut(
 
     let cur_offset = bucket.offset;
     for (ckey, sec_bucket) in &mut escape_list {
-        let key = *ckey as u32;
+        let key = *ckey;
         let maxlen = min(sec_bucket.maxlen, MAX_LUT_BITS);
         let new_off = resize_table(table, maxlen);
         fill_lut(
@@ -374,7 +374,7 @@ impl<'a, S: Copy, B: BitRead<'a>> CodebookReader<S> for B {
         let mut idx = 0;
         let mut lut_bits = cb.lut_bits;
         while esc {
-            let lut_idx = (self.peek_bits_32(lut_bits as usize) as usize) + (idx as usize);
+            let lut_idx = (self.peek_bits_32(lut_bits as usize) as usize) + idx;
             if cb.table[lut_idx] == TABLE_FILL_VALUE {
                 return Err(InvalidCode);
             }

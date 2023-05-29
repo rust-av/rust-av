@@ -24,7 +24,7 @@ pub trait Encoder: Send {
     /// Configures the encoder.
     fn configure(&mut self) -> Result<()>;
     /// Sets an encoder option.
-    fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()>;
+    fn set_option(&mut self, key: &str, val: Value) -> Result<()>;
     // fn get_option(&mut self, key: &str) -> Option<Value>;
     //
     /// Sets the parameters associated to a determined codec.
@@ -220,7 +220,7 @@ mod test {
 
                 Ok(p)
             }
-            fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()> {
+            fn set_option(&mut self, key: &str, val: Value) -> Result<()> {
                 match (key, val) {
                     ("w", Value::U64(v)) => self.w = Some(v as usize),
                     ("h", Value::U64(v)) => self.h = Some(v as usize),

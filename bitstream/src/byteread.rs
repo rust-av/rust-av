@@ -7,7 +7,7 @@
 #[inline]
 pub fn get_u8(buf: &[u8]) -> u8 {
     assert!(!buf.is_empty());
-    buf[0] as u8
+    buf[0]
 }
 
 /// Reads the first byte of a buffer and returns it as an `i8`.

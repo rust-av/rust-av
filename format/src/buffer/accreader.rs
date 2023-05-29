@@ -285,11 +285,11 @@ mod tests {
 
         let mut acc = AccReader::with_capacity(5, c);
 
-        assert_eq!(0, acc.seek(SeekFrom::Current(0)).unwrap());
+        assert_eq!(0, acc.stream_position().unwrap());
 
         for i in 0..30 {
-            assert_eq!(i as u64, read_byte(&mut acc).unwrap() as u64);
-            assert_eq!(i + 1, acc.seek(SeekFrom::Current(0)).unwrap());
+            assert_eq!(i, read_byte(&mut acc).unwrap() as u64);
+            assert_eq!(i + 1, acc.stream_position().unwrap());
         }
     }
 
