@@ -154,10 +154,7 @@ impl<T: Descriptor + ?Sized> CodecList for Codecs<T> {
     fn append(&mut self, desc: &'static Self::D) {
         let codec_name = desc.describe().codec;
 
-        self.list
-            .entry(codec_name)
-            .or_insert_with(Vec::new)
-            .push(desc);
+        self.list.entry(codec_name).or_default().push(desc);
     }
 }
 

@@ -236,6 +236,8 @@ mod tests {
     fn same_capacity_full_read() {
         let buf = (0u8..).take(20).collect::<Vec<u8>>();
 
+        // This is actually exactly what we want
+        #[allow(clippy::single_range_in_vec_init)]
         assert_read_acc(&buf, 20, &[0..buf.len()]);
     }
 
