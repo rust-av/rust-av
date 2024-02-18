@@ -15,7 +15,7 @@ pub fn bitreader(c: &mut Criterion) {
 pub fn bitread<'a>(c: &mut Criterion, r: impl BitRead<'a>, kind: &str) {
     c.bench_function(&format!("{kind} read bits using 32bit output"), |b| {
         b.iter(|| {
-            let mut rr = black_box(r.clone());
+            let mut rr = black_box(r);
             for _ in 0..1024 {
                 for l in 0..31 {
                     rr.get_bits_32(l);
@@ -30,7 +30,7 @@ pub fn bitread<'a>(c: &mut Criterion, r: impl BitRead<'a>, kind: &str) {
 
     c.bench_function(&format!("{kind} read bits using 64bit output"), |b| {
         b.iter(|| {
-            let mut rr = black_box(r.clone());
+            let mut rr = black_box(r);
             for _ in 0..1024 {
                 for l in 0..31 {
                     rr.get_bits_64(l);
@@ -45,7 +45,7 @@ pub fn bitread<'a>(c: &mut Criterion, r: impl BitRead<'a>, kind: &str) {
 
     c.bench_function(&format!("{kind} read bits mixing"), |b| {
         b.iter(|| {
-            let mut rr = black_box(r.clone());
+            let mut rr = black_box(r);
             for _ in 0..1024 {
                 for l in 0..31 {
                     rr.get_bits_64(l);
