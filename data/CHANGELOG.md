@@ -1,3 +1,7 @@
+## Version 0.4.2
+
+- Update num-derive from 0.3 to 0.4.
+
 ## Version 0.4.1
 
 - Use initialized data for a frame.
