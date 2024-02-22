@@ -1,6 +1,28 @@
 name: rust-av
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '**.rs'
+      - '**.sh'
+      - '**.yml'
+      - '**.toml'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.rs'
+      - '**.sh'
+      - '**.yml'
+      - '**.toml'
+
+env:
+  #
+  # Dependency versioning
+  #
+
+  GRCOV_VERSION: "0.8.13"
 
 jobs:
   clippy-rustfmt:
@@ -8,94 +30,74 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Install stable
-      uses: actions-rs/toolchain@v1
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
-        toolchain: stable
-        override: true
-        components: clippy, rustfmt
+        components: rustfmt, clippy
 
     - name: Run rustfmt
       run: |
         cargo fmt --all -- --check
 
     - name: Run clippy
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --workspace --all-features --all-targets -- -D warnings --verbose
+      run: |
+        cargo clippy --workspace --all-features --all-targets -- -D warnings --verbose
 
   grcov-codecov:
+
+    needs: clippy-rustfmt
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Install Rust stable
-      uses: actions-rs/toolchain@v1
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
-        toolchain: stable
-        override: true
+        components: llvm-tools-preview
 
     - name: Install grcov
       env:
-        LINK: https://github.com/mozilla/grcov/releases/latest/download
+        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
       run: |
-        curl -L "$LINK/grcov-x86_64-unknown-linux-musl.tar.bz2" |
+        curl -L "$GRCOV_LINK/v$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
         tar xj -C $HOME/.cargo/bin
-
-    - name: Install llvm-tools-preview
-      run: |
-        rustup component add llvm-tools-preview
-
-    - name: Run cargo clean
-      run: |
-        cargo clean
 
     - name: Run tests
       env:
-        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Cinstrument-coverage"
         LLVM_PROFILE_FILE: "rust-av-%p-%m.profraw"
-        RUSTFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-        RUSTDOCFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
       run: |
-        cargo test --workspace --all-features --verbose
+        cargo test --verbose
 
-    - name: Run grcov
+    - name: Get coverage data for codecov
       run: |
         grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
               --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
 
     - name: Codecov upload
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         files: lcov.info
+        token: ${{ secrets.CODECOV_TOKEN }}
 
-  test-x86_64:
+  test:
     strategy:
       matrix:
         platform: [macOS-latest, ubuntu-latest, windows-latest]
 
+    needs: clippy-rustfmt
+
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Install stable
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
 
     - name: Run tests
       run: |
