@@ -351,6 +351,8 @@ mod test {
         );
     }
 
+    #[cfg(not(target_arch = "wasm32"))] // Files depend on host, so this test
+    // cannot be run for WebAssembly
     #[test]
     fn file_muxer() {
         let file = tempfile::tempfile().unwrap();
