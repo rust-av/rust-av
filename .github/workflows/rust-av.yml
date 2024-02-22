@@ -110,3 +110,27 @@ jobs:
     - name: Run doc
       run: |
         cargo doc --workspace --all-features --verbose
+
+
+  wasm-test:
+
+    runs-on: ubuntu-latest
+
+    needs: [test]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Run tests
+        run: |
+          wasm-pack test --headless --chrome --no-default-features --workspace
