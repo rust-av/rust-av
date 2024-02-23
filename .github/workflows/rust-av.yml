@@ -108,14 +108,9 @@ jobs:
       run: |
         cargo test --workspace --all-features --verbose
 
-    - name: Run bench
-      run: |
-        cargo bench --workspace --all-features --verbose
-
     - name: Run doc
       run: |
         cargo doc --workspace --all-features --verbose
-
 
   wasm-test:
 
