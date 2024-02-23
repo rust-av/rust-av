@@ -71,7 +71,7 @@ jobs:
         RUSTFLAGS: "-Cinstrument-coverage"
         LLVM_PROFILE_FILE: "rust-av-%p-%m.profraw"
       run: |
-        cargo test --verbose
+        cargo test --workspace --verbose
 
     - name: Get coverage data for codecov
       run: |
