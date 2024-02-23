@@ -18,6 +18,9 @@ on:
       - '**.toml'
 
 env:
+  # CI doesn't benefit from incremental builds, this just increases cache size
+  CARGO_INCREMENTAL: 0
+
   #
   # Dependency versioning
   #
@@ -98,6 +101,8 @@ jobs:
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+
+    - uses: Swatinem/rust-cache@v2
 
     - name: Run tests
       run: |
