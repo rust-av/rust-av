@@ -18,6 +18,10 @@ on:
       - '**.toml'
 
 env:
+  # CI doesn't benefit from incremental builds, this just increases cache size
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
+
   #
   # Dependency versioning
   #
@@ -43,7 +47,7 @@ jobs:
 
     - name: Run clippy
       run: |
-        cargo clippy --workspace --all-features --all-targets -- -D warnings --verbose
+        cargo clippy --workspace --all-features --all-targets
 
   grcov-codecov:
 
@@ -68,10 +72,10 @@ jobs:
 
     - name: Run tests
       env:
-        RUSTFLAGS: "-Cinstrument-coverage"
+        RUSTFLAGS: "-Dwarnings -Cinstrument-coverage"
         LLVM_PROFILE_FILE: "rust-av-%p-%m.profraw"
       run: |
-        cargo test --workspace --verbose
+        cargo test --workspace
 
     - name: Get coverage data for codecov
       run: |
@@ -99,18 +103,15 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
 
+    - uses: Swatinem/rust-cache@v2
+
     - name: Run tests
       run: |
-        cargo test --workspace --all-features --verbose
-
-    - name: Run bench
-      run: |
-        cargo bench --workspace --all-features --verbose
+        cargo test --workspace --all-features
 
     - name: Run doc
       run: |
-        cargo doc --workspace --all-features --verbose
-
+        cargo doc --workspace --all-features
 
   wasm-test:
 
