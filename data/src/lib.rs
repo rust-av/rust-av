@@ -8,6 +8,7 @@ pub mod rational {
 }
 
 pub mod audiosample;
+pub mod colorspace;
 pub mod frame;
 pub mod packet;
 pub mod params;
