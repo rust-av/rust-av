@@ -127,15 +127,13 @@ impl VideoInfo {
         self.height = height;
     }
 
-    /// Returns video stream size with the specified alignment.
+    /// Calculates frame size from alignment and planes sizes.
     pub fn size(&self, align: usize) -> usize {
-        let mut size = 0;
-        for &component in self.format.into_iter() {
-            if let Some(c) = component {
-                size += c.get_data_size(self.width, self.height, align);
-            }
-        }
-        size
+        self.format
+            .iter()
+            .flatten()
+            .map(|plane_chroma_info| plane_chroma_info.size(self.width, self.height, align))
+            .sum()
     }
 }
 
