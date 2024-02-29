@@ -1,18 +1,19 @@
 //! Video and audio definitions.
 
-use crate::audiosample::{ChannelMap, Soniton};
-use crate::pixel::Formaton;
 use std::sync::Arc;
+
+use crate::audiosample::{ChannelMap, Soniton};
+use crate::pixel::Pixel;
 
 /// Video stream information.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VideoInfo {
-    /// Picture width.
+    /// Video width.
     pub width: usize,
-    /// Picture height.
+    /// Video height.
     pub height: usize,
-    /// Picture pixel format.
-    pub format: Option<Arc<Formaton>>,
+    /// Video frame pixel format.
+    pub format: Option<Arc<Pixel>>,
 }
 
 /// Audio stream information.

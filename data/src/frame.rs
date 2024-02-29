@@ -12,7 +12,7 @@ use bytes::BytesMut;
 use thiserror::Error;
 
 use crate::audiosample::*;
-use crate::pixel::*;
+use crate::pixel::Pixel;
 use crate::timeinfo::*;
 
 use self::FrameError::*;
@@ -72,7 +72,7 @@ pub struct VideoInfo {
     /// Frame type.
     pub frame_type: FrameType,
     /// Frame pixel format.
-    pub format: Arc<Formaton>,
+    pub format: Arc<Pixel>,
     /// Declared bits per sample.
     pub bits: u8,
 }
@@ -84,9 +84,9 @@ impl VideoInfo {
         height: usize,
         flipped: bool,
         frame_type: FrameType,
-        format: Arc<Formaton>,
+        format: Arc<Pixel>,
     ) -> Self {
-        let bits = format.get_total_depth();
+        let bits = format.pixel_bit_depths_sum();
         VideoInfo {
             width,
             height,
@@ -114,7 +114,7 @@ impl VideoInfo {
         &self.frame_type
     }
     /// Returns frame pixel format.
-    pub fn get_format(&self) -> Formaton {
+    pub fn get_format(&self) -> Pixel {
         *self.format
     }
 
@@ -405,12 +405,12 @@ impl DefaultFrameBuffer {
                 let buf = BytesMut::zeroed(size);
                 let mut buffer = DefaultFrameBuffer {
                     buf,
-                    planes: Vec::with_capacity(video.format.get_num_comp()),
+                    planes: Vec::with_capacity(video.format.planes()),
                 };
                 for &component in video.format.iter() {
                     if let Some(c) = component {
-                        let planesize = c.get_data_size(video.width, video.height, ALIGNMENT);
-                        let linesize = c.get_linesize(video.width, ALIGNMENT);
+                        let planesize = c.size(video.width, video.height, ALIGNMENT);
+                        let linesize = c.linesize(video.width, ALIGNMENT);
                         buffer.planes.push(Plane {
                             buf: buffer.buf.split_to(planesize),
                             linesize,
@@ -509,8 +509,8 @@ impl FrameBufferCopy for Frame {
                     d_linesize,
                     self.buf.as_slice_inner(plane_index).unwrap(),
                     self.buf.linesize(plane_index).unwrap(),
-                    c.unwrap().get_width(width),
-                    c.unwrap().get_height(height),
+                    c.unwrap().width(width),
+                    c.unwrap().height(height),
                 );
             }
         } else {
@@ -540,8 +540,8 @@ impl FrameBufferCopy for Frame {
                     d_linesize,
                     ss,
                     s_linesize,
-                    cc.unwrap().get_width(width),
-                    cc.unwrap().get_height(height),
+                    cc.unwrap().width(width),
+                    cc.unwrap().height(height),
                 );
             }
         } else {
@@ -576,7 +576,8 @@ pub type ArcFrame = Arc<Frame>;
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::audiosample::formats;
+
+    use crate::pixel::formats as pixel_format;
 
     #[test]
     fn test_format_cmp() {
@@ -602,25 +603,23 @@ mod test {
         assert!(!(info1 == info2));
     }
 
-    use crate::pixel::formats::{RGB565, YUV420};
-
     #[test]
     fn test_video_format_cmp() {
-        let yuv420: Formaton = *YUV420;
+        let yuv420: Pixel = *pixel_format::YUV420;
         let fm = Arc::new(yuv420);
         let info1 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
-        let yuv420: Formaton = *YUV420;
+        let yuv420: Pixel = *pixel_format::YUV420;
         let fm = Arc::new(yuv420);
         let info2 = VideoInfo::new(42, 42, false, FrameType::P, fm);
 
         assert!(info1 == info2);
 
-        let yuv420: Formaton = *YUV420;
+        let yuv420: Pixel = *pixel_format::YUV420;
         let fm = Arc::new(yuv420);
         let info1 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
-        let rgb565: Formaton = *RGB565;
+        let rgb565: Pixel = *pixel_format::RGB565;
         let fm = Arc::new(rgb565);
         let info2 = VideoInfo::new(42, 42, false, FrameType::I, fm);
 
@@ -630,7 +629,7 @@ mod test {
     #[test]
     #[should_panic]
     fn test_frame_copy_from_slice() {
-        let yuv420: Formaton = *YUV420;
+        let yuv420: Pixel = *pixel_format::YUV420;
         let fm = Arc::new(yuv420);
         let video_info = VideoInfo::new(42, 42, false, FrameType::I, fm);
 

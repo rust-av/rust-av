@@ -1,10 +1,10 @@
 //! Option values definitions.
 
-use crate::audiosample::Soniton;
-use crate::pixel::Formaton;
-
 use std::convert::From;
 use std::sync::Arc;
+
+use crate::audiosample::Soniton;
+use crate::pixel::Pixel;
 
 /// Accepted option values.
 #[derive(Debug)]
@@ -19,8 +19,8 @@ pub enum Value<'a> {
     Bool(bool),
     /// Pair of signed integer values.
     Pair(i64, i64),
-    /// Image colorspace representation value.
-    Formaton(Arc<Formaton>),
+    /// Video frame pixel value.
+    Formaton(Arc<Pixel>),
     /// Audio format definition value.
     Soniton(Arc<Soniton>),
 }
@@ -55,8 +55,8 @@ impl<'a> From<(i64, i64)> for Value<'a> {
     }
 }
 
-impl<'a> From<Arc<Formaton>> for Value<'a> {
-    fn from(v: Arc<Formaton>) -> Self {
+impl<'a> From<Arc<Pixel>> for Value<'a> {
+    fn from(v: Arc<Pixel>) -> Self {
         Value::Formaton(v)
     }
 }
