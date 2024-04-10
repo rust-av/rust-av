@@ -9,7 +9,6 @@ use std::sync::Arc;
 
 use byte_slice_cast::*;
 use bytes::BytesMut;
-use thiserror::Error;
 
 use crate::audiosample::*;
 use crate::pixel::*;
@@ -18,14 +17,23 @@ use crate::timeinfo::*;
 use self::FrameError::*;
 
 /// Frame errors.
-#[derive(Clone, Copy, Debug, Error, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum FrameError {
     /// Invalid frame index.
-    #[error("Invalid Index")]
     InvalidIndex,
     /// Invalid frame conversion.
-    #[error("Invalid Conversion")]
     InvalidConversion,
+}
+
+impl std::error::Error for FrameError {}
+
+impl fmt::Display for FrameError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            InvalidIndex => write!(f, "Invalid Index"),
+            InvalidConversion => write!(f, "Invalid Conversion"),
+        }
+    }
 }
 
 // TODO: Change it to provide Droppable/Seekable information or use a separate enum?
