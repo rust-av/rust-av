@@ -212,7 +212,7 @@ pub trait Probe<T: Descriptor + ?Sized> {
 
 impl<T: Descriptor + ?Sized> Probe<T> for [&'static T] {
     fn probe(&self, data: &[u8]) -> Option<&'static T> {
-        let mut max = u8::min_value();
+        let mut max = u8::MIN;
         let mut candidate: Option<&'static T> = None;
         for desc in self {
             let score = desc.probe(data);
