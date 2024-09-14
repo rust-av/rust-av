@@ -4,7 +4,7 @@ use std::fmt;
 use std::string::*;
 
 /// Audio format definition.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Soniton {
     /// Bits per sample.
     pub bits: u8,
@@ -79,7 +79,7 @@ impl fmt::Display for Soniton {
 }
 
 /// Known audio channel types.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ChannelType {
     /// Center front.
