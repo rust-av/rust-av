@@ -1,9 +1,11 @@
+// This has been written and tested, but has no specific usecase yet.
+#![allow(dead_code)]
+
 use std::io::ErrorKind::*;
 use std::io::{BufRead, Error, Read, Result};
 
 use crate::bitstream::byteread::*;
 
-#[allow(dead_code)]
 fn get_buffer<R: Read + ?Sized>(reader: &mut R, buf: &mut [u8]) -> Result<()> {
     let mut nread = 0usize;
     while nread < buf.len() {
