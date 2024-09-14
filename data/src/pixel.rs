@@ -11,7 +11,7 @@ use std::ops::Index;
 use std::slice;
 
 /// YUV color range.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum YUVRange {
     /// Pixels in the range [16, 235].
@@ -34,7 +34,7 @@ impl fmt::Display for YUVRange {
 ///
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
 pub enum MatrixCoefficients {
     /// The identity matrix.
     /// Typically used for:
@@ -129,7 +129,7 @@ impl fmt::Display for MatrixCoefficients {
 /// of the CIE 1931 definition of x and y as specified by ISO 11664-1.
 ///
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ColorPrimaries {
     /// For future use by ITU-T | ISO/IEC.
@@ -214,7 +214,7 @@ impl fmt::Display for ColorPrimaries {
 /// output linear optical intensity Lo with a nominal real-valued range of 0 to 1.
 ///
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum TransferCharacteristic {
     /// For future use by ITU-T | ISO/IEC.
@@ -328,7 +328,7 @@ impl fmt::Display for TransferCharacteristic {
 /// and half the height of the associated luma array)
 ///
 /// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(missing_docs)]
 pub enum ChromaLocation {
     Unspecified = 0,
@@ -356,7 +356,7 @@ impl fmt::Display for ChromaLocation {
 }
 
 /// All YUV color representations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum YUVSystem {
     /// YCbCr is a family of color spaces used as a part of the color image pipeline
@@ -386,7 +386,7 @@ impl fmt::Display for YUVSystem {
 }
 
 /// Trichromatic color encoding system.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum TrichromaticEncodingSystem {
     /// Image represented by three color channels: Red, Green, and Blue.
@@ -412,7 +412,7 @@ impl fmt::Display for TrichromaticEncodingSystem {
 }
 
 /// All supported color models.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ColorModel {
     /// An image represented by three channels or planes: Includes RGB, YUV, and XYZ.
@@ -456,7 +456,7 @@ impl ColorModel {
 ///
 /// Defines how the components of a colorspace are subsampled and
 /// where and how they are stored.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Chromaton {
     /// Horizontal subsampling in power of two
     /// (e.g. `0` = no subsampling, `1` = only every second value is stored).
@@ -597,7 +597,7 @@ impl fmt::Display for Chromaton {
 ///
 /// For example, the format can be paletted, so the components describe
 /// the palette storage format, while the actual data is 8-bit palette indices.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct Formaton {
     /// Image color model.
     pub model: ColorModel,
