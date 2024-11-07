@@ -9,5 +9,5 @@ edition = "2021"
 
 [dependencies]
 av-data = "0.4.0"
-thiserror = "1.0"
+thiserror = "2.0"
 num-rational = "0.4.0"
