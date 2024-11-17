@@ -1,19 +1,40 @@
+use std::fmt;
 use std::io;
 
-use thiserror::Error;
-
 /// General muxing/demuxing errors.
-#[derive(Debug, Error)]
+#[derive(Debug)]
 pub enum Error {
     /// Invalid input data.
-    #[error("Invalid Data")]
     InvalidData,
     /// A muxing/demuxing operation needs more data to be completed.
-    #[error("{0} more bytes needed")]
     MoreDataNeeded(usize),
-    #[error("I/O error")]
     /// A more generic I/O error.
-    Io(#[from] io::Error),
+    Io(io::Error),
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io(inner) => Some(inner),
+            _ => None,
+        }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Error::InvalidData => write!(f, "Invalid Data"),
+            Error::MoreDataNeeded(n) => write!(f, "{n} more bytes needed"),
+            Error::Io(_) => write!(f, "I/O error"),
+        }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(value: io::Error) -> Self {
+        Self::Io(value)
+    }
 }
 
 /// A specialized `Result` type for muxing/demuxing operations.
