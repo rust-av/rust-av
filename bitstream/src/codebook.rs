@@ -4,22 +4,31 @@
 
 use std::cmp::{max, min};
 use std::collections::HashMap;
+use std::fmt;
 use std::marker::PhantomData;
 
 use num_traits::AsPrimitive;
-use thiserror::Error;
 
 use crate::bitread::*;
 
 /// Codebook operations errors.
-#[derive(Debug, Error)]
+#[derive(Debug)]
 pub enum CodebookError {
     /// The codebook is invalid.
-    #[error("Invalid Codebook")]
     InvalidCodebook,
     /// The analyzed bitstream is not present in the codebook.
-    #[error("Invalid Code")]
     InvalidCode,
+}
+
+impl std::error::Error for CodebookError {}
+
+impl fmt::Display for CodebookError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            InvalidCodebook => write!(f, "Invalid Codebook"),
+            InvalidCode => write!(f, "Invalid Code"),
+        }
+    }
 }
 
 use self::CodebookError::*;
