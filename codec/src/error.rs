@@ -1,25 +1,34 @@
-use thiserror::Error;
+use std::fmt;
 
 /// General coding errors.
-#[derive(Debug, Error)]
+#[derive(Debug)]
 pub enum Error {
     /// Invalid input data.
-    #[error("Invalid Data")]
     InvalidData,
     /// A coding operation needs more data to be completed.
-    #[error("Additional data needed")]
     MoreDataNeeded,
     /// Incomplete input configuration.
-    #[error("Configuration Incomplete")]
     ConfigurationIncomplete,
     /// Invalid input configuration.
-    #[error("Configuration Invalid")]
     ConfigurationInvalid,
     /// Unsupported requested feature.
-    #[error("Unsupported feature {0}")]
     Unsupported(String),
     // TODO add support for dependency-specific errors here
     // Inner(failure::Context)
+}
+
+impl std::error::Error for Error {}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Error::InvalidData => write!(f, "Invalid Data"),
+            Error::MoreDataNeeded => write!(f, "Additional data needed"),
+            Error::ConfigurationIncomplete => write!(f, "Configuration Incomplete"),
+            Error::ConfigurationInvalid => write!(f, "Configuration Invalid"),
+            Error::Unsupported(feat) => write!(f, "Unsupported feature {feat}"),
+        }
+    }
 }
 
 /// A specialized `Result` type for coding operations.
