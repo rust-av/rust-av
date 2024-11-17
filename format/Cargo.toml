@@ -9,7 +9,6 @@ repository = "https://github.com/rust-av/rust-av"
 
 [dependencies]
 log = "0.4.6"
-thiserror = "1.0"
 av-data = "0.4.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
