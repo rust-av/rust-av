@@ -14,7 +14,7 @@ nightly = []
 members = ["bitstream", "codec", "data", "format"]
 
 [dependencies.av-bitstream]
-version = "0.2.0"
+version = "0.2.1"
 path = "bitstream"
 
 [dependencies.av-codec]
