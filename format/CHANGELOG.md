@@ -1,3 +1,7 @@
+## Version 0.7.1
+
+- Remove `thiserror` dependency.
+
 ## Version 0.7.0
 
 - Simplify the `Muxer` trait to have one `Write` generic instead of two.
