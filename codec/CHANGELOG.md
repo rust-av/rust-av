@@ -1,3 +1,7 @@
+## Version 0.3.1
+
+- Remove `thiserror` dependency
+
 ## Version 0.3.0
 
 - Update `num-rational` crate requirement.

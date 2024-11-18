@@ -18,7 +18,7 @@ version = "0.2.0"
 path = "bitstream"
 
 [dependencies.av-codec]
-version = "0.3.0"
+version = "0.3.1"
 path = "codec"
 
 [dependencies.av-data]
