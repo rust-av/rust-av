@@ -83,7 +83,7 @@ jobs:
               --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
 
     - name: Codecov upload
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         files: lcov.info
         token: ${{ secrets.CODECOV_TOKEN }}
