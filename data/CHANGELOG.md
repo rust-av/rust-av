@@ -1,3 +1,8 @@
+## Version 0.4.3
+
+- Add Hash trait to some structs
+- Include LICENSE file in published crate
+
 ## Version 0.4.2
 
 - Update num-derive from 0.3 to 0.4.
