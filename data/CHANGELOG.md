@@ -1,3 +1,7 @@
+## Version 0.4.4
+
+- Remove `thiserror` dependency
+
 ## Version 0.4.3
 
 - Add Hash trait to some structs

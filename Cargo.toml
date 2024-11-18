@@ -22,7 +22,7 @@ version = "0.3.0"
 path = "codec"
 
 [dependencies.av-data]
-version = "0.4.3"
+version = "0.4.4"
 path = "data"
 
 [dependencies.av-format]
