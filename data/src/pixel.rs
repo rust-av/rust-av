@@ -770,7 +770,7 @@ impl Formaton {
     }
 }
 
-impl<'a> Index<usize> for &'a Formaton {
+impl Index<usize> for &Formaton {
     type Output = Option<Chromaton>;
 
     fn index(&self, index: usize) -> &Self::Output {

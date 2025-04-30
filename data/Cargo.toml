@@ -8,6 +8,7 @@ homepage = "https://github.com/rust-av/rust-av"
 keywords = ["multimedia"]
 readme = "README.md"
 edition = "2021"
+rust-version = "1.61.0"
 
 [dependencies]
 byte-slice-cast = "1.2.1"

@@ -6,7 +6,7 @@ authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 repository = "https://github.com/rust-av/rust-av"
 edition = "2021"
+rust-version = "1.61.0"
 
 [dependencies]
 av-data = "0.4.0"
-num-rational = "0.4.0"
