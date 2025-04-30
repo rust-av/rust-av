@@ -441,7 +441,7 @@ impl CodebookDescReader<u32> for Vec<ShortCodebookDesc> {
     }
 }
 
-impl<'a, S: Copy> CodebookDescReader<S> for &'a [FullCodebookDesc<S>] {
+impl<S: Copy> CodebookDescReader<S> for &[FullCodebookDesc<S>] {
     fn bits(&self, idx: usize) -> u8 {
         self[idx].bits
     }
@@ -459,7 +459,7 @@ impl<'a, S: Copy> CodebookDescReader<S> for &'a [FullCodebookDesc<S>] {
     }
 }
 
-impl<'a> CodebookDescReader<u32> for &'a [ShortCodebookDesc] {
+impl CodebookDescReader<u32> for &[ShortCodebookDesc] {
     fn bits(&self, idx: usize) -> u8 {
         self[idx].bits
     }

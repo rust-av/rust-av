@@ -261,7 +261,7 @@ macro_rules! little_endian_reader {
 
 little_endian_reader! { BitReadLE }
 
-impl<'a> BitReadFill for BitReadLE<'a> {
+impl BitReadFill for BitReadLE<'_> {
     #[inline]
     fn can_refill(&self) -> bool {
         self.index + 8 <= self.buffer.len()
@@ -306,7 +306,7 @@ macro_rules! big_endian_reader {
 
 big_endian_reader! { BitReadBE }
 
-impl<'a> BitReadFill for BitReadBE<'a> {
+impl BitReadFill for BitReadBE<'_> {
     #[inline]
     fn can_refill(&self) -> bool {
         self.index + 8 <= self.buffer.len()

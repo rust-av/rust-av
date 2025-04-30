@@ -5,11 +5,10 @@
 //! were used.
 
 use crate::buffer::Buffered;
-use std::cmp;
 use std::io;
 use std::io::{BufRead, Read, Result, Seek, SeekFrom};
-use std::iter;
 use std::iter::Iterator;
+use std::{cmp, iter};
 
 /// Partial consumption buffer for any reader.
 pub struct AccReader<R> {
