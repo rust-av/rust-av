@@ -793,7 +793,7 @@ impl Formaton {
     }
 
     /// Returns an iterator over the format definition of each component.
-    pub fn iter(&self) -> slice::Iter<Option<Chromaton>> {
+    pub fn iter(&'_ self) -> slice::Iter<'_, Option<Chromaton>> {
         self.comp_info.iter()
     }
 }
