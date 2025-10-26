@@ -125,63 +125,91 @@ impl fmt::Display for MatrixCoefficients {
     }
 }
 
-/// Indicates the chromaticity coordinates of the source colour primaries as specified in Table 2 in terms
-/// of the CIE 1931 definition of x and y as specified by ISO 11664-1.
+/// Colour Primaries.
 ///
-/// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
+/// Indicates the chromaticity coordinates of the source colour primaries as specified in Table 2 in terms
+/// of the CIE 1931 definition of x and y as specified by ISO/CIE 11664-1.
+///
+/// The values in this enumeration match the corresponding entries in ISO/IEC 23091-2:2025 Section 8.1. These
+/// are equivalent to the colour primaries code points in ITU H.273 (V4, 2024) Section 8.1.
+/// These values were previously published in ISO/IEC 23001-8, which has since been withdrawn.
+///
+/// Values not specified in this enumeration (13 to 21, and 23 to 255 inclusive) are reserved for future use
+/// by ITU-T | ISO/IEC.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum ColorPrimaries {
+    /// Reserved.
+    ///
     /// For future use by ITU-T | ISO/IEC.
     Reserved0 = 0,
-    /// - Rec. ITU-R BT.709-6
-    /// - Rec. ITU-R BT.1361-0 conventional colour gamut
-    ///   system and extended colour gamut system (historical)
+
+    /// Rec. ITU-R BT.709-6.
+    ///
+    /// This value is also applicable to colour primaries specified in:
+    /// - Rec. ITU-R BT.1361-0 conventional colour gamut system and extended colour gamut system (historical)
     /// - IEC 61966-2-1 sRGB or sYCC
     /// - IEC 61966-2-4
-    /// - Society of Motion Picture and Television Engineers
-    ///   (SMPTE) RP 177 (1993) Annex B
+    /// - Society of Motion Picture and Television Engineers (SMPTE) RP 177 (1993) Annex B
     BT709 = 1,
-    /// Image characteristics are unknown or are determined by
-    /// the application.
+
+    /// Image characteristics are unknown or are determined by the application.
     Unspecified = 2,
+
+    /// Reserved.
+    ///
     /// For future use by ITU-T | ISO/IEC.
     Reserved = 3,
-    /// - Rec. ITU-R BT.470-6 System M (historical)
-    /// - United States National Television System Committee
-    ///   1953 Recommendation for transmission standards for
-    ///   color television
-    /// - United States Federal Communications Commission
-    ///   (2003) Title 47 Code of Federal Regulations 73.682 (a) (20)
+
+    /// Rec. ITU-R BT.470-6 System M (historical).
+    ///
+    /// This value is also applicable to colour primaries specified in:
+    /// - United States National Television System Committee 1953 Recommendation for transmission standards for color television
+    /// - United States Federal Communications Commission (2003) Title 47 Code of Federal Regulations 73.682 (a) (20)
     BT470M = 4,
-    /// - Rec. ITU-R BT.470-6 System B, G (historical)
+
+    /// Rec. ITU-R BT.470-6 System B, G (historical).
+    ///
+    /// This value is also applicable to colour primaries specified in:
     /// - Rec. ITU-R BT.601-7 625
     /// - Rec. ITU-R BT.1358-0 625 (historical)
     /// - Rec. ITU-R BT.1700-0 625 PAL and 625 SECAM
     BT470BG = 5,
-    /// - Rec. ITU-R BT.601-7 525
+
+    /// Rec. ITU-R BT.601-7 525.
+    ///
+    /// This value is also applicable to colour primaries specified in:
     /// - Rec. ITU-R BT.1358-1 525 or 625 (historical)
     /// - Rec. ITU-R BT.1700-0 NTSC
     /// - SMPTE ST 170 (2004)
     ///
-    /// (functionally the same as the value 7)
+    /// Note that this value is functionally the same as the value 7.
     ST170M = 6,
-    /// - SMPTE ST 240 (1999)
+
+    /// SMPTE ST 240 (1999).
     ///
-    /// (functionally the same as the value 6)
+    /// Note that this value is functionally the same as the value 6.
     ST240M = 7,
-    /// Generic film (colour filters using Illuminant C)
+
+    /// Generic film (colour filters using Illuminant C).
     Film = 8,
-    /// - Rec. ITU-R BT.2020-2
-    /// - Rec. ITU-R BT.2100-2
+
+    /// Rec. ITU-R BT.2020-2.
+    ///
+    /// This value is also applicable to colour primaries specified in Rec. ITU-R BT.2100-2.
     BT2020 = 9,
-    /// - SMPTE ST 428-1 (2019)
-    /// - (CIE 1931 XYZ as in ISO 11664-1)
+
+    ///  Society of Motion Picture and Television Engineers ST 428-1 (2019).
+    ///
+    /// (CIE 1931 XYZ as in ISO/CIE 11664-1)
     ST428 = 10,
-    /// SMPTE RP 431-2 (2011)
+
+    /// Society of Motion Picture and Television Engineers RP 431-2 (2011)
     P3DCI = 11,
-    /// SMPTE EG 432-1 (2010)
+
+    /// Society of Motion Picture and Television Engineers EG 432-1 (2010)
     P3Display = 12,
+
     /// No corresponding industry specification identified.
     Tech3213 = 22,
 }
