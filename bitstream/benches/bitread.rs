@@ -4,7 +4,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use av_bitstream::bitread::*;
 
 pub fn bitreader(c: &mut Criterion) {
-    let buffer: Vec<u8> = (0..2048).flat_map(|_| (0..128)).collect();
+    let buffer: Vec<u8> = (0..2048).flat_map(|_| 0..128).collect();
     let rbe = BitReadBE::new(&buffer);
     let rle = BitReadLE::new(&buffer);
 
