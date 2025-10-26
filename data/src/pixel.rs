@@ -29,70 +29,139 @@ impl fmt::Display for YUVRange {
     }
 }
 
-/// Describes the matrix coefficients used in deriving
+/// Matrix Coefficients.
+///
+/// This enumeration identifies the code points that define the matrix coefficients used in deriving
 /// luma and chroma signals from the green, blue and red or X, Y and Z primaries.
 ///
-/// Values adopted from Table 4 of ISO/IEC 23001-8:2013/DCOR1.
+/// The values in this enumeration match the corresponding entries in ISO/IEC 23091-2:2025 Section 8.3. These are equivalent to the
+/// matrix coefficient code points in ITU H.273 (V4, 2024) Section 8.3. These values were previously published in ISO/IEC 23001-8,
+/// which has since been withdrawn.
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromPrimitive, ToPrimitive)]
 pub enum MatrixCoefficients {
     /// The identity matrix.
-    /// Typically used for:
     ///
-    /// - GBR (often referred to as RGB)
-    /// - YZX (often referred to as XYZ)
+    /// Typically used for GBR (often referred to as RGB); however, may also be used for YZX (often referred to as XYZ).
+    ///
+    /// This value is also applicable to matrix coefficients specified in:
     /// - IEC 61966-2-1 sRGB
     /// - SMPTE ST 428-1 (2019)
     Identity = 0,
-    /// - Rec. ITU-R BT.709-6
-    /// - Rec. ITU-R BT.1361-0 conventional colour gamut system and extended colour
-    ///   gamut system (historical)
-    /// - IEC 61966-2-4 xvYCC709
+
+    /// Rec. ITU-R BT.709-6.
+    ///
+    /// This value is also applicable to matrix coefficients specified in:
+    /// - Rec. ITU-R BT.1361-0 conventional colour gamut system and extended colour gamut system (historical)
+    /// - IEC 61966-2-4 xvYCC<sub>709</sub>
     /// - SMPTE RP 177 (1993) Annex B
     BT709 = 1,
+
+    /// Unspecified.
+    ///
     /// Image characteristics are unknown or are determined by the application.
     Unspecified = 2,
+
+    /// Reserved.
+    ///
     /// For future use by ITU-T | ISO/IEC.
     Reserved = 3,
-    /// United States Federal Communications Commission (2003) Title 47 Code of
-    /// Federal Regulations 73.682 (a) (20)
+
+    /// United States Federal Communications Commission (2003) Title 47 Code of Federal Regulations 73.682 (a) (20)
     BT470M = 4,
-    /// - Rec. ITU-R BT.470-6 System B, G (historical)
+
+    /// Rec. ITU-R BT.470-6 System B, G (historical).
+    ///
+    /// This value is also applicable to matrix coefficients specified in:
     /// - Rec. ITU-R BT.601-7 625
     /// - Rec. ITU-R BT.1358-0 625 (historical)
     /// - Rec. ITU-R BT.1700-0 625 PAL and 625 SECAM
     /// - IEC 61966-2-1 sYCC
-    /// - IEC 61966-2-4 xvYCC601
+    /// - IEC 61966-2-4 xvYCC<sub>601</sub>
     ///
-    /// (functionally the same as the value 6)
+    /// Note that this value is functionally the same as the value 6.
+    ///
+    /// Note that earlier versions of the standards noted the IEC 61966-2-1 sYCC representation as corresponding
+    /// to MatrixCoefficients equal to 1. Closer study later determined that this representation should correspond to
+    /// MatrixCoefficients equal to 5 instead. This was corrected in the 2021 editions of the standards.
     BT470BG = 5,
-    /// - Rec. ITU-R BT.601-7 525
+
+    /// Rec. ITU-R BT.601-7 525.
+    ///
+    /// This value is also applicable to matrix coefficients specified in:
     /// - Rec. ITU-R BT.1358-1 525 or 625 (historical)
     /// - Rec. ITU-R BT.1700-0 NTSC
     /// - SMPTE ST 170 (2004)
     ///
-    /// (functionally the same as the value 5)
+    /// Note that this value is functionally the same as the value 5.
     ST170M = 6,
+
     /// SMPTE ST 240 (1999)
     ST240M = 7,
+
+    /// YCgCo or YCgCo-R.
+    ///
     /// The YCoCg color model, also known as the YCgCo color model,
     /// is the color space formed from a simple transformation of
     /// an associated RGB color space into a luma value and
     /// two chroma values called chrominance green and chrominance orange.
     YCgCo = 8,
-    /// - Rec. ITU-R BT.2020-2 (non-constant luminance)
-    /// - Rec. ITU-R BT.2100-2 Y′CbCr
+
+    /// Rec. ITU-R BT.2020-2 (non-constant luminance).
+    ///
+    /// This value is also applicable to matrix coefficients specified in Rec. ITU-R BT.2100-2 Y′CbCr
     BT2020NonConstantLuminance = 9,
-    /// Rec. ITU-R BT.2020-2 (constant luminance)
+
+    /// Rec. ITU-R BT.2020-2 (constant luminance).
     BT2020ConstantLuminance = 10,
-    /// SMPTE ST 2085 (2015)
+
+    /// SMPTE ST 2085 (2015).
     ST2085 = 11,
+
     /// Chromaticity-derived non-constant luminance system.
     ChromaticityDerivedNonConstantLuminance = 12,
+
     /// Chromaticity-derived constant luminance system.
     ChromaticityDerivedConstantLuminance = 13,
-    /// Rec. ITU-R BT.2100-2 ICTCP
+
+    /// Rec. ITU-R BT.2100-2 IC<sub>T</sub>C<sub>P</sub>.
     ICtCp = 14,
+
+    /// IPT-C2.
+    ///
+    /// Colour representation developed in SMPTE as IPT-PQ-C2.
+    ///
+    /// For H.273, this value is only valid from the 2024 version (i.e. V4). There is a pre-published version
+    /// (V3) that shows it as "SMPTE ST 2128 (202x)", which was updated in V4. Earlier versions (V1 and V2) have
+    /// this value as Reserved.
+    ///
+    /// For ISO/IEC 23091-2, this value is only valid from the 2025 version (i.e. Third edition). Earlier versions
+    /// have this value as Reserved.
+    PqC2 = 15,
+
+    /// YCgCo-Re.
+    ///
+    /// YCoCg-R colour space with equal luma and chroma bit depths, where the number of bits added to a source
+    /// RGB bit depth is 2 (i.e. "even", hence "Re").
+    ///
+    /// For H.273, this value is valid from the 2024 version (i.e. V4), however there is a pre-published version
+    /// (V3) that also includes it. Earlier versions (V1 and V2) have this value as Reserved.
+    ///
+    /// For ISO/IEC 23091-2, this value is only valid from the 2025 version (i.e. Third edition). Earlier versions
+    /// have this value as Reserved.
+    YCgCoRe = 16,
+
+    /// YCgCo-Ro.
+    ///
+    /// YCoCg-R colour space with equal luma and chroma bit depths, where the number of bits added to a source
+    /// RGB bit depth is 1 (i.e. "odd", hence "Ro").
+    ///
+    /// For H.273, this value is valid from the 2024 version (i.e. V4), however there is a pre-published version
+    /// (V3) that also includes it. Earlier versions (V1 and V2) have this value as Reserved.
+    ///
+    /// For ISO/IEC 23091-2, this value is only valid from the 2025 version (i.e. Third edition). Earlier versions
+    /// have this value as Reserved.
+    YCgCoRo = 17,
 }
 
 impl fmt::Display for MatrixCoefficients {
@@ -115,12 +184,15 @@ impl fmt::Display for MatrixCoefficients {
             }
             MatrixCoefficients::ST2085 => write!(f, "SMPTE ST-2085"),
             MatrixCoefficients::ChromaticityDerivedNonConstantLuminance => {
-                write!(f, "Chromaticity Derived (Non ConstantLuminance)")
+                write!(f, "Chromaticity Derived (Non Constant Luminance)")
             }
             MatrixCoefficients::ChromaticityDerivedConstantLuminance => {
                 write!(f, "Chromaticity Derived (Constant Luminance)")
             }
             MatrixCoefficients::ICtCp => write!(f, "ICtCp"),
+            MatrixCoefficients::PqC2 => write!(f, "PQ-C2"),
+            MatrixCoefficients::YCgCoRe => write!(f, "YCgCo-Re"),
+            MatrixCoefficients::YCgCoRo => write!(f, "YCgCo-Ro"),
         }
     }
 }
