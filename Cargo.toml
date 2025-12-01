@@ -34,7 +34,7 @@ path = "format"
 wasm-bindgen = "0.2.91"
 
 [dev-dependencies]
-criterion = { version = "0.5.1", default-features = false }
+criterion = { version = "0.8.0", default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3.0"
