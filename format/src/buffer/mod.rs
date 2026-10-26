@@ -11,3 +11,7 @@ pub trait Buffered: BufRead + Seek + Send + Sync {
     /// Increases the size of a buffer.
     fn grow(&mut self, len: usize);
 }
+
+mod hlsreader;
+
+pub use self::hlsreader::HlsReader;

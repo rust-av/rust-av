@@ -11,6 +11,9 @@ rust-version = "1.61.0"
 [dependencies]
 log = "0.4.6"
 av-data = "0.4.0"
+reqwest = { version = "0.12", features = ["blocking"] }
+m3u8-rs = "6.0"
+url = "2.5"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tempfile = "3.3.0"
